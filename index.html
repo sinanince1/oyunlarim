@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎮 Oyun Dünyam</title>
+  <title>🎮 Eğitici Oyunlar</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -277,17 +277,15 @@
       box-shadow: none;
     }
 
-    /* MODAL */
+    /* MODAL - TAM EKRAN */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(6px);
+      background: #000;
       z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
+      align-items: stretch;
+      justify-content: stretch;
     }
     .modal-overlay.active {
       display: flex;
@@ -296,46 +294,46 @@
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .modal {
-      background: white;
-      border-radius: 28px;
+      background: #000;
       width: 100%;
-      max-width: 960px;
-      max-height: 90vh;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.35);
-      overflow: hidden;
-      animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    @keyframes slideUp {
-      from { transform: translateY(40px) scale(0.95); opacity: 0; }
-      to   { transform: translateY(0) scale(1); opacity: 1; }
+      position: relative;
     }
 
-    .modal-header {
+    /* Floating butonlar - sağ üst köşe */
+    .modal-controls {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 24px;
-      border-bottom: 2px solid #F0F0F0;
+      gap: 10px;
     }
-    .modal-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.5rem;
-      color: #2D2D2D;
-    }
-    .modal-close {
-      width: 40px; height: 40px;
-      border-radius: 12px;
-      background: #FFE0E0;
+    .modal-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
       border: none;
       cursor: pointer;
-      font-size: 1.3rem;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--pink);
-      transition: background 0.2s, transform 0.1s;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
     }
-    .modal-close:hover { background: #FFCCD0; transform: scale(1.1); }
+    .modal-btn:hover { transform: scale(1.1); }
+    .modal-btn:active { transform: scale(0.95); }
+    .modal-btn-reload {
+      background: #FFD600;
+      color: #333;
+    }
+    .modal-btn-close {
+      background: #FF4D8D;
+      color: white;
+    }
 
     .modal-body {
       flex: 1;
@@ -345,7 +343,6 @@
     .modal-body iframe {
       width: 100%;
       height: 100%;
-      min-height: 520px;
       border: none;
       display: block;
     }
@@ -383,7 +380,7 @@
 
 <!-- HEADER -->
 <header>
-  <div class="logo"><span>🎮</span> Oyun Dünyam</div>
+  <div class="logo"><span>🎮</span> Eğitici Oyunlar</div>
   <div class="header-badges">
     <div class="badge">✨ Ücretsiz</div>
     <div class="badge">📱 Mobil Uyumlu</div>
@@ -400,12 +397,12 @@
 <!-- MAIN -->
 <main id="main-content"></main>
 
-<!-- MODAL -->
+<!-- MODAL - TAM EKRAN -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Oyun</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-controls">
+      <button class="modal-btn modal-btn-reload" onclick="reloadGame()" title="Yenile">↺</button>
+      <button class="modal-btn modal-btn-close" onclick="closeModal()" title="Kapat">✕</button>
     </div>
     <div class="modal-body">
       <iframe id="game-frame" src="" allowfullscreen></iframe>
@@ -546,10 +543,14 @@ function buildPage() {
 // MODAL
 // ============================================================
 function openGame(file, name) {
-  document.getElementById('modal-title').textContent = '🎮 ' + name;
   document.getElementById('game-frame').src = file;
   document.getElementById('modal-overlay').classList.add('active');
   document.body.style.overflow = 'hidden';
+}
+
+function reloadGame() {
+  const frame = document.getElementById('game-frame');
+  frame.src = frame.src;
 }
 
 function closeModal() {
