@@ -306,7 +306,7 @@
     /* Floating butonlar - sağ üst köşe */
     .modal-controls {
       position: fixed;
-      top: 15vh;
+      top: 9vh;
       right: 16px;
       z-index: 10001;
       display: flex;
@@ -365,6 +365,22 @@
       .game-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
       .game-thumb { height: 110px; font-size: 3rem; }
       .modal-body iframe { min-height: 340px; }
+    }
+    /* CONFETTI */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      z-index: 9999;
+      pointer-events: none;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
     }
   </style>
 </head>
@@ -450,6 +466,22 @@ const categories = [
         sinif: "1. Sınıf",
         emoji: "⚖️",
         thumbBg: "linear-gradient(135deg, #E8FFE8, #B8F0C0)"
+      },
+      {
+        name: "Sünger Bob",
+        file: "sungerbob.html",
+        desc: "Toplama ve çıkarma işlemi 🧽",
+        sinif: "1. Sınıf",
+        emoji: "🧽",
+        thumbBg: "linear-gradient(135deg, #FFF9C4, #FFE082)"
+      },
+      {
+        name: "Timsahı Doyur",
+        file: "timsah.html",
+        desc: "Toplamada ve çıkarmada bilinmeyeni bulma 🐊",
+        sinif: "1. Sınıf",
+        emoji: "🐊",
+        thumbBg: "linear-gradient(135deg, #DFFFD6, #A5D6A7)"
       }
     ]
   },
@@ -593,8 +625,36 @@ function addFloaties() {
   }
 }
 
+// ============================================================
+// KONFETİ — Sadece ilk açılışta
+// ============================================================
+function launchConfetti() {
+  const colors = ['#FF6B35','#FFD600','#FF4D8D','#00C9A7','#4D9FFF','#A855F7','#fff'];
+  for (let i = 0; i < 120; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.width  = (6 + Math.random() * 8) + 'px';
+    el.style.height = (6 + Math.random() * 8) + 'px';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const dur = 2.5 + Math.random() * 2.5;
+    const delay = Math.random() * 1.8;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = delay + 's';
+    if (Math.random() > 0.5) el.style.borderRadius = '50%';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), (dur + delay) * 1000 + 200);
+  }
+}
+
 buildPage();
 addFloaties();
+
+// Konfeti sadece sayfaya ilk girişte
+if (!sessionStorage.getItem('confettiShown')) {
+  sessionStorage.setItem('confettiShown', '1');
+  setTimeout(launchConfetti, 200);
+}
 </script>
 </body>
 </html>
