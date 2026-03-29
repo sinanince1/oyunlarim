@@ -1090,8 +1090,12 @@ document.getElementById('answerInput').addEventListener('keydown',e=>{
 
 
 // ===== AUDIO ENGINE (Web Audio API) =====
-const AC = new (window.AudioContext || window.webkitAudioContext)();
-
+let AC = null;
+function getAC() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+  return AC;
+}
+function resumeAC() { const ac = getAC(); if(ac && ac.state === 'suspended') ac.resume(); }
 function resumeAC() { if(AC.state === 'suspended') AC.resume(); }
 
 // --- SFX helpers ---
