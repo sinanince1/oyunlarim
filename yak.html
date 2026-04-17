@@ -32,11 +32,26 @@ button:disabled{cursor:default;opacity:.5}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* Ana menü */
-.main-menu{text-align:center;padding:60px 20px}
+.main-menu{text-align:center;padding:40px 20px 30px}
 .main-menu h1{font-size:52px;margin:0 0 8px;letter-spacing:-1px}
-.main-menu p{font-size:22px;color:var(--text-soft);margin:0 0 40px}
+.main-menu p{font-size:22px;color:var(--text-soft);margin:0 0 30px}
 .main-menu .start-btn{display:inline-flex;align-items:center;justify-content:center;padding:24px 48px;border-radius:28px;background:var(--primary);color:#fff;font-size:30px;font-weight:700;box-shadow:0 6px 0 var(--primary-dark),var(--shadow);transition:transform .1s,box-shadow .1s;min-height:88px}
 .main-menu .start-btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--primary-dark),var(--shadow)}
+
+/* Madalya Rafı */
+.shelf-wrap{margin:36px auto 0;max-width:520px}
+.shelf-title{font-size:22px;font-weight:700;color:var(--text);margin:0 0 14px;text-align:center}
+.shelf-title .count{color:var(--text-soft);font-weight:500;font-size:18px}
+.shelf{background:linear-gradient(180deg,#FFF8E1 0%,#FFECB3 100%);border-radius:22px;padding:20px 16px 14px;box-shadow:var(--shadow),inset 0 -4px 0 rgba(0,0,0,0.08);position:relative}
+.shelf::after{content:'';position:absolute;left:8px;right:8px;bottom:6px;height:6px;background:linear-gradient(180deg,#8D6E63,#5D4037);border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.shelf-row{display:flex;justify-content:space-around;align-items:flex-end;gap:8px;flex-wrap:wrap}
+.medal-slot{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:90px;padding:8px 4px}
+.medal-big{font-size:56px;line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,0.15))}
+.medal-slot.empty .medal-big{filter:grayscale(1) opacity(.25)}
+.medal-label{font-size:15px;font-weight:600;color:var(--text-soft);text-align:center;line-height:1.3}
+.medal-count{font-size:20px;font-weight:800;color:var(--yak-amber-dark);background:#fff;padding:2px 12px;border-radius:12px;min-width:44px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.medal-slot.empty .medal-count{color:#B0BEC5;background:#F5F7FA;box-shadow:none}
+.shelf-empty{text-align:center;color:var(--text-soft);font-size:17px;padding:10px 0 4px;font-style:italic}
 
 /* Poster ekranı */
 .poster-screen{text-align:center;padding:20px}
@@ -194,6 +209,7 @@ button:disabled{cursor:default;opacity:.5}
 .end-subtitle{font-size:20px;color:var(--text-soft);margin:0 0 18px}
 .end-score{font-size:44px;font-weight:800;color:var(--primary-dark);margin:12px 0}
 .end-msg{font-size:22px;margin:12px 0 20px;line-height:1.5}
+.end-collected{font-size:18px;margin:0 0 20px;padding:12px 16px;background:#FFF8E1;border-radius:16px;color:var(--yak-amber-dark);font-weight:600}
 
 /* Özel Modal */
 .modal-backdrop{position:fixed;inset:0;background:rgba(38,50,56,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;opacity:0;animation:fadeIn .2s ease-out forwards}
@@ -310,6 +326,50 @@ function generateValues(p){
 }
 function cleanWord(s){return s.replace(/[.,!?;:'"«»()]+$/g,'').replace(/^[.,!?;:'"«»()]+/g,'').toLocaleLowerCase('tr')}
 
+/* ========== localStorage (Kalıcı Veri) ========== */
+const LS_KEY='yak_oyun_v1';
+let oyunVerisi={
+  madalyalar:{basit:0,orta:0,zor:0},  // kazanılan madalya sayıları
+  gecmis:[]  // {level, skor, toplam, tarih} kayıtları (son 50)
+};
+
+function lsYukle(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw)return;
+    const parsed=JSON.parse(raw);
+    if(parsed&&typeof parsed==='object'){
+      if(parsed.madalyalar&&typeof parsed.madalyalar==='object'){
+        oyunVerisi.madalyalar.basit=Number(parsed.madalyalar.basit)||0;
+        oyunVerisi.madalyalar.orta=Number(parsed.madalyalar.orta)||0;
+        oyunVerisi.madalyalar.zor=Number(parsed.madalyalar.zor)||0;
+      }
+      if(Array.isArray(parsed.gecmis))oyunVerisi.gecmis=parsed.gecmis.slice(-50);
+    }
+  }catch(e){/* localStorage engelliyse sessizce varsayılanlarla devam et */}
+}
+
+function lsYaz(){
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify(oyunVerisi));
+  }catch(e){/* kota dolmuş olabilir, sessizce geç */}
+}
+
+function lsTemizle(){
+  // Sadece oturum/ilerleme sıfırlanır, madalyalar korunur.
+  // Bu oyunda kalıcı oturum verisi yok, ama API tutarlılığı için fonksiyon duruyor.
+  // Madalyalar oyunVerisi.madalyalar içinde kalır.
+  try{lsYaz()}catch(e){}
+}
+
+function madalyaKazan(level,skor,toplam){
+  if(!oyunVerisi.madalyalar[level])oyunVerisi.madalyalar[level]=0;
+  oyunVerisi.madalyalar[level]+=1;
+  oyunVerisi.gecmis.push({level,skor,toplam,tarih:Date.now()});
+  if(oyunVerisi.gecmis.length>50)oyunVerisi.gecmis=oyunVerisi.gecmis.slice(-50);
+  lsYaz();
+}
+
 /* ========== SES ========== */
 let soundEnabled=true;
 try{const s=localStorage.getItem('yak_sound');if(s==='off')soundEnabled=false}catch(e){}
@@ -404,7 +464,38 @@ function renderMainMenu(){
     el('button',{class:'start-btn',onClick:renderPosterScreen},'Oyuna Başla 🚀')
   ]);
   s.appendChild(m);
+  s.appendChild(renderMedalShelf());
   app.appendChild(s);
+}
+
+function renderMedalShelf(){
+  const wrap=el('div',{class:'shelf-wrap'});
+  const total=oyunVerisi.madalyalar.basit+oyunVerisi.madalyalar.orta+oyunVerisi.madalyalar.zor;
+  wrap.appendChild(el('div',{class:'shelf-title'},[
+    document.createTextNode('🏅 Madalya Rafım '),
+    el('span',{class:'count'},'('+total+')')
+  ]));
+  const shelf=el('div',{class:'shelf'});
+  const row=el('div',{class:'shelf-row'});
+  [
+    {key:'basit',emoji:'🥉',label:'Problem Dedektifi'},
+    {key:'orta',emoji:'🥈',label:'YAK Ustası'},
+    {key:'zor',emoji:'🥇',label:'Matematik Kahramanı'}
+  ].forEach(m=>{
+    const count=oyunVerisi.madalyalar[m.key]||0;
+    const slot=el('div',{class:'medal-slot'+(count===0?' empty':''),'aria-label':m.label+', '+count+' adet'},[
+      el('div',{class:'medal-big','aria-hidden':'true'},m.emoji),
+      el('div',{class:'medal-label'},m.label),
+      el('div',{class:'medal-count'},'×'+count)
+    ]);
+    row.appendChild(slot);
+  });
+  shelf.appendChild(row);
+  wrap.appendChild(shelf);
+  if(total===0){
+    wrap.appendChild(el('div',{class:'shelf-empty'},'Henüz madalyan yok. Bir seviyeyi baştan sona doğru çöz!'));
+  }
+  return wrap;
 }
 
 /* ========== POSTER EKRANI ========== */
@@ -871,26 +962,34 @@ function renderEnd(){
     if(gameState.level==='basit'){badge='🥉';title='Problem Dedektifi'}
     else if(gameState.level==='orta'){badge='🥈';title='YAK Ustası'}
     else{badge='🥇';title='Matematik Kahramanı'}
+    // Madalyayı kaydet
+    madalyaKazan(gameState.level,score,total);
   }else{
     badge='🌱';
     if(score>=Math.ceil(total*.7))title='Güzel iş!';
     else if(score>=Math.ceil(total*.4))title='İyi gidiyorsun!';
     else title='Birlikte tekrar deneyelim!';
   }
-  s.appendChild(el('div',{class:'end-card'},[
+  const cardChildren=[
     el('div',{class:'end-badge'},badge),
     el('div',{class:'end-title'},title),
     el('div',{class:'end-subtitle'},LEVEL_LABELS[gameState.level]+' seviye'),
     el('div',{class:'end-score'},score+' / '+total),
-    el('div',{class:'end-msg'},perfect?'Tüm problemleri çözdün! Muhteşemsin 🎉':'Bir daha deneyelim mi? Her denemede daha iyi olursun 💪'),
-    el('button',{class:'primary-btn',onClick:renderMainMenu},'Tekrar Oyna 🔁')
-  ]));
+    el('div',{class:'end-msg'},perfect?'Tüm problemleri çözdün! Muhteşemsin 🎉':'Bir daha deneyelim mi? Her denemede daha iyi olursun 💪')
+  ];
+  if(perfect){
+    const total_medal=oyunVerisi.madalyalar[gameState.level];
+    cardChildren.push(el('div',{class:'end-collected'},'Rafında bu seviyeden '+total_medal+' madalya var! 🏅'));
+  }
+  cardChildren.push(el('button',{class:'primary-btn',onClick:renderMainMenu},'Tekrar Oyna 🔁'));
+  s.appendChild(el('div',{class:'end-card'},cardChildren));
   if(perfect){setTimeout(()=>{launchConfetti();playCorrect()},200);setTimeout(launchConfetti,900)}
   app.appendChild(s);
 }
 
 /* ========== BAŞLAT ========== */
 problemBank=PROBLEM_BANK;
+lsYukle();
 renderMainMenu();
 
 })();
