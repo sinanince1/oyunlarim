@@ -254,6 +254,31 @@
       border-radius: 999px;
     }
 
+    .new-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: linear-gradient(135deg, #FF4D8D, #FF6B35);
+      color: white;
+      font-weight: 900;
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(255, 77, 141, 0.4);
+      animation: pulse-scale 2s ease-in-out infinite;
+      z-index: 10;
+    }
+    @keyframes pulse-scale {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+    }
+
     .play-btn {
       display: flex;
       align-items: center;
@@ -496,6 +521,15 @@ const categories = [
         sinif: "1. Sınıf",
         emoji: "🔥",
         thumbBg: "linear-gradient(135deg, #FFE8D6, #FFB088)"
+      },
+      {
+        name: "Banka Yöneticisi",
+        file: "banka.html",
+        desc: "Bankacılık kariyerinde para kullanarak yükselin! 💰",
+        sinif: "1. - 2. Sınıf",
+        emoji: "💰",
+        thumbBg: "linear-gradient(135deg, #E8F4FF, #B0D4FF)",
+        isNew: true
       }
     ]
   },
@@ -543,7 +577,8 @@ const categories = [
         desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
         sinif: "1. - 2. Sınıf",
         emoji: "🏰",
-        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
+        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)",
+        isNew: true
       }
     ]
   },
@@ -601,6 +636,7 @@ function buildPage() {
       card.innerHTML = `
         <div class="game-thumb" style="background:${game.thumbBg}">
           ${game.emoji}
+          ${game.isNew ? '<div class="new-badge">✨ Yeni!</div>' : ''}
         </div>
         <div class="game-info">
           <div class="game-name">${game.name}</div>
