@@ -504,6 +504,95 @@ html, body {
 }
 .oyuna-basla-btn:not(:disabled):active { transform: scale(0.96); }
 
+/* Ek katılımcı kartı */
+.ek-katilimci-kart {
+  background: white;
+  border: 3px dashed #C9B87A;
+  border-radius: var(--radius);
+  padding: 24px 32px;
+  min-width: 200px;
+  max-width: 260px;
+  text-align: center;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.07);
+  transition: var(--gecis);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.ek-katilimci-kart.secili {
+  border-color: var(--yesil);
+  border-style: solid;
+  background: #F0FFF4;
+  box-shadow: 0 8px 30px rgba(82,214,138,0.3);
+}
+.ek-katilimci-ekle-btn {
+  font-size: clamp(28px, 4vw, 42px);
+  color: #C9B87A;
+  line-height: 1;
+}
+.ek-katilimci-label {
+  font-size: clamp(12px, 1.6vw, 17px);
+  font-weight: 700;
+  color: #9A8B6A;
+}
+/* Girdi modu */
+.ek-katilimci-kart.kapali {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+}
+  border-style: solid;
+  border-color: var(--mavi);
+  background: #F0F8FF;
+  cursor: default;
+}
+.ek-isim-input {
+  width: 100%;
+  border: 2px solid var(--mavi);
+  border-radius: var(--radius-kucuk);
+  padding: 8px 12px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(13px, 1.8vw, 19px);
+  font-weight: 700;
+  color: var(--koyu);
+  text-align: center;
+  outline: none;
+  background: white;
+}
+.ek-isim-input:focus {
+  border-color: var(--mavi-koyu);
+  box-shadow: 0 0 0 3px rgba(75,170,255,0.2);
+}
+.ek-onayla-btn {
+  background: linear-gradient(135deg, #4BAAFF, #2D8FE8);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 7px 22px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(12px, 1.5vw, 16px);
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--gecis);
+}
+.ek-onayla-btn:active { transform: scale(0.95); }
+.ek-iptal-btn {
+  background: none;
+  border: none;
+  color: var(--gri);
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(11px, 1.4vw, 15px);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 8px;
+  transition: var(--gecis);
+}
+.ek-iptal-btn:hover { color: var(--kirmizi); }
+
 /* =============================================
    PLACEHOLDER AŞAMA EKRANLARI
    ============================================= */
@@ -2188,6 +2277,8 @@ function ebeveynEkraniniHazirla() {
   kartlar.innerHTML = '';
 
   const seciliEbeveynler = new Set();
+  gameState._seciliEbeveynler = seciliEbeveynler; // ek kart erişimi için sakla
+  gameState._ekKatilimciAd = null; // önceki ek katılımcıyı sıfırla
 
   // Anne kartı
   if (ogr.anne) {
@@ -2197,6 +2288,9 @@ function ebeveynEkraniniHazirla() {
   if (ogr.baba) {
     kartlar.appendChild(ebeveynKartOlustur('baba', '👨', 'Baba', ogr.baba, seciliEbeveynler));
   }
+
+  // Ek katılımcı kartı
+  kartlar.appendChild(ekKatilimciKartOlustur(seciliEbeveynler));
 
   // Tek velili öğrenci: otomatik seç
   const tumKartlar = kartlar.querySelectorAll('.ebeveyn-kart');
@@ -2241,8 +2335,115 @@ function ebeveynDurumGuncelle(seciliEbeveynler) {
   const ogr = gameState.ogrenci;
   if (seciliEbeveynler.has('anne') && ogr.anne) katilimcilar.push(ogr.anne);
   if (seciliEbeveynler.has('baba') && ogr.baba) katilimcilar.push(ogr.baba);
+  if (seciliEbeveynler.has('ekKatilimci') && gameState._ekKatilimciAd) katilimcilar.push(gameState._ekKatilimciAd);
   gameState.katilimcilar = katilimcilar;
   gameState.oyuncuSayisi = katilimcilar.length;
+
+  // Anne VE baba ikisi de seçiliyse ek katılımcı kartını gizle/kilitle
+  const ogr2 = gameState.ogrenci;
+  const ikisiDeSecili = ogr2.anne && ogr2.baba
+    && seciliEbeveynler.has('anne') && seciliEbeveynler.has('baba');
+  if (window._ekKatilimciDurumGuncelle) window._ekKatilimciDurumGuncelle(ikisiDeSecili);
+}
+
+function ekKatilimciKartOlustur(seciliEbeveynler) {
+  const div = document.createElement('div');
+  div.className = 'ek-katilimci-kart';
+  div.id = 'ek-katilimci-kart';
+
+  function gosterEkleUI() {
+    div.classList.remove('giris-modu', 'secili', 'kapali');
+    seciliEbeveynler.delete('ekKatilimci');
+    gameState._ekKatilimciAd = null;
+    ebeveynDurumGuncelle(seciliEbeveynler);
+    div.innerHTML = `
+      <div class="ek-katilimci-ekle-btn">➕</div>
+      <div class="ek-katilimci-label">Ek Katılımcı</div>
+    `;
+    div.onclick = gosterGirisUI;
+  }
+
+  function gosterGirisUI() {
+    if (div.classList.contains('kapali')) return;
+    div.classList.add('giris-modu');
+    div.onclick = null;
+    div.innerHTML = `
+      <div class="ek-katilimci-label" style="margin-bottom:2px;">Katılımcı Adı</div>
+      <input class="ek-isim-input" id="ek-isim-input" type="text" placeholder="İsim yazın..." maxlength="30" autocomplete="off">
+      <button class="ek-onayla-btn" onclick="ekKatilimciOnayla()">✓ Ekle</button>
+      <button class="ek-iptal-btn" onclick="ekKatilimciIptal()">İptal</button>
+    `;
+    setTimeout(() => {
+      const inp = document.getElementById('ek-isim-input');
+      if (inp) inp.focus();
+    }, 80);
+    setTimeout(() => {
+      const inp = document.getElementById('ek-isim-input');
+      if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') ekKatilimciOnayla(); });
+    }, 90);
+  }
+
+  function gosterSeciliUI(ad) {
+    div.classList.remove('giris-modu', 'kapali');
+    div.classList.add('secili');
+    div.onclick = null;
+    div.innerHTML = `
+      <div class="tik-isaret" style="opacity:1;transform:scale(1);">✅</div>
+      <div class="ek-katilimci-ekle-btn" style="font-size:clamp(28px,3.5vw,40px);">🧑</div>
+      <div class="ek-katilimci-label">Ek Katılımcı</div>
+      <div class="ebeveyn-ad" style="font-size:clamp(13px,1.8vw,21px);font-weight:800;color:var(--koyu);">${ad}</div>
+      <button class="ek-iptal-btn" style="color:var(--kirmizi);font-weight:700;" onclick="ekKatilimciKaldir()">✕ Kaldır</button>
+    `;
+  }
+
+  // ikisiDeSecili değişince çağrılacak dış kontrol fonksiyonu
+  window._ekKatilimciDurumGuncelle = function(ikisiDeSecili) {
+    if (ikisiDeSecili) {
+      // İkisi de seçildi → ek katılımcıyı sıfırla ve gizle
+      div.classList.add('kapali');
+      div.classList.remove('giris-modu', 'secili');
+      seciliEbeveynler.delete('ekKatilimci');
+      gameState._ekKatilimciAd = null;
+      div.onclick = null;
+      div.innerHTML = `
+        <div class="ek-katilimci-ekle-btn" style="opacity:0.25;">➕</div>
+        <div class="ek-katilimci-label" style="opacity:0.35;">Ek Katılımcı</div>
+      `;
+    } else {
+      // En az biri seçili değil → kartı tekrar aktif et (sadece kapali durumdaysa)
+      if (div.classList.contains('kapali')) {
+        div.classList.remove('kapali');
+        div.innerHTML = `
+          <div class="ek-katilimci-ekle-btn">➕</div>
+          <div class="ek-katilimci-label">Ek Katılımcı</div>
+        `;
+        div.onclick = gosterGirisUI;
+      }
+    }
+  };
+
+  // Global erişim için fonksiyonları dışa aç
+  window.ekKatilimciOnayla = function() {
+    const inp = document.getElementById('ek-isim-input');
+    if (!inp) return;
+    const ad = inp.value.trim();
+    if (!ad) { inp.focus(); inp.style.borderColor = 'var(--kirmizi)'; return; }
+    gameState._ekKatilimciAd = ad;
+    seciliEbeveynler.add('ekKatilimci');
+    ebeveynDurumGuncelle(seciliEbeveynler);
+    gosterSeciliUI(ad);
+  };
+
+  window.ekKatilimciIptal = function() {
+    gosterEkleUI();
+  };
+
+  window.ekKatilimciKaldir = function() {
+    gosterEkleUI();
+  };
+
+  gosterEkleUI();
+  return div;
 }
 
 function oyunaBasla() {
