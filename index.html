@@ -279,6 +279,26 @@
       }
     }
 
+    .special-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: linear-gradient(135deg, #A855F7, #FF4D8D);
+      color: white;
+      font-weight: 900;
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(168, 85, 247, 0.5);
+      animation: special-blink 1.1s ease-in-out infinite;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    @keyframes special-blink {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 4px 14px rgba(168,85,247,0.5); }
+      50% { opacity: 0.35; transform: scale(1.08); box-shadow: 0 4px 22px rgba(255,77,141,0.7); }
+    }
+
     .play-btn {
       display: flex;
       align-items: center;
@@ -621,6 +641,15 @@ const categories = [
         sinif: "1-4. Sınıf",
         emoji: "🌟",
         thumbBg: "linear-gradient(135deg, #F3E8FF, #E0C8FF)"
+      },
+      {
+        name: "2. Portfolyo Etkinliği",
+        file: "portfolio.html",
+        desc: "1. Sınıflar 2. Portfolyo Etkinliği",
+        sinif: "1. Sınıf",
+        emoji: "📁",
+        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)",
+        isSpecial: true
       }
     ]
   }
@@ -663,6 +692,7 @@ function buildPage() {
         <div class="game-thumb" style="background:${game.thumbBg}">
           ${game.emoji}
           ${game.isNew ? '<div class="new-badge">✨ Yeni!</div>' : ''}
+          ${game.isSpecial ? '<div class="special-badge">⭐ ÖZEL ETKİNLİK</div>' : ''}
         </div>
         <div class="game-info">
           <div class="game-name">${game.name}</div>
