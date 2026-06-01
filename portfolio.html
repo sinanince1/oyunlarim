@@ -1768,7 +1768,7 @@ html, body {
       <!-- ALT EKRAN 2: OYUN -->
       <div class="tabu-altekran tabu-oyun" id="tabu-oyun">
         <div class="tabu-ust-bar">
-          <div class="tabu-sure" id="tabu-sure">⏱️ 60</div>
+          <div class="tabu-sure" id="tabu-sure">⏱️ 180</div>
           <div class="tabu-pas-alani" id="tabu-pas-alani">
             <span class="pas-ikon">⏭️</span><span class="pas-ikon">⏭️</span><span class="pas-ikon">⏭️</span>
           </div>
@@ -1863,7 +1863,7 @@ html, body {
       <!-- ALT EKRAN 4: OYUN -->
       <div class="alis-altekran" id="alis-oyun">
         <div class="alis-oyun-ust">
-          <div class="alis-sure" id="alis-sure">⏱️ 60</div>
+          <div class="alis-sure" id="alis-sure">⏱️ 180</div>
           <div class="alis-dogru" id="alis-dogru">✅ Doğru: 0</div>
         </div>
         <div class="alis-panel-alani" id="alis-panel-alani"></div>
@@ -2610,7 +2610,7 @@ function tabuBaslat() {
     indeks: 0,
     dogru: 0,
     pas: 3,
-    sure: 60,
+    sure: 180,
     timerId: null
   };
 
@@ -2681,8 +2681,8 @@ function tabuOyunaGec() {
   bt.innerHTML = html;
 
   // Sayaç ve göstergeleri sıfırla
-  rt.sure = 60;
-  document.getElementById('tabu-sure').textContent = '⏱️ 60';
+  rt.sure = 180;
+  document.getElementById('tabu-sure').textContent = '⏱️ 180';
   document.getElementById('tabu-sure').classList.remove('az');
   document.getElementById('tabu-dogru').textContent = '✅ Doğru: 0';
   tabuPasGuncelle();
@@ -2939,7 +2939,7 @@ function alisBaslat() {
     urunler: [], paralar: [],
     mevcutUrunler: [], seciliUrun: null,
     odeme: [], sonAdlar: [],
-    skor: 0, sure: 60, timerId: null, kilit: false
+    skor: 0, sure: 180, timerId: null, kilit: false
   };
 
   // Öğretmen fotoğrafı (yoksa fallback emoji) — Tabu ile aynı mantık
@@ -3059,10 +3059,10 @@ function alisOyunBaslat() {
   rt.urunler = urunHavuzu.filter(u => u.fiyat >= min && u.fiyat <= max);
   rt.paralar = paraSetleri[rt.zorluk].map(alisParaObj);
   rt.skor = 0;
-  rt.sure = 60;
+  rt.sure = 180;
 
   document.getElementById('alis-dogru').textContent = '✅ Doğru: 0';
-  document.getElementById('alis-sure').textContent = '⏱️ 60';
+  document.getElementById('alis-sure').textContent = '⏱️ 180';
   document.getElementById('alis-sure').classList.remove('az');
 
   alisPanelleriKur();
