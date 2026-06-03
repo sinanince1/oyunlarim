@@ -799,6 +799,24 @@ html, body {
   margin-bottom: clamp(12px, 2.5vh, 24px);
   gap: 8px;
 }
+/* ---------- SÜREYİ ATLA TUŞU (Tabu + Alışveriş) ---------- */
+.sure-grup { display: flex; align-items: center; gap: clamp(6px, 1vw, 10px); }
+.sure-atla-btn {
+  font-family: inherit;
+  font-size: clamp(11px, 1.5vw, 15px);
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #FFB347, #FF9A1F);
+  border: none;
+  border-radius: 999px;
+  padding: clamp(4px, 0.8vh, 7px) clamp(8px, 1.4vw, 14px);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+.sure-atla-btn:active { transform: scale(0.94); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
 .tabu-sure {
   font-size: clamp(22px, 3.4vw, 38px);
   font-weight: 800;
@@ -1768,7 +1786,10 @@ html, body {
       <!-- ALT EKRAN 2: OYUN -->
       <div class="tabu-altekran tabu-oyun" id="tabu-oyun">
         <div class="tabu-ust-bar">
-          <div class="tabu-sure" id="tabu-sure">⏱️ 180</div>
+          <div class="sure-grup">
+            <div class="tabu-sure" id="tabu-sure">⏱️ 180</div>
+            <button class="sure-atla-btn" style="touch-action:manipulation;" onclick="tabuSureyiAtla()">⏩ Süreyi Atla</button>
+          </div>
           <div class="tabu-pas-alani" id="tabu-pas-alani">
             <span class="pas-ikon">⏭️</span><span class="pas-ikon">⏭️</span><span class="pas-ikon">⏭️</span>
           </div>
@@ -1863,7 +1884,10 @@ html, body {
       <!-- ALT EKRAN 4: OYUN -->
       <div class="alis-altekran" id="alis-oyun">
         <div class="alis-oyun-ust">
-          <div class="alis-sure" id="alis-sure">⏱️ 180</div>
+          <div class="sure-grup">
+            <div class="alis-sure" id="alis-sure">⏱️ 180</div>
+            <button class="sure-atla-btn" style="touch-action:manipulation;" onclick="alisSureyiAtla()">⏩ Süreyi Atla</button>
+          </div>
           <div class="alis-dogru" id="alis-dogru">✅ Doğru: 0</div>
         </div>
         <div class="alis-panel-alani" id="alis-panel-alani"></div>
@@ -2652,7 +2676,7 @@ function tabuTalimatHazirla() {
       '<strong>' + ogr + '</strong>, sen anlatıcısın! Kelimeyi yasaklı kelimeleri KULLANMADAN anlat!<br><br>' +
       '<strong>' + eb1 + '</strong>, sen tahmin edeceksin! Dikkatli dinle! Ayrıca sen iPad ekranını görmeyecek şekilde otur.<br><br>' +
       '<strong>' + eb2 + '</strong>, sen yasaklı kelime kontrolcüsüsün! 🔍 Yasaklı kelimeleri takip et, kullanılırsa uyar!<br><br>' +
-      '⏱️ 1 dakikanız var, ⏭️ 3 pas hakkınız var! Başarılar! 🍀';
+      '⏱️ 3 dakikanız var, ⏭️ 3 pas hakkınız var! Başarılar! 🍀';
     roller.innerHTML =
       tabuRolKart('🗣️', 'Anlatıcı', ogr, '#E3F2FD') +
       tabuRolKart('🤔', 'Tahmin Eden', eb1, '#FFF3E0') +
@@ -2662,7 +2686,7 @@ function tabuTalimatHazirla() {
       'Merhaba! 🎭 Şimdi Tabu oynayacağız!<br><br>' +
       '<strong>' + ogr + '</strong>, sen anlatıcısın! Ekranda bir kelime ve altında yasaklı kelimeler göreceksin. Kelimeyi, yasaklı kelimeleri KULLANMADAN anlatmaya çalış!<br><br>' +
       '<strong>' + eb1 + '</strong>, sen tahmin edeceksin! Dikkatli dinle! Ayrıca sen iPad ekranını görmeyecek şekilde otur.<br><br>' +
-      '⏱️ 1 dakikanız var, ⏭️ 3 pas hakkınız var! Başarılar! 🍀';
+      '⏱️ 3 dakikanız var, ⏭️ 3 pas hakkınız var! Başarılar! 🍀';
     roller.innerHTML =
       tabuRolKart('🗣️', 'Anlatıcı', ogr, '#E3F2FD') +
       tabuRolKart('🤔', 'Tahmin Eden', eb1, '#FFF3E0');
@@ -2703,6 +2727,13 @@ function tabuSureAzalt() {
     rt.timerId = null;
     tabuBitir(false);
   }
+}
+
+function tabuSureyiAtla() {
+  const rt = gameState.tabuRuntime;
+  if (rt.timerId) { clearInterval(rt.timerId); rt.timerId = null; }
+  rt.sure = 0;
+  tabuBitir(false);
 }
 
 function tabuKartGoster() {
@@ -2959,7 +2990,7 @@ function alisBaslat() {
     'Merhaba! 🧮 Şimdi <strong>Alışveriş Oyunu</strong> oynayacağız!<br><br>' +
     'Bu oyunda market alışverişi yapacaksınız! Bir kişi ürün seçecek, diğeri doğru tutarı ödeyecek.<br><br>' +
     'Önce rollerinizi ve zorluk seviyesini seçeceksiniz!<br><br>' +
-    '⏱️ 1 dakikanız var! Ne kadar çok doğru ödeme yaparsanız o kadar çok puan kazanırsınız! Bol şanslar! 🛒';
+    '⏱️ 3 dakikanız var! Ne kadar çok doğru ödeme yaparsanız o kadar çok puan kazanırsınız! Bol şanslar! 🛒';
 
   alisAltEkran('alis-talimat');
 }
@@ -3267,6 +3298,13 @@ function alisSureAzalt() {
     rt.timerId = null;
     alisBitir();
   }
+}
+
+function alisSureyiAtla() {
+  const rt = gameState.alisRuntime;
+  if (rt.timerId) { clearInterval(rt.timerId); rt.timerId = null; }
+  rt.sure = 0;
+  alisBitir();
 }
 
 function alisBitir() {
