@@ -40,6 +40,10 @@ body{
 .diff-btn.easy{border-color:rgba(128,216,144,.35)}.diff-btn.easy .diff-elo{color:#80d890}.diff-btn.easy:hover{border-color:#80d890;background:rgba(128,216,144,.08)}
 .diff-btn.medium{border-color:rgba(240,192,96,.35)}.diff-btn.medium .diff-elo{color:#f0c060}.diff-btn.medium:hover{border-color:#f0c060;background:rgba(240,192,96,.08)}
 .diff-btn.hard{border-color:rgba(224,112,96,.35)}.diff-btn.hard .diff-elo{color:#e07060}.diff-btn.hard:hover{border-color:#e07060;background:rgba(224,112,96,.08)}
+.diff-btn.locked{opacity:.45;cursor:not-allowed;filter:grayscale(.25)}
+.diff-btn.locked:hover{transform:none;box-shadow:none;background:rgba(30,70,45,.5)}
+.diff-btn.locked .diff-elo{font-size:.78rem;line-height:1.25;text-align:right;color:#8aa38a;white-space:normal}
+.lock-note{display:block;font-size:.66rem;color:#a8e0a2;margin-top:.16rem;letter-spacing:.04em}
 .setup-instruction{color:#b8ddb4;font-size:1rem;margin-bottom:.4rem}
 .setup-sub{color:#4a7c5e;font-size:.82rem;margin-bottom:1.6rem;letter-spacing:.05em}
 .selection-display{min-height:36px;color:#c8f0c0;font-size:.9rem;margin-bottom:1.4rem;letter-spacing:.05em}
@@ -325,8 +329,8 @@ body.mode-2p #robot-overlay{
     <div class="card-title">Zorluk Seviyesi Seçin</div>
     <div class="diff-grid">
       <button class="diff-btn easy" onclick="selectDiff('easy')"><div class="diff-left"><span class="diff-icon">🌱</span><div><div class="diff-name">Kolay</div><div class="diff-sub">Yeni başlayanlar için</div></div></div><div class="diff-elo">300 ELO</div></button>
-      <button class="diff-btn medium" onclick="selectDiff('medium')"><div class="diff-left"><span class="diff-icon">⚔️</span><div><div class="diff-name">Orta</div><div class="diff-sub">Temel taktikler bilir</div></div></div><div class="diff-elo">1000 ELO</div></button>
-      <button class="diff-btn hard" onclick="selectDiff('hard')"><div class="diff-left"><span class="diff-icon">💀</span><div><div class="diff-name">Zor</div><div class="diff-sub">İleri düzey analiz</div></div></div><div class="diff-elo">2000 ELO</div></button>
+      <button class="diff-btn medium locked" disabled aria-disabled="true"><div class="diff-left"><span class="diff-icon">🔒</span><div><div class="diff-name">Orta</div><div class="diff-sub">Temel taktikler bilir</div></div></div><div class="diff-elo">1000 ELO<span class="lock-note">Yakında açılacaktır!</span></div></button>
+      <button class="diff-btn hard locked" disabled aria-disabled="true"><div class="diff-left"><span class="diff-icon">🔒</span><div><div class="diff-name">Zor</div><div class="diff-sub">İleri düzey analiz</div></div></div><div class="diff-elo">2000 ELO<span class="lock-note">Yakında açılacaktır!</span></div></button>
     </div>
     <button class="back-btn" onclick="goTo('theme-screen')">← Geri</button>
   </div>
@@ -528,7 +532,7 @@ function goTo(id){
   document.getElementById(id).classList.add('active');
 }
 function selectMode(m){gameMode=m;goTo('theme-screen');}
-function selectDiff(d){difficulty=d;goTo('setup-screen');}
+function selectDiff(d){if(d==='medium'||d==='hard')return;difficulty=d;goTo('setup-screen');}
 function goBackFromSetup(){goTo(gameMode==='1p'?'diff-screen':'theme-screen');}
 
 function togglePiece(t){
