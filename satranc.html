@@ -169,7 +169,7 @@ body{
 
 /* ── ROBOT THINKING OVERLAY ── */
 #robot-overlay{
-  display:none;
+  display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
@@ -177,8 +177,14 @@ body{
   width:min(160px,38vw);
   flex-shrink:0;
   align-self:center;
+  visibility:hidden;
+  opacity:0;
+  transition:opacity .25s ease;
 }
-#robot-overlay.show{display:flex}
+#robot-overlay.show{
+  visibility:visible;
+  opacity:1;
+}
 #robot-img{
   width:100%;
   max-width:140px;
@@ -204,6 +210,10 @@ body{
   #robot-overlay{width:min(100px,30vw)}
   #robot-img{max-width:90px}
   #robot-label{font-size:.62rem}
+}
+/* In 2p mode robot overlay takes no space */
+body.mode-2p #robot-overlay{
+  display:none;
 }
 
 /* ── RESPONSIVE FIXES ── */
@@ -559,6 +569,7 @@ let G={};
 function startGame(){
   if(setupSel.length!==2)return;
   applyBoardColors();
+  document.body.classList.toggle('mode-2p', gameMode==='2p');
   G={
     board:initBoard(),turn:'w',selected:null,legalMoves:[],
     enPassant:null,castling:{wK:true,wQ:true,bK:true,bQ:true},
