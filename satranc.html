@@ -106,8 +106,11 @@ body{
   border:3px solid #1a3d28;border-radius:4px;overflow:hidden;
   box-shadow:0 4px 60px rgba(0,0,0,.7),0 0 0 1px rgba(168,224,162,.1);
   width:var(--bsz);height:var(--bsz);flex-shrink:0;
+  touch-action:none;
+  -webkit-user-select:none;user-select:none;
 }
-.square{display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:filter .08s;user-select:none}
+.square{touch-action:none;}
+.square{display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:filter .08s;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;}
 .square:hover{filter:brightness(1.1)}
 .square.sel{background:var(--sel-color,#c8a84b)!important}
 .square.last-from{box-shadow:inset 0 0 0 3px rgba(200,168,75,.45)}
@@ -952,13 +955,18 @@ function cancelDrag(){
 }
 
 function sqFromXY(x,y){
-  ghostEl.style.visibility='hidden';
-  const el=document.elementFromPoint(x,y);
-  if(drag.active)ghostEl.style.visibility='visible';  // restore
-  if(!el)return null;
-  const sq=el.closest?.('.square')||el.classList?.contains('square')&&el;
-  if(!sq||!sq.dataset.r)return null;
-  return{r:+sq.dataset.r,c:+sq.dataset.c};
+  // Use board bounding rect math — reliable on touch/smartboard
+  // (elementFromPoint fails when ghost is on top)
+  const boardEl=document.getElementById('board');
+  if(!boardEl)return null;
+  const rect=boardEl.getBoundingClientRect();
+  const sqSize=rect.width/8;
+  const relX=x-rect.left, relY=y-rect.top;
+  if(relX<0||relY<0||relX>rect.width||relY>rect.height)return null;
+  let c=Math.floor(relX/sqSize), r=Math.floor(relY/sqSize);
+  if(r<0||r>7||c<0||c>7)return null;
+  if(boardFlipped){r=7-r;c=7-c;}
+  return{r,c};
 }
 
 function dragStart(r,c,x,y){
@@ -1086,11 +1094,12 @@ document.addEventListener('touchmove',e=>{
   if(drag.active){e.preventDefault();const t=e.touches[0];dragMove(t.clientX,t.clientY);}
 },{passive:false});
 document.addEventListener('touchend',e=>{
-  if(drag.active){lastDragEndTime=Date.now();const t=e.changedTouches[0];dragEnd(t.clientX,t.clientY);}
-});
+  if(drag.active){e.preventDefault();lastDragEndTime=Date.now();const t=e.changedTouches[0];dragEnd(t.clientX,t.clientY);}
+},{passive:false});
 // Safety net: cancel drag if focus leaves window
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelDrag();});
 window.addEventListener('blur',cancelDrag);
+document.addEventListener('touchcancel',()=>{if(drag.active)cancelDrag();});
 
 // Board squares get drag listeners after render
 function addSquareDragListeners(){
@@ -1100,9 +1109,10 @@ function addSquareDragListeners(){
       dragStart(+sq.dataset.r,+sq.dataset.c,e.clientX,e.clientY);
     });
     sq.addEventListener('touchstart',e=>{
+      e.preventDefault();
       const t=e.touches[0];
       dragStart(+sq.dataset.r,+sq.dataset.c,t.clientX,t.clientY);
-    },{passive:true});
+    },{passive:false});
   });
 }
 
