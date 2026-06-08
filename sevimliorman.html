@@ -701,6 +701,151 @@ html, body {
 #reward-box .reward-title { font-family:var(--font); font-size:clamp(19px,4.7vh,38px); color:var(--accent-main); margin:6px 0; }
 #reward-box .reward-sub { font-size:clamp(12px,2.6vh,21px); font-family:var(--font); color:var(--text-dark); }
 
+/* =============================================
+   ANA MENÜ ANİMASYONLU ARKA PLAN
+*/
+#menu-scene {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;
+}
+/* Ağaçlar / zemindeki bitkiler */
+.menu-tree {
+  position: absolute; bottom: 0;
+  font-size: clamp(32px,8vh,72px);
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.18));
+  animation: treeSway 3.5s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+.menu-flower {
+  position: absolute; bottom: 0;
+  font-size: clamp(18px,4.5vh,40px);
+  animation: flowerSway 2.5s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+@keyframes treeSway {
+  from { transform: rotate(-2.5deg); }
+  to   { transform: rotate(2.5deg); }
+}
+@keyframes flowerSway {
+  from { transform: rotate(-5deg) scaleX(0.97); }
+  to   { transform: rotate(5deg) scaleX(1.03); }
+}
+/* Uçan kuş */
+.menu-bird {
+  position: absolute;
+  font-size: clamp(22px,5.5vh,48px);
+  animation: birdFly 11s linear infinite;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.15));
+}
+@keyframes birdFly {
+  0%   { left: -8%; top: 18%; transform: scaleX(1); }
+  45%  { top: 10%; transform: scaleX(1); }
+  50%  { left: 110%; top: 8%; transform: scaleX(-1); }
+  95%  { top: 15%; transform: scaleX(-1); }
+  100% { left: -8%; top: 18%; transform: scaleX(1); }
+}
+/* Kelebek */
+.menu-butterfly {
+  position: absolute;
+  font-size: clamp(16px,3.8vh,34px);
+  animation: butterflyFloat 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes butterflyFloat {
+  0%   { left: 15%; top: 55%; transform: translateY(0) rotate(-5deg); }
+  20%  { top: 40%; transform: translateY(-12px) rotate(5deg); }
+  45%  { left: 45%; top: 50%; transform: translateY(0) rotate(-3deg); }
+  70%  { top: 38%; transform: translateY(-10px) rotate(4deg); }
+  100% { left: 15%; top: 55%; transform: translateY(0) rotate(-5deg); }
+}
+/* Düşen yapraklar */
+.menu-leaf {
+  position: absolute;
+  font-size: clamp(14px,3vh,26px);
+  animation: leafFall linear infinite;
+  opacity: 0.85;
+  pointer-events: none;
+}
+@keyframes leafFall {
+  0%   { transform: translateY(-40px) rotate(0deg) translateX(0); opacity: 0; }
+  10%  { opacity: 0.9; }
+  50%  { transform: translateY(40vh) rotate(180deg) translateX(18px); }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(95vh) rotate(360deg) translateX(-10px); opacity: 0; }
+}
+
+/* Tema bazlı menü arka planı öğeleri — varsayılan: orman yeşili */
+#screen-menu::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(56,142,60,0.35) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+  transition: background 0.6s ease;
+}
+/* Space teması menü */
+body.theme-space #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(58,49,171,0.5) 0%, transparent 70%);
+}
+body.theme-space #menu-scene .menu-tree   { filter: drop-shadow(0 0 10px #7c4dff) hue-rotate(200deg); }
+body.theme-space #menu-scene .menu-flower { filter: drop-shadow(0 0 8px #e94560) hue-rotate(280deg); }
+body.theme-space #menu-scene .menu-bird  { filter: drop-shadow(0 0 8px #00b0ff) hue-rotate(160deg); }
+/* Sunset teması */
+body.theme-sunset #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(230,74,25,0.4) 0%, transparent 70%);
+}
+body.theme-sunset #menu-scene .menu-tree   { filter: hue-rotate(30deg) saturate(1.4); }
+body.theme-sunset #menu-scene .menu-flower { filter: hue-rotate(20deg) saturate(1.6); }
+/* Ocean teması */
+body.theme-ocean #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0,150,199,0.45) 0%, transparent 70%);
+}
+body.theme-ocean #menu-scene .menu-tree   { filter: hue-rotate(150deg) saturate(1.2); }
+body.theme-ocean #menu-scene .menu-flower { filter: hue-rotate(160deg) saturate(1.5); }
+/* Candy teması */
+body.theme-candy #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(233,30,99,0.4) 0%, transparent 70%);
+}
+body.theme-candy #menu-scene .menu-flower { filter: hue-rotate(330deg) saturate(2); }
+/* Autumn teması */
+body.theme-autumn #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(230,74,25,0.35) 0%, transparent 70%);
+}
+body.theme-autumn #menu-scene .menu-tree   { filter: hue-rotate(15deg) saturate(1.5) brightness(0.9); }
+body.theme-autumn #menu-scene .menu-flower { filter: hue-rotate(20deg) saturate(1.8); }
+/* Misty */
+body.theme-misty #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(70,100,65,0.5) 0%, transparent 70%);
+}
+/* Fall forest */
+body.theme-fall-forest #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(200,70,10,0.45) 0%, transparent 70%);
+}
+body.theme-fall-forest #menu-scene .menu-tree   { filter: hue-rotate(18deg) saturate(1.8) brightness(0.88); }
+body.theme-fall-forest #menu-scene .menu-flower { filter: hue-rotate(22deg) saturate(2.2) brightness(0.9); }
+/* Snow forest */
+body.theme-snow-forest #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(21,101,192,0.35) 0%, transparent 70%);
+}
+body.theme-snow-forest #menu-scene .menu-tree   { filter: saturate(0.4) brightness(1.2); }
+body.theme-snow-forest #menu-scene .menu-flower { filter: saturate(0.3) brightness(1.3) hue-rotate(200deg); }
+/* Night forest */
+body.theme-night-forest #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(20,60,20,0.7) 0%, transparent 70%);
+}
+body.theme-night-forest #menu-scene .menu-tree   { filter: brightness(0.55) saturate(0.8); }
+body.theme-night-forest #menu-scene .menu-flower { filter: brightness(0.5) hue-rotate(200deg) saturate(0.7); }
+body.theme-night-forest #menu-scene .menu-bird   { filter: brightness(0.5) hue-rotate(120deg); }
+/* Magic forest */
+body.theme-magic-forest #screen-menu::before {
+  background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(123,31,162,0.55) 0%, transparent 70%);
+}
+body.theme-magic-forest #menu-scene .menu-tree   { filter: hue-rotate(260deg) saturate(1.6) drop-shadow(0 0 8px #ab47bc); }
+body.theme-magic-forest #menu-scene .menu-flower { filter: hue-rotate(280deg) saturate(2) drop-shadow(0 0 6px #ce93d8); }
+body.theme-magic-forest #menu-scene .menu-bird   { filter: hue-rotate(250deg) saturate(1.5) drop-shadow(0 0 6px #7b1fa2); }
+
+/* Menü içeriğini z-index ile öne al */
+#screen-menu > *:not(#menu-scene) { position: relative; z-index: 1; }
+
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
 @keyframes barCelebrate { 0%,100%{transform:scaleX(1)} 50%{transform:scaleX(1.07)} }
 </style>
@@ -739,6 +884,35 @@ html, body {
 
     <!-- ANA MENÜ -->
     <div id="screen-menu" class="screen active">
+      <!-- Animasyonlu arka plan sahnesi -->
+      <div id="menu-scene">
+        <!-- Ağaçlar (zemin) -->
+        <div class="menu-tree" style="left:2%;animation-duration:4.1s;">🌲</div>
+        <div class="menu-tree" style="left:8%;animation-duration:3.6s;font-size:clamp(24px,6vh,54px);">🌳</div>
+        <div class="menu-tree" style="left:16%;animation-duration:4.8s;font-size:clamp(20px,5vh,44px);">🌿</div>
+        <div class="menu-tree" style="right:3%;animation-duration:3.9s;">🌲</div>
+        <div class="menu-tree" style="right:10%;animation-duration:4.4s;font-size:clamp(26px,6.5vh,58px);">🌳</div>
+        <div class="menu-tree" style="right:18%;animation-duration:3.3s;font-size:clamp(22px,5.5vh,50px);">🌲</div>
+        <!-- Çiçekler (zemin, sallanan) -->
+        <div class="menu-flower" style="left:23%;animation-duration:2.2s;animation-delay:0.3s;">🌸</div>
+        <div class="menu-flower" style="left:30%;animation-duration:2.8s;animation-delay:0.7s;font-size:clamp(14px,3.5vh,30px);">🌺</div>
+        <div class="menu-flower" style="left:38%;animation-duration:2s;animation-delay:0.1s;">🌼</div>
+        <div class="menu-flower" style="right:23%;animation-duration:2.5s;animation-delay:0.5s;">🌸</div>
+        <div class="menu-flower" style="right:31%;animation-duration:3.1s;animation-delay:0.9s;font-size:clamp(14px,3.5vh,30px);">🌻</div>
+        <div class="menu-flower" style="right:38%;animation-duration:2.3s;animation-delay:0.4s;">🌼</div>
+        <!-- Küçük mantarlar -->
+        <div class="menu-flower" style="left:12%;animation-duration:3.5s;animation-delay:0.6s;font-size:clamp(13px,3vh,26px);">🍄</div>
+        <div class="menu-flower" style="right:14%;animation-duration:2.9s;animation-delay:0.2s;font-size:clamp(13px,3vh,26px);">🍄</div>
+        <!-- Uçan kuş -->
+        <div class="menu-bird" style="animation-delay:0s;">🐦</div>
+        <!-- Kelebek -->
+        <div class="menu-butterfly" style="animation-delay:1.5s;">🦋</div>
+        <!-- Düşen yapraklar -->
+        <div class="menu-leaf" style="left:10%;animation-duration:6s;animation-delay:0s;">🍃</div>
+        <div class="menu-leaf" style="left:35%;animation-duration:7.5s;animation-delay:2s;">🍂</div>
+        <div class="menu-leaf" style="left:60%;animation-duration:5.5s;animation-delay:0.8s;">🍃</div>
+        <div class="menu-leaf" style="left:80%;animation-duration:8s;animation-delay:3.5s;">🍂</div>
+      </div><!-- /menu-scene -->
       <div class="menu-badger">🦉</div>
       <div class="menu-game-title">🌲 Sevimli Orman Sayımı 🌿</div>
       <div class="menu-subtitle">Ormanda sayılması ve tablolanması gerekenler var! Yardımın lazım.</div>
@@ -814,8 +988,8 @@ const OBJECT_SETS = [
   [ {icon:'🍎',name:'Elma'}, {icon:'🍐',name:'Armut'}, {icon:'🌰',name:'Ceviz'} ],
   [ {icon:'🌸',name:'Çiçek'}, {icon:'🍄',name:'Mantar'}, {icon:'⭐',name:'Yıldız'} ],
   [ {icon:'🐛',name:'Tırtıl'}, {icon:'🦋',name:'Kelebek'}, {icon:'🐝',name:'Arı'} ],
-  [ {icon:'🔴',name:'Kırmızı'}, {icon:'🔵',name:'Mavi'}, {icon:'🟡',name:'Sarı'} ],
-  [ {icon:'🐟',name:'Balık'}, {icon:'🦀',name:'Yengeç'}, {icon:'🐚',name:'Kabuk'} ]
+  [ {icon:'🦊',name:'Tilki'}, {icon:'🐿️',name:'Sincap'}, {icon:'🐇',name:'Tavşan'} ],
+  [ {icon:'🦌',name:'Geyik'}, {icon:'🐦',name:'Kuş'}, {icon:'🌿',name:'Yaprak'} ]
 ];
 
 /* BAR RENKLERİ */
