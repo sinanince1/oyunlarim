@@ -984,13 +984,99 @@ body.theme-magic-forest #menu-scene .menu-bird   { filter: hue-rotate(250deg) sa
    NESNE SETLERİ
    Her set 3 nesne: { icon, name }
 */
-const OBJECT_SETS = [
-  [ {icon:'🍎',name:'Elma'}, {icon:'🍐',name:'Armut'}, {icon:'🌰',name:'Ceviz'} ],
-  [ {icon:'🌸',name:'Çiçek'}, {icon:'🍄',name:'Mantar'}, {icon:'⭐',name:'Yıldız'} ],
-  [ {icon:'🐛',name:'Tırtıl'}, {icon:'🦋',name:'Kelebek'}, {icon:'🐝',name:'Arı'} ],
-  [ {icon:'🦊',name:'Tilki'}, {icon:'🐿️',name:'Sincap'}, {icon:'🐇',name:'Tavşan'} ],
-  [ {icon:'🦌',name:'Geyik'}, {icon:'🐦',name:'Kuş'}, {icon:'🌿',name:'Yaprak'} ]
-];
+/* ==============================================
+   TEMA BAZLI NESNE SETLERİ
+   Her tema için ayrı emoji grupları
+*/
+const THEME_OBJECT_SETS = {
+  // Varsayılan: Orman
+  'forest': [
+    [ {icon:'🍎',name:'Elma'}, {icon:'🍐',name:'Armut'}, {icon:'🌰',name:'Ceviz'} ],
+    [ {icon:'🌸',name:'Çiçek'}, {icon:'🍄',name:'Mantar'}, {icon:'🌿',name:'Yaprak'} ],
+    [ {icon:'🐛',name:'Tırtıl'}, {icon:'🦋',name:'Kelebek'}, {icon:'🐝',name:'Arı'} ],
+    [ {icon:'🦊',name:'Tilki'}, {icon:'🐿️',name:'Sincap'}, {icon:'🐇',name:'Tavşan'} ],
+    [ {icon:'🦌',name:'Geyik'}, {icon:'🐦',name:'Kuş'}, {icon:'🍃',name:'Yaprak'} ]
+  ],
+  'theme-space': [
+    [ {icon:'🚀',name:'Roket'}, {icon:'⭐',name:'Yıldız'}, {icon:'🪐',name:'Gezegen'} ],
+    [ {icon:'🌙',name:'Ay'}, {icon:'☄️',name:'Kuyruklu Yıldız'}, {icon:'🛸',name:'UFO'} ],
+    [ {icon:'👨‍🚀',name:'Astronot'}, {icon:'🔭',name:'Teleskop'}, {icon:'🌌',name:'Galaksi'} ],
+    [ {icon:'💫',name:'Işıltı'}, {icon:'🌠',name:'Kayan Yıldız'}, {icon:'🛰️',name:'Uydu'} ],
+    [ {icon:'🪨',name:'Meteor'}, {icon:'🌟',name:'Parlayan Yıldız'}, {icon:'🚀',name:'Roket'} ]
+  ],
+  'theme-sunset': [
+    [ {icon:'🌅',name:'Gün Batımı'}, {icon:'☁️',name:'Bulut'}, {icon:'🌤️',name:'Güneş'} ],
+    [ {icon:'🦅',name:'Kartal'}, {icon:'🌻',name:'Ayçiçeği'}, {icon:'🌾',name:'Buğday'} ],
+    [ {icon:'🏔️',name:'Dağ'}, {icon:'🌄',name:'Manzara'}, {icon:'🕊️',name:'Güvercin'} ],
+    [ {icon:'🌸',name:'Çiçek'}, {icon:'🌼',name:'Papatya'}, {icon:'🦋',name:'Kelebek'} ],
+    [ {icon:'🌺',name:'Çiçek'}, {icon:'🌈',name:'Gökkuşağı'}, {icon:'⛅',name:'Yarı Bulutlu'} ]
+  ],
+  'theme-ocean': [
+    [ {icon:'🐟',name:'Balık'}, {icon:'🌊',name:'Dalga'}, {icon:'🐚',name:'Deniz Kabuğu'} ],
+    [ {icon:'🦈',name:'Köpek Balığı'}, {icon:'🐠',name:'Tropikal Balık'}, {icon:'🦑',name:'Kalamar'} ],
+    [ {icon:'🐙',name:'Ahtapot'}, {icon:'🦀',name:'Yengeç'}, {icon:'🐡',name:'Balon Balığı'} ],
+    [ {icon:'🐬',name:'Yunus'}, {icon:'🐋',name:'Balina'}, {icon:'💧',name:'Su Damlası'} ],
+    [ {icon:'🦞',name:'Istakoz'}, {icon:'🐟',name:'Balık'}, {icon:'⚓',name:'Çapa'} ]
+  ],
+  'theme-candy': [
+    [ {icon:'🍭',name:'Lolipop'}, {icon:'🍬',name:'Şeker'}, {icon:'🍰',name:'Pasta'} ],
+    [ {icon:'🧁',name:'Kek'}, {icon:'🍩',name:'Donut'}, {icon:'🍪',name:'Kurabiye'} ],
+    [ {icon:'🍫',name:'Çikolata'}, {icon:'🍡',name:'Mochi'}, {icon:'🎂',name:'Doğum Günü'} ],
+    [ {icon:'🍦',name:'Dondurma'}, {icon:'🍧',name:'Buz'}, {icon:'🍮',name:'Puding'} ],
+    [ {icon:'🌈',name:'Gökkuşağı'}, {icon:'💝',name:'Kalp'}, {icon:'🎀',name:'Kurdele'} ]
+  ],
+  'theme-autumn': [
+    [ {icon:'🍂',name:'Dökülen Yaprak'}, {icon:'🍁',name:'Akçaağaç'}, {icon:'🌰',name:'Kestane'} ],
+    [ {icon:'🍄',name:'Mantar'}, {icon:'🦔',name:'Kirpi'}, {icon:'🐿️',name:'Sincap'} ],
+    [ {icon:'🍎',name:'Elma'}, {icon:'🎃',name:'Balkabağı'}, {icon:'🌽',name:'Mısır'} ],
+    [ {icon:'🍁',name:'Yaprak'}, {icon:'🦃',name:'Hindi'}, {icon:'🦉',name:'Baykuş'} ],
+    [ {icon:'🌾',name:'Buğday'}, {icon:'🍇',name:'Üzüm'}, {icon:'🍂',name:'Yaprak'} ]
+  ],
+  'theme-misty': [
+    [ {icon:'🌫️',name:'Sis'}, {icon:'🦔',name:'Kirpi'}, {icon:'🍄',name:'Mantar'} ],
+    [ {icon:'🌿',name:'Yaprak'}, {icon:'🐸',name:'Kurbağa'}, {icon:'🕷️',name:'Örümcek'} ],
+    [ {icon:'🦋',name:'Kelebek'}, {icon:'🐌',name:'Salyangoz'}, {icon:'🌱',name:'Filiz'} ],
+    [ {icon:'🐦',name:'Kuş'}, {icon:'🌲',name:'Çam'}, {icon:'🍃',name:'Yaprak'} ],
+    [ {icon:'🦊',name:'Tilki'}, {icon:'🐇',name:'Tavşan'}, {icon:'🌾',name:'Ot'} ]
+  ],
+  'theme-fall-forest': [
+    [ {icon:'🍁',name:'Akçaağaç'}, {icon:'🍂',name:'Dökülen Yaprak'}, {icon:'🌰',name:'Kestane'} ],
+    [ {icon:'🦌',name:'Geyik'}, {icon:'🐿️',name:'Sincap'}, {icon:'🦔',name:'Kirpi'} ],
+    [ {icon:'🍎',name:'Elma'}, {icon:'🍄',name:'Mantar'}, {icon:'🌾',name:'Buğday'} ],
+    [ {icon:'🦉',name:'Baykuş'}, {icon:'🐻',name:'Ayı'}, {icon:'🍇',name:'Üzüm'} ],
+    [ {icon:'🔥',name:'Ateş'}, {icon:'🍁',name:'Yaprak'}, {icon:'🌲',name:'Ağaç'} ]
+  ],
+  'theme-snow-forest': [
+    [ {icon:'❄️',name:'Kar Tanesi'}, {icon:'⛄',name:'Kardan Adam'}, {icon:'🌨️',name:'Kar'} ],
+    [ {icon:'🐺',name:'Kurt'}, {icon:'🦌',name:'Ren Geyiği'}, {icon:'🐻',name:'Ayı'} ],
+    [ {icon:'🧊',name:'Buz'}, {icon:'🌲',name:'Çam'}, {icon:'🏔️',name:'Dağ'} ],
+    [ {icon:'🦅',name:'Kartal'}, {icon:'❄️',name:'Kar'}, {icon:'🐾',name:'Pati İzi'} ],
+    [ {icon:'⛷️',name:'Kayakçı'}, {icon:'🏂',name:'Snowboard'}, {icon:'🌨️',name:'Kar'} ]
+  ],
+  'theme-night-forest': [
+    [ {icon:'🌙',name:'Ay'}, {icon:'⭐',name:'Yıldız'}, {icon:'🦉',name:'Baykuş'} ],
+    [ {icon:'🌟',name:'Parlayan'}, {icon:'🦇',name:'Yarasa'}, {icon:'🕷️',name:'Örümcek'} ],
+    [ {icon:'🔮',name:'Kristal'}, {icon:'🐺',name:'Kurt'}, {icon:'💫',name:'Işıltı'} ],
+    [ {icon:'🌌',name:'Galaksi'}, {icon:'🦋',name:'Gece Kelebeği'}, {icon:'🌙',name:'Hilal'} ],
+    [ {icon:'🪲',name:'Böcek'}, {icon:'🌿',name:'Yaprak'}, {icon:'🦎',name:'Kertenkele'} ]
+  ],
+  'theme-magic-forest': [
+    [ {icon:'✨',name:'Sihir'}, {icon:'🧚',name:'Peri'}, {icon:'🌟',name:'Yıldız'} ],
+    [ {icon:'🔮',name:'Kristal'}, {icon:'🦄',name:'Unicorn'}, {icon:'🧿',name:'Tılsım'} ],
+    [ {icon:'🌈',name:'Gökkuşağı'}, {icon:'🧙',name:'Büyücü'}, {icon:'💎',name:'Elmas'} ],
+    [ {icon:'🍄',name:'Sihirli Mantar'}, {icon:'🦋',name:'Peri Kelebeği'}, {icon:'🌸',name:'Çiçek'} ],
+    [ {icon:'⚡',name:'Şimşek'}, {icon:'🌙',name:'Ay'}, {icon:'💫',name:'Büyülü Işık'} ]
+  ]
+};
+
+/* Aktif temaya göre nesne seti döndür */
+function getObjectSets() {
+  const theme = state.activeTheme || 'forest';
+  return THEME_OBJECT_SETS[theme] || THEME_OBJECT_SETS['forest'];
+}
+
+// Geriye dönük uyumluluk için (eski referanslar varsa)
+const OBJECT_SETS = THEME_OBJECT_SETS['forest'];
 
 /* BAR RENKLERİ */
 const BAR_COLORS = ['#ff8c42','#06d6a0','#118ab2'];
@@ -1019,8 +1105,86 @@ const SHOP_ITEMS = [
 const FOREST_CLASS = 'theme-forest'; // Orman: varsayılan
 
 /* ==============================================
-   OYUN DURUMU
+   SES SİSTEMİ — Web Audio API ile tatlı sesler
 */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new AudioCtx();
+  return _audioCtx;
+}
+
+/* Bir nota çal: freq=Hz, dur=saniye, type=dalga, vol=0-1 */
+function playTone(freq, dur, type='sine', vol=0.35, delayMs=0) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delayMs/1000);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delayMs/1000);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delayMs/1000 + dur);
+    osc.start(ctx.currentTime + delayMs/1000);
+    osc.stop(ctx.currentTime + delayMs/1000 + dur + 0.05);
+  } catch(e) {}
+}
+
+/* 🔔 Nesneye dokunma: kısa yumuşak pop */
+function soundTouch() {
+  playTone(880, 0.12, 'sine', 0.28);
+  playTone(1100, 0.10, 'sine', 0.15, 30);
+}
+
+/* ✅ Doğru eşleşme: küçük mutlu akor */
+function soundCorrect() {
+  playTone(523, 0.18, 'sine', 0.3);   // C5
+  playTone(659, 0.18, 'sine', 0.25, 80);  // E5
+  playTone(784, 0.22, 'sine', 0.2, 160); // G5
+}
+
+/* ❌ Yanlış eşleşme: kısa boing */
+function soundWrong() {
+  playTone(300, 0.08, 'sawtooth', 0.2);
+  playTone(220, 0.15, 'square', 0.12, 60);
+}
+
+/* 🎉 Tur tamamlama: zafer fanfar */
+function soundComplete() {
+  const notes = [523,659,784,1047];
+  notes.forEach((f,i) => playTone(f, 0.25, 'sine', 0.3, i*100));
+}
+
+/* 🛒 Satın alma: altın çıkışı */
+function soundPurchase() {
+  playTone(784, 0.12, 'sine', 0.3);
+  playTone(988, 0.12, 'sine', 0.25, 100);
+  playTone(1319, 0.2, 'sine', 0.28, 200);
+}
+
+/* 🎨 Tema uygulama: kelebek fısıltısı */
+function soundTheme() {
+  playTone(659, 0.1, 'sine', 0.2);
+  playTone(784, 0.1, 'sine', 0.18, 80);
+  playTone(1047, 0.15, 'sine', 0.22, 160);
+}
+
+/* ➕ Bar artırma: tık */
+function soundBarUp() {
+  playTone(660, 0.09, 'sine', 0.22);
+}
+
+/* ➖ Bar azaltma: tok */
+function soundBarDown() {
+  playTone(440, 0.09, 'sine', 0.22);
+}
+
+/* Şekil slota yerleştirme: şap */
+function soundPlace() {
+  playTone(700, 0.1, 'sine', 0.25);
+  playTone(900, 0.08, 'sine', 0.18, 50);
+}
+
 const state = {
   cycleIndex: 0,
   totalCycles: 3,
@@ -1160,12 +1324,14 @@ function purchaseItem(item) {
   if(state.acorns < item.price) return;
   state.acorns -= item.price;
   state.ownedItems[item.id] = true;
+  soundPurchase();
   saveStorage(); updateAcornDisplay();
   applyTheme(item.themeClass);
   renderShopItems();
 }
 function toggleTheme(item) {
   if(!state.ownedItems[item.id]) return;
+  soundTheme();
   // Aktifse → kaldır, orman döner
   if(state.activeTheme === item.themeClass) {
     applyTheme(null); // orman
@@ -1180,8 +1346,9 @@ function toggleTheme(item) {
 */
 function startGame() { state.cycleIndex=0; startCycle(); }
 function startCycle() {
-  const si = Math.floor(Math.random()*OBJECT_SETS.length);
-  state.currentObjects = OBJECT_SETS[si].map(o=>({icon:o.icon,name:o.name,count:Math.floor(Math.random()*10)+1}));
+  const sets = getObjectSets();
+  const si = Math.floor(Math.random()*sets.length);
+  state.currentObjects = sets[si].map(o=>({icon:o.icon,name:o.name,count:Math.floor(Math.random()*10)+1}));
   state.tallyCounts = state.currentObjects.map(()=>0);
   state.tallyMatched = state.currentObjects.map(()=>false);
   state.shapeFilledCounts = state.currentObjects.map(()=>0);
@@ -1239,6 +1406,7 @@ function buildObjectsField() {
 function countObject(el,ti) {
   if(el.classList.contains('counted')) return;
   el.classList.add('counted');
+  soundTouch();
   state.tallyCounts[ti]++;
   // Orta panelde sayacı güncelle
   const badge=document.getElementById(`tally-count-${ti}`);
@@ -1384,6 +1552,7 @@ function tryDropOnZone(zoneIdx) {
 
   if(cardCount===zoneCount) {
     // DOĞRU
+    soundCorrect();
     dz.className='answer-drop-zone correct';
     const content=document.getElementById(`dz-content-${zoneIdx}`);
     content.innerHTML='';
@@ -1397,6 +1566,7 @@ function tryDropOnZone(zoneIdx) {
     checkTallyMatchComplete();
   } else {
     // YANLIŞ — titret
+    soundWrong();
     dz.classList.add('wrong');
     setTimeout(()=>dz.classList.remove('wrong'),450);
   }
@@ -1519,6 +1689,7 @@ function fillNextEmptySlot(ti) {
   const s=state.shapeFilledCounts[ti];
   const slot=document.getElementById(`slot-${ti}-${s}`);
   if(!slot) return;
+  soundPlace();
   slot.classList.add('filled'); slot.textContent=state.currentObjects[ti].icon;
   state.shapeFilledCounts[ti]++;
   updateDepotCount(ti); checkShapeComplete();
@@ -1624,8 +1795,9 @@ function createBarGroup(area,obj,index) {
 
   /* Tıklama + sürükleme */
   let dragging=false;
+  let lastBarV = 0;
   track.addEventListener('pointerdown',e=>{ if(e.target.classList.contains('bar-btn')) return; dragging=true; track.setPointerCapture(e.pointerId); setBarFromPointer(index,e); });
-  track.addEventListener('pointermove',e=>{ if(!dragging) return; setBarFromPointer(index,e); });
+  track.addEventListener('pointermove',e=>{ if(!dragging) return; const prev=state.chartValues[index]; setBarFromPointer(index,e); if(state.chartValues[index]!==prev){ if(state.chartValues[index]>prev) soundBarUp(); else soundBarDown(); } });
   track.addEventListener('pointerup',()=>dragging=false);
   group.appendChild(track);
 
@@ -1636,11 +1808,11 @@ function createBarGroup(area,obj,index) {
   const bDown=document.createElement('button'); bDown.className='bar-btn bar-btn-down'; bDown.textContent='−';
   const bUp=document.createElement('button'); bUp.className='bar-btn bar-btn-up'; bUp.textContent='+';
   let ut=null,dt=null;
-  bUp.addEventListener('click',e=>{e.stopPropagation();changeBarValue(index,1);});
-  bUp.addEventListener('pointerdown',e=>{e.stopPropagation();ut=setInterval(()=>changeBarValue(index,1),130);});
+  bUp.addEventListener('click',e=>{e.stopPropagation();soundBarUp();changeBarValue(index,1);});
+  bUp.addEventListener('pointerdown',e=>{e.stopPropagation();ut=setInterval(()=>{soundBarUp();changeBarValue(index,1);},130);});
   bUp.addEventListener('pointerup',()=>clearInterval(ut)); bUp.addEventListener('pointerleave',()=>clearInterval(ut));
-  bDown.addEventListener('click',e=>{e.stopPropagation();changeBarValue(index,-1);});
-  bDown.addEventListener('pointerdown',e=>{e.stopPropagation();dt=setInterval(()=>changeBarValue(index,-1),130);});
+  bDown.addEventListener('click',e=>{e.stopPropagation();soundBarDown();changeBarValue(index,-1);});
+  bDown.addEventListener('pointerdown',e=>{e.stopPropagation();dt=setInterval(()=>{soundBarDown();changeBarValue(index,-1);},130);});
   bDown.addEventListener('pointerup',()=>clearInterval(dt)); bDown.addEventListener('pointerleave',()=>clearInterval(dt));
   controls.appendChild(bDown); controls.appendChild(bUp);
   bottom.appendChild(xIcon); bottom.appendChild(controls);
@@ -1680,10 +1852,13 @@ function checkChart(){
     const fill=document.getElementById(`bar-fill-${i}`);
     fill.style.outline=''; fill.style.animation='';
     if(state.chartValues[i]===state.tallyCounts[i]){
+      playTone(523 + i*100, 0.15, 'sine', 0.25, i*80);
       fill.style.outline='3px solid #4caf50'; fill.style.animation='barCelebrate 0.5s ease';
       setTimeout(()=>{fill.style.animation='';fill.style.outline='';},700);
     } else {
-      allOk=false; fill.style.outline='3px solid #ef5350'; fill.style.animation='shake 0.4s ease';
+      allOk=false;
+      soundWrong();
+      fill.style.outline='3px solid #ef5350'; fill.style.animation='shake 0.4s ease';
       setTimeout(()=>{fill.style.outline='';fill.style.animation='';},500);
     }
   });
@@ -1695,6 +1870,7 @@ function checkChart(){
 */
 function onCycleComplete(){
   state.acorns+=10; saveStorage(); updateAcornDisplay();
+  soundComplete();
   spawnConfetti();
   document.getElementById('reward-sub-text').textContent='+10 🌰 Altın Palamut kazandın!';
   const popup=document.getElementById('reward-popup'); popup.classList.add('show');
