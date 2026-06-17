@@ -505,8 +505,8 @@
   }
   .preload-subtitle{font-size:clamp(15px,2.2vw,24px);color:rgba(255,255,255,.88);max-width:560px;line-height:1.35;}
   .preload-loading{width:min(420px,78vw);height:12px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);}
-  .preload-loading span{display:block;width:44%;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFD700,#38BDF8,#A855F7);animation:loadingSlide 1.15s ease-in-out infinite alternate;}
-  @keyframes loadingSlide{from{transform:translateX(-40%);width:34%;}to{transform:translateX(178%);width:46%;}}
+  .preload-loading span{display:block;width:100%;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFD700,#38BDF8,#A855F7);transform-origin:left center;animation:loadingFill 1.4s ease-out forwards;}
+  @keyframes loadingFill{from{transform:scaleX(0);}to{transform:scaleX(1);}}
   .preload-start-btn{
     margin-top:4px;padding:16px 54px;border:none;border-radius:999px;cursor:pointer;
     font-family:var(--font);font-size:clamp(20px,3.4vw,36px);font-weight:800;color:#fff;
