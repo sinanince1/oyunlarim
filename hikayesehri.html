@@ -310,6 +310,77 @@
   .oc-date{font-size:0.8em;color:#888;white-space:nowrap;}
   .other-cities-toolbar{display:flex;justify-content:flex-end;margin-bottom:10px;}
 
+  /* ---------- Diğer Şehirler: sembol kutucukları ---------- */
+  .oc-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    gap:14px;
+  }
+  .oc-card{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:var(--paper-solid);
+    border:2.5px solid #e5e0f5;border-radius:var(--r-lg);
+    padding:16px 8px 14px;
+    box-shadow:var(--shadow-sm);
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .oc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+  }
+  .oc-card:active{transform:scale(0.96);}
+  .oc-card.me{border-color:#b477f0;background:#f8f2ff;}
+  .oc-symbol{font-size:40px;line-height:1;}
+  .oc-card-name{font-weight:700;font-size:13px;text-align:center;color:var(--ink);}
+  .oc-card-score{font-size:12px;font-weight:700;color:var(--ink-soft);}
+
+  /* ---------- Şehir sembolü seçici butonu ---------- */
+  .city-symbol-btn{
+    flex:0 0 auto;
+    width:52px;height:52px;
+    border:2.5px solid var(--line);
+    border-radius:50%;
+    background:var(--paper-solid);
+    font-size:26px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    box-shadow:var(--shadow-sm);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .city-symbol-btn:active{transform:scale(0.92);}
+
+  /* ---------- Emoji seçici modal ---------- */
+  .emoji-modal{max-width:520px;}
+  .emoji-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(54px,1fr));
+    gap:8px;
+    max-height:55vh;
+    overflow-y:auto;
+    padding:4px;
+  }
+  .emoji-opt{
+    aspect-ratio:1;
+    font-size:30px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--paper-solid);
+    border:2.5px solid var(--line);
+    border-radius:var(--r-md);
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .emoji-opt:hover{transform:scale(1.08);}
+  }
+  .emoji-opt.selected{border-color:var(--blue);background:#eaf5ff;}
+
+  /* ---------- Tam şehir görüntüleme modalı ---------- */
+  .city-view-modal{max-width:720px;}
+  .cv-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-right:38px;}
+  .cv-symbol{font-size:44px;line-height:1;}
+  .cv-title{font-weight:800;font-size:19px;color:var(--blue-dark);flex:1 1 auto;}
+  .cv-score{font-weight:700;font-size:13.5px;background:var(--green);color:#fff;padding:6px 14px;border-radius:var(--r-full);white-space:nowrap;}
+
 
   /* ---------- Building picker grid ---------- */
   .tier-section{margin-bottom:26px;}
@@ -897,6 +968,7 @@
     <div class="screen" id="screenCity">
       <button class="back-btn" data-back="1">← Ana Menü</button>
       <div class="city-name-bar">
+        <button class="city-symbol-btn" id="citySymbolBtn" title="Şehir sembolünü seç">🏙️</button>
         <div class="city-name-field">
           <label for="cityNameInput">Şehir Adı:</label>
           <input type="text" id="cityNameInput" placeholder="Şehrine bir isim ver..." maxlength="24" autocomplete="off">
@@ -938,6 +1010,30 @@
     <div class="modal" id="modalCard">
       <button class="modal-close" id="modalCloseBtn">✕</button>
       <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Emoji / City Symbol Picker Overlay -->
+  <div class="overlay" id="emojiOverlay">
+    <div class="modal emoji-modal">
+      <button class="modal-close" id="emojiCloseBtn">✕</button>
+      <h2>Şehrinin Sembolünü Seç</h2>
+      <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+  </div>
+
+  <!-- Full City View Overlay (Diğer Şehirler kutucuğuna tıklayınca) -->
+  <div class="overlay" id="cityViewOverlay">
+    <div class="modal city-view-modal">
+      <button class="modal-close" id="cityViewCloseBtn">✕</button>
+      <div class="cv-header">
+        <div class="cv-symbol" id="cvSymbol">🏙️</div>
+        <div class="cv-title" id="cvTitle">Şehir</div>
+        <div class="cv-score" id="cvScore">0 / 15</div>
+      </div>
+      <div class="map-outer">
+        <div class="map-wrap" id="cvMapWrap"></div>
+      </div>
     </div>
   </div>
 
@@ -993,24 +1089,43 @@
   var TIER_ORDER = ["kolay","orta","zor"];
   var TIER_LABEL = {kolay:"Kolay", orta:"Orta", zor:"Zor"};
 
+  // Her zorluk seviyesinde hep aynı binalar çıksın diye sabit bir eşleme.
+  var CATEGORY_KEYS = {
+    kolay: ["hastane_2.png","ev_1.png","itfaiye.png","okul_1.png","market.png"],
+    orta:  ["restorant.png","evcil_hayvan_mağazası.png","polis_istasyonu.png","fırın.png","bahçe.png"],
+    zor:   ["oyuncakçı.png","sinema.png","fıskiye_1.png","dondurmacı_1.png","oyun_parkı_2.png"]
+  };
+  function computeBuildingOrder(){
+    var keyIndex = {};
+    BUILDINGS.forEach(function(b,i){ keyIndex[b.key] = i; });
+    var used = {kolay:0, orta:0, zor:0};
+    return TEXTS.map(function(t){
+      var d = t.difficulty;
+      var keys = CATEGORY_KEYS[d] || [];
+      var pos = used[d]++;
+      var key = keys[pos % (keys.length||1)];
+      return keyIndex.hasOwnProperty(key) ? keyIndex[key] : 0;
+    });
+  }
+
   var state = loadState();
+  state.buildingOrder = computeBuildingOrder();
 
   function freshState(){
-    var order = BUILDINGS.map(function(_,i){return i;});
-    shuffle(order);
     var initialName = "";
     try{
       var legacyName = localStorage.getItem("hikayeSehri_playerName");
       if(legacyName && legacyName.trim()) initialName = legacyName.trim().slice(0,24);
     }catch(e){}
     return {
-      buildingOrder: order,
+      buildingOrder: computeBuildingOrder(),
       itemState: TEXTS.map(function(){return "new";}),
       placements: {},
       pending: null,
       cloudSubmitted: false,
       cityName: initialName,
-      citySharedOnce: false
+      citySharedOnce: false,
+      citySymbol: "🏙️"
     };
   }
   function loadState(){
@@ -1018,10 +1133,10 @@
       var raw = localStorage.getItem(STORAGE_KEY);
       if(raw){
         var parsed = JSON.parse(raw);
-        if(parsed && Array.isArray(parsed.buildingOrder) && parsed.buildingOrder.length===SLOTS.length &&
-           Array.isArray(parsed.itemState) && parsed.itemState.length===TEXTS.length && parsed.placements){
+        if(parsed && Array.isArray(parsed.itemState) && parsed.itemState.length===TEXTS.length && parsed.placements){
           if(typeof parsed.cityName !== "string") parsed.cityName = "";
           if(typeof parsed.citySharedOnce !== "boolean") parsed.citySharedOnce = false;
+          if(typeof parsed.citySymbol !== "string" || !parsed.citySymbol) parsed.citySymbol = "🏙️";
           return parsed;
         }
       }
@@ -1145,8 +1260,10 @@
     var cityName = (state.cityName && state.cityName.trim()) ? state.cityName.trim() : "İsimsiz Şehir";
     db.collection(CITIES_COLLECTION).doc(playerId).set({
       name: cityName,
+      symbol: state.citySymbol || "🏙️",
       placedCount: placedCount(),
       totalCount: TEXTS.length,
+      placements: state.placements || {},
       completedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, {merge:true}).then(function(){
       console.log("Şehir bulut havuzuna kaydedildi/güncellendi.");
@@ -1172,6 +1289,7 @@
     db.collection(CITIES_COLLECTION).orderBy("completedAt", "desc").limit(50).get()
       .then(function(snapshot){
         container.innerHTML = "";
+        container.classList.add("oc-grid");
         if(snapshot.empty){
           container.innerHTML = '<p class="empty-hint">Henüz kimse şehrini tamamlamamış.<br>İlk sen ol! 🏙️</p>';
           return;
@@ -1179,25 +1297,79 @@
         var myId = getPlayerId();
         snapshot.forEach(function(doc){
           var d = doc.data();
-          var row = document.createElement("div");
-          row.className = "other-city-row" + (doc.id === myId ? " me" : "");
-          var dateStr = "";
-          if(d.completedAt && d.completedAt.toDate){
-            dateStr = d.completedAt.toDate().toLocaleDateString("tr-TR");
-          }
-          row.innerHTML =
-            '<div class="oc-name">' + escapeHtml(d.name || "İsimsiz Mimar") +
+          var card = document.createElement("div");
+          card.className = "oc-card" + (doc.id === myId ? " me" : "");
+          card.innerHTML =
+            '<div class="oc-symbol">' + escapeHtml(d.symbol || "🏙️") + '</div>' +
+            '<div class="oc-card-name">' + escapeHtml(d.name || "İsimsiz Mimar") +
               (doc.id === myId ? ' <span class="oc-tag">(sen)</span>' : '') + '</div>' +
-            '<div class="oc-score">' + (d.placedCount != null ? d.placedCount : "?") +
-              ' / ' + (d.totalCount != null ? d.totalCount : TEXTS.length) + ' 🏆</div>' +
-            '<div class="oc-date">' + dateStr + '</div>';
-          container.appendChild(row);
+            '<div class="oc-card-score">🏆 ' + (d.placedCount != null ? d.placedCount : "?") +
+              ' / ' + (d.totalCount != null ? d.totalCount : TEXTS.length) + '</div>';
+          card.addEventListener("click", function(){ openCityView(d); });
+          container.appendChild(card);
         });
       })
       .catch(function(err){
         console.error(err);
         container.innerHTML = '<p class="empty-hint">Şehirler yüklenirken bir hata oluştu.<br>Lütfen internet bağlantını kontrol et.</p>';
       });
+  }
+
+  /* ---------------- Başka bir oyuncunun şehrini tam olarak görüntüle ---------------- */
+  function openCityView(d){
+    var placements = d.placements || {};
+    var order = computeBuildingOrder();
+    var bySlot = {};
+    Object.keys(placements).forEach(function(k){ bySlot[placements[k]] = parseInt(k,10); });
+
+    document.getElementById("cvSymbol").textContent = d.symbol || "🏙️";
+    document.getElementById("cvTitle").textContent = d.name || "İsimsiz Mimar";
+    document.getElementById("cvScore").textContent =
+      (d.placedCount != null ? d.placedCount : "?") + " / " + (d.totalCount != null ? d.totalCount : TEXTS.length);
+
+    var wrap = document.getElementById("cvMapWrap");
+    wrap.innerHTML = "";
+    var srcImg = document.querySelector("#mapWrap .map-bg");
+    var bgImg = document.createElement("img");
+    bgImg.className = "map-bg";
+    bgImg.src = srcImg ? srcImg.src : "";
+    wrap.appendChild(bgImg);
+
+    SLOTS.forEach(function(slot, i){
+      var plot = document.createElement("div");
+      plot.className = "plot";
+      plot.style.left = slot.x + "%";
+      plot.style.top = slot.y + "%";
+      plot.style.width = slot.width + "%";
+      plot.style.height = slot.height + "%";
+      var inner = document.createElement("div");
+      inner.className = "plot-inner";
+      if(bySlot.hasOwnProperty(i)){
+        var b = BUILDINGS[order[bySlot[i]]];
+        if(b){
+          var img = document.createElement("img");
+          img.className = "bld-img";
+          img.src = b.img;
+          img.alt = b.label;
+          inner.appendChild(img);
+        }
+      }
+      plot.appendChild(inner);
+      wrap.appendChild(plot);
+    });
+    document.getElementById("cityViewOverlay").classList.add("show");
+  }
+  var cityViewCloseBtnEl = document.getElementById("cityViewCloseBtn");
+  if(cityViewCloseBtnEl){
+    cityViewCloseBtnEl.addEventListener("click", function(){
+      document.getElementById("cityViewOverlay").classList.remove("show");
+    });
+  }
+  var cityViewOverlayEl = document.getElementById("cityViewOverlay");
+  if(cityViewOverlayEl){
+    cityViewOverlayEl.addEventListener("click", function(e){
+      if(e.target === cityViewOverlayEl) cityViewOverlayEl.classList.remove("show");
+    });
   }
 
   /* ---------------- Navigation ---------------- */
@@ -1433,10 +1605,59 @@
     syncSharedCity();
   }
 
+  /* ---------------- Şehir Sembolü (Emoji) Seçici ---------------- */
+  var CITY_EMOJIS = [
+    "🏙️","🏰","🏯","🏟️","🗽","🎡","🏝️","🏔️","🌋","🏖️",
+    "🌅","🌆","🌃","🎠","🎪","🚀","⭐","🌟","✨","🌈",
+    "☀️","🌙","🔥","💎","👑","🦄","🐉","🦁","🐯","🐻",
+    "🐼","🦊","🐸","🐳","🐬","🦋","🌸","🌻","🌵","🍀",
+    "🍄","🌊","⚡","❄️","🎈","🎨","🎵","⚽","🏆","💫",
+    "🚂","🛸","🏠","🌳","🍁","🐢","🐨","🦉","🐝","🌺"
+  ];
+  function renderEmojiGrid(){
+    var grid = document.getElementById("emojiGrid");
+    grid.innerHTML = "";
+    CITY_EMOJIS.forEach(function(em){
+      var opt = document.createElement("button");
+      opt.className = "emoji-opt" + (state.citySymbol===em ? " selected" : "");
+      opt.type = "button";
+      opt.textContent = em;
+      opt.addEventListener("click", function(){
+        state.citySymbol = em;
+        saveState();
+        updateCityShareUI();
+        document.getElementById("emojiOverlay").classList.remove("show");
+        syncSharedCity();
+      });
+      grid.appendChild(opt);
+    });
+  }
+  var citySymbolBtnEl = document.getElementById("citySymbolBtn");
+  if(citySymbolBtnEl){
+    citySymbolBtnEl.addEventListener("click", function(){
+      renderEmojiGrid();
+      document.getElementById("emojiOverlay").classList.add("show");
+    });
+  }
+  var emojiCloseBtnEl = document.getElementById("emojiCloseBtn");
+  if(emojiCloseBtnEl){
+    emojiCloseBtnEl.addEventListener("click", function(){
+      document.getElementById("emojiOverlay").classList.remove("show");
+    });
+  }
+  var emojiOverlayEl = document.getElementById("emojiOverlay");
+  if(emojiOverlayEl){
+    emojiOverlayEl.addEventListener("click", function(e){
+      if(e.target === emojiOverlayEl) emojiOverlayEl.classList.remove("show");
+    });
+  }
+
   /* ---------------- Şehir Adı / Paylaşım UI ---------------- */
   function updateCityShareUI(){
     var input = document.getElementById("cityNameInput");
     var btn = document.getElementById("shareCityBtn");
+    var symbolBtn = document.getElementById("citySymbolBtn");
+    if(symbolBtn) symbolBtn.textContent = state.citySymbol || "🏙️";
     if(input && document.activeElement !== input) input.value = state.cityName || "";
     if(btn){
       if(state.citySharedOnce){
