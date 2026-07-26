@@ -323,8 +323,27 @@
     padding:16px 8px 14px;
     box-shadow:var(--shadow-sm);
     cursor:pointer;
+    position:relative;
     transition:transform .15s ease, box-shadow .15s ease;
   }
+  .oc-edit-btn{
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:none;
+    background:#fff;
+    box-shadow:var(--shadow-sm);
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:2;
+  }
+  .oc-edit-btn:active{transform:scale(0.9);}
   @media (hover:hover) and (pointer:fine){
     .oc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
   }
@@ -630,6 +649,47 @@
     .city-name-field{flex:1 1 auto;}
     .share-city-btn{width:100%;justify-content:center;}
   }
+
+  /* ---------- Yönetici (Admin) kilit tuşu ve paneli ---------- */
+  .admin-lock-btn{
+    position:fixed;
+    right:10px;
+    bottom:10px;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:none;
+    background:rgba(0,0,0,0.10);
+    color:#333;
+    font-size:12px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    opacity:0.30;
+    z-index:500;
+    transition:opacity .15s ease;
+  }
+  .admin-lock-btn:hover{opacity:0.85;}
+  .admin-lock-btn.active{opacity:0.9;background:rgba(180,119,240,0.35);}
+  .admin-modal{max-width:340px;text-align:center;}
+  .admin-modal h2{margin:0 0 6px;font-size:18px;}
+  .admin-sub{font-size:12.5px;opacity:.7;margin:0 0 14px;line-height:1.4;}
+  .admin-pass-input,.admin-city-input{
+    width:100%;
+    box-sizing:border-box;
+    text-align:center;
+    padding:11px 12px;
+    border-radius:10px;
+    border:2px solid #ddd;
+    font-family:inherit;
+    margin-bottom:14px;
+  }
+  .admin-pass-input{font-size:22px;letter-spacing:6px;}
+  .admin-city-input{font-size:15px;letter-spacing:normal;}
+  .admin-full-btn{width:100%;justify-content:center;}
+  .cityNameField-locked-note{font-size:11.5px;opacity:.65;margin-top:4px;}
 
   .rotate-hint{
     display:none;
@@ -1049,6 +1109,33 @@
     </div>
   </div>
 
+  <!-- Küçük Yönetici (Admin) Kilit Tuşu -->
+  <button class="admin-lock-btn" id="adminLockBtn" title="Yönetici Girişi" aria-label="Yönetici Girişi">🔒</button>
+
+  <!-- Yönetici Girişi (Şifre) Overlay -->
+  <div class="overlay" id="adminOverlay">
+    <div class="modal admin-modal">
+      <button class="modal-close" id="adminCloseBtn">✕</button>
+      <div id="adminPasswordStep">
+        <h2>Yönetici Girişi</h2>
+        <p class="admin-sub">Devam etmek için şifreyi gir.</p>
+        <input type="password" id="adminPasswordInput" class="admin-pass-input" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="off" placeholder="••••••">
+        <button class="share-city-btn admin-full-btn" id="adminPasswordSubmitBtn">Onayla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yönetici Modunda: Bir Şehrin Adını Değiştirme Overlay -->
+  <div class="overlay" id="adminEditCityOverlay">
+    <div class="modal admin-modal">
+      <button class="modal-close" id="adminEditCityCloseBtn">✕</button>
+      <h2>Şehir Adını Değiştir</h2>
+      <p class="admin-sub">Uygunsuz bir isim girildiyse burada değiştirebilirsin. Kaydettikten sonra bu isim kilitlenir ve öğrenci tarafından değiştirilemez.</p>
+      <input type="text" id="adminEditCityNameInput" class="admin-city-input" maxlength="24" autocomplete="off" placeholder="Yeni şehir adı...">
+      <button class="share-city-btn admin-full-btn" id="adminEditCitySaveBtn">Kaydet</button>
+    </div>
+  </div>
+
   <!-- ======================================================
        FIREBASE / FIRESTORE ENTEGRASYONU
        "Diğer Şehirler" özelliği için gerekli.
@@ -1125,7 +1212,8 @@
       cloudSubmitted: false,
       cityName: initialName,
       citySharedOnce: false,
-      citySymbol: "🏙️"
+      citySymbol: "🏙️",
+      cityNameLocked: false
     };
   }
   function loadState(){
@@ -1137,6 +1225,7 @@
           if(typeof parsed.cityName !== "string") parsed.cityName = "";
           if(typeof parsed.citySharedOnce !== "boolean") parsed.citySharedOnce = false;
           if(typeof parsed.citySymbol !== "string" || !parsed.citySymbol) parsed.citySymbol = "🏙️";
+          if(typeof parsed.cityNameLocked !== "boolean") parsed.cityNameLocked = false;
           return parsed;
         }
       }
@@ -1311,6 +1400,18 @@
             '<div class="oc-card-score">🏆 ' + (d.placedCount != null ? d.placedCount : "?") +
               ' / ' + (d.totalCount != null ? d.totalCount : TEXTS.length) + '</div>';
           card.addEventListener("click", function(){ openCityView(d); });
+          if(adminMode){
+            var editBtn = document.createElement("button");
+            editBtn.className = "oc-edit-btn";
+            editBtn.title = "Şehir adını değiştir";
+            editBtn.setAttribute("aria-label", "Şehir adını değiştir");
+            editBtn.textContent = "✏️";
+            editBtn.addEventListener("click", function(e){
+              e.stopPropagation();
+              openAdminEditCity(doc.id, d, doc.id === myId);
+            });
+            card.appendChild(editBtn);
+          }
           container.appendChild(card);
         });
       })
@@ -1664,6 +1765,10 @@
     var symbolBtn = document.getElementById("citySymbolBtn");
     if(symbolBtn) symbolBtn.textContent = state.citySymbol || "🏙️";
     if(input && document.activeElement !== input) input.value = state.cityName || "";
+    if(input){
+      input.disabled = !!state.cityNameLocked;
+      input.title = state.cityNameLocked ? "Bu şehir adı yönetici tarafından kilitlendi." : "";
+    }
     if(btn){
       if(state.citySharedOnce){
         btn.textContent = "✅ Paylaşıldı (Güncelle)";
@@ -1677,6 +1782,11 @@
   function applyCityNameFromInput(showFeedback){
     var input = document.getElementById("cityNameInput");
     if(!input) return null;
+    if(state.cityNameLocked){
+      input.value = state.cityName || "";
+      if(showFeedback) showToast("Bu şehir adı yönetici tarafından kilitlendi, değiştirilemez.");
+      return null;
+    }
     var result = validateCityName(input.value);
     if(!result.ok){
       if(showFeedback) showToast(result.reason);
@@ -1704,6 +1814,168 @@
       submitCityToCloud();
       updateCityShareUI();
       showToast("Şehrin \"" + name + "\" adıyla diğer oyuncularla paylaşıldı! 🎉");
+    });
+  }
+
+  /* ---------------- Yönetici (Admin) Paneli ---------------- */
+  var ADMIN_PASSWORD = "859530";
+  var adminMode = false;
+  var adminEditingDocId = null;
+  var adminEditingIsMe = false;
+
+  var adminOverlayEl = document.getElementById("adminOverlay");
+  var adminLockBtnEl = document.getElementById("adminLockBtn");
+  var adminCloseBtnEl = document.getElementById("adminCloseBtn");
+  var adminPasswordInputEl = document.getElementById("adminPasswordInput");
+  var adminPasswordSubmitBtnEl = document.getElementById("adminPasswordSubmitBtn");
+
+  var adminEditCityOverlayEl = document.getElementById("adminEditCityOverlay");
+  var adminEditCityCloseBtnEl = document.getElementById("adminEditCityCloseBtn");
+  var adminEditCityNameInputEl = document.getElementById("adminEditCityNameInput");
+  var adminEditCitySaveBtnEl = document.getElementById("adminEditCitySaveBtn");
+
+  function updateAdminLockBtnUI(){
+    if(!adminLockBtnEl) return;
+    adminLockBtnEl.textContent = adminMode ? "🔓" : "🔒";
+    adminLockBtnEl.classList.toggle("active", adminMode);
+    adminLockBtnEl.title = adminMode ? "Yönetici Modundan Çık" : "Yönetici Girişi";
+  }
+
+  function openAdminPasswordOverlay(){
+    if(!adminOverlayEl) return;
+    if(adminPasswordInputEl) adminPasswordInputEl.value = "";
+    adminOverlayEl.classList.add("show");
+    setTimeout(function(){ if(adminPasswordInputEl) adminPasswordInputEl.focus(); }, 50);
+  }
+  function closeAdminPasswordOverlay(){
+    if(!adminOverlayEl) return;
+    adminOverlayEl.classList.remove("show");
+    if(adminPasswordInputEl) adminPasswordInputEl.value = "";
+  }
+  function enterAdminMode(){
+    adminMode = true;
+    updateAdminLockBtnUI();
+    showScreen("other");
+  }
+  function exitAdminMode(){
+    adminMode = false;
+    updateAdminLockBtnUI();
+    showScreen("menu");
+  }
+  function checkAdminPassword(){
+    if(!adminPasswordInputEl) return;
+    var val = (adminPasswordInputEl.value || "").trim();
+    closeAdminPasswordOverlay();
+    if(val === ADMIN_PASSWORD){
+      enterAdminMode();
+    }
+    // Yanlış şifre: ekran zaten kapandı, ekstra bir şey yapılmıyor.
+  }
+  if(adminLockBtnEl){
+    adminLockBtnEl.addEventListener("click", function(){
+      if(adminMode){ exitAdminMode(); }
+      else{ openAdminPasswordOverlay(); }
+    });
+  }
+  if(adminCloseBtnEl){
+    adminCloseBtnEl.addEventListener("click", closeAdminPasswordOverlay);
+  }
+  if(adminOverlayEl){
+    adminOverlayEl.addEventListener("click", function(e){
+      if(e.target === adminOverlayEl) closeAdminPasswordOverlay();
+    });
+  }
+  if(adminPasswordInputEl){
+    adminPasswordInputEl.addEventListener("input", function(){
+      this.value = this.value.replace(/[^0-9]/g, "");
+    });
+    adminPasswordInputEl.addEventListener("keydown", function(e){
+      if(e.key === "Enter") checkAdminPassword();
+    });
+  }
+  if(adminPasswordSubmitBtnEl){
+    adminPasswordSubmitBtnEl.addEventListener("click", checkAdminPassword);
+  }
+
+  /* ---- Yönetici modunda: listeden bir şehrin adını değiştirme ---- */
+  function openAdminEditCity(docId, data, isMe){
+    adminEditingDocId = docId;
+    adminEditingIsMe = !!isMe;
+    if(adminEditCityNameInputEl) adminEditCityNameInputEl.value = (data && data.name) || "";
+    if(adminEditCityOverlayEl) adminEditCityOverlayEl.classList.add("show");
+    setTimeout(function(){ if(adminEditCityNameInputEl) adminEditCityNameInputEl.focus(); }, 50);
+  }
+  function closeAdminEditCityOverlay(){
+    if(adminEditCityOverlayEl) adminEditCityOverlayEl.classList.remove("show");
+    adminEditingDocId = null;
+    adminEditingIsMe = false;
+  }
+  function saveAdminEditCityName(){
+    if(!adminEditCityNameInputEl || !adminEditingDocId) return;
+    var result = validateCityName(adminEditCityNameInputEl.value);
+    if(!result.ok){
+      showToast(result.reason);
+      return;
+    }
+    if(!db){
+      showToast("Bulut bağlantısı yok, değişiklik kaydedilemedi.");
+      return;
+    }
+    var targetId = adminEditingDocId;
+    var wasMe = adminEditingIsMe;
+    db.collection(CITIES_COLLECTION).doc(targetId).set({
+      name: result.value,
+      nameLockedByAdmin: true
+    }, {merge:true}).then(function(){
+      if(wasMe){
+        state.cityName = result.value;
+        state.cityNameLocked = true;
+        saveState();
+        updateCityShareUI();
+      }
+      showToast("Şehir adı \"" + result.value + "\" olarak güncellendi ve kilitlendi. 🔒");
+      closeAdminEditCityOverlay();
+      renderOtherCities();
+    }).catch(function(err){
+      console.error(err);
+      showToast("Kaydedilirken bir hata oluştu. Lütfen tekrar dene.");
+    });
+  }
+  if(adminEditCityCloseBtnEl){
+    adminEditCityCloseBtnEl.addEventListener("click", closeAdminEditCityOverlay);
+  }
+  if(adminEditCityOverlayEl){
+    adminEditCityOverlayEl.addEventListener("click", function(e){
+      if(e.target === adminEditCityOverlayEl) closeAdminEditCityOverlay();
+    });
+  }
+  if(adminEditCityNameInputEl){
+    adminEditCityNameInputEl.addEventListener("keydown", function(e){
+      if(e.key === "Enter") saveAdminEditCityName();
+    });
+  }
+  if(adminEditCitySaveBtnEl){
+    adminEditCitySaveBtnEl.addEventListener("click", saveAdminEditCityName);
+  }
+
+  /* ---- Kendi cihazımızdaki şehir, başka bir yerden yönetici tarafından
+     kilitlendiyse (nameLockedByAdmin), açılışta bunu bulut üzerinden
+     kontrol edip yerel durumu buna göre güncelle. ---- */
+  function checkOwnCityLockFromCloud(){
+    if(!db) return;
+    var myId = getPlayerId();
+    db.collection(CITIES_COLLECTION).doc(myId).get().then(function(doc){
+      if(doc.exists){
+        var data = doc.data();
+        if(data && data.nameLockedByAdmin === true){
+          state.cityName = data.name || state.cityName;
+          state.cityNameLocked = true;
+          saveState();
+          updateCityShareUI();
+        }
+      }
+    }).catch(function(err){
+      console.warn("Şehir kilit durumu kontrol edilemedi:", err);
     });
   }
 
@@ -1932,6 +2204,8 @@
   });
 
   renderHeader();
+  // Şehir başka bir zamanda yönetici tarafından kilitlendiyse, önce onu kontrol et.
+  checkOwnCityLockFromCloud();
   // Oyun her açıldığında şehri buluta gönder/güncelle, böylece
   // "Diğer Şehirler" listesi her zaman güncel kalır.
   syncSharedCity();
