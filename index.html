@@ -78,6 +78,39 @@
       gap: 10px;
       flex-wrap: wrap;
     }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      color: var(--pink);
+      font-weight: 900;
+      font-size: 0.95rem;
+      text-decoration: none;
+      padding: 10px 22px;
+      border-radius: 999px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+    .about-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+    }
+    .about-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    }
     .badge {
       background: rgba(255,255,255,0.22);
       border: 2px solid rgba(255,255,255,0.4);
@@ -436,10 +469,13 @@
 <!-- HEADER -->
 <header>
   <div class="logo"><span>🎮</span> Eğitici Oyunlar</div>
-  <div class="header-badges">
-    <div class="badge">✨ Ücretsiz</div>
-    <div class="badge">📱 Mobil Uyumlu</div>
-    <div class="badge">🎯 Eğlenceli</div>
+  <div class="header-right">
+    <div class="header-badges">
+      <div class="badge">✨ Ücretsiz</div>
+      <div class="badge">📱 Mobil Uyumlu</div>
+      <div class="badge">🎯 Eğlenceli</div>
+    </div>
+    <a class="about-btn" href="hakkimda.html">👤 Hakkımda</a>
   </div>
 </header>
 
