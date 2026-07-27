@@ -294,10 +294,10 @@
       background: linear-gradient(135deg, #FF4D8D, #FF6B35);
       color: white;
       font-weight: 900;
-      font-size: 0.8rem;
-      padding: 6px 12px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(255, 77, 141, 0.4);
+      font-size: 1.05rem;
+      padding: 9px 18px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(255, 77, 141, 0.55);
       animation: pulse-scale 2s ease-in-out infinite;
       z-index: 10;
     }
@@ -509,6 +509,95 @@
 // ============================================================
 const categories = [
   {
+    name: "📖 Türkçe",
+    color: "#00C9A7",
+    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
+    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
+    games: [
+      {
+        name: "Hikaye Şehri",
+        file: "hikayesehri.html",
+        desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏙️",
+        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)",
+        isNew: true
+      },
+      {
+        name: "1. Sınıflar Yarışması",
+        file: "yarisma.html",
+        desc: "Sınıfta bilgimizi yarıştıralım!",
+        sinif: "1. Sınıf",
+        emoji: "🏆",
+        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
+      },
+      {
+        name: "5N1K Dedektifi",
+        file: "5n1k.html",
+        desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🕵️",
+        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
+      },
+      {
+        name: "Hecelerden Kelimelere",
+        file: "hece.html",
+        desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
+        sinif: "1. Sınıf",
+        emoji: "🔤",
+        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
+      },
+      {
+        name: "Noktalama Parşomeni",
+        file: "nokta.html",
+        desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
+        sinif: "1. Sınıf",
+        emoji: "📜",
+        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
+      },
+      {
+        name: "Zoxi'ye Türkçe Öğretiyoruz",
+        file: "zoxi.html",
+        desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
+        sinif: "1. Sınıf",
+        emoji: "👽",
+        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
+      },
+      {
+        name: "Noktalama Treni",
+        file: "tren.html",
+        desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
+        sinif: "1. Sınıf",
+        emoji: "🚂",
+        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
+      },
+      {
+        name: "Düşler Şatosu",
+        file: "duslersatosu.html",
+        desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏰",
+        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
+      },
+      {
+        name: "Lilo & Stitch Sörf Yarışması",
+        file: "sorf.html",
+        desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏄",
+        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
+      },
+      {
+        name: "Düşler Şatosu 2",
+        file: "duslersatosu2.html",
+        desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🍬",
+        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
+      }
+    ]
+  },
+  {
     name: "➕ Matematik",
     color: "#FF6B35",
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
@@ -601,95 +690,6 @@ const categories = [
         sinif: "1. - 2. Sınıf",
         emoji: "🌲",
         thumbBg: "linear-gradient(135deg, #D4F5D4, #A8E6A3)",
-      }
-    ]
-  },
-  {
-    name: "📖 Türkçe",
-    color: "#00C9A7",
-    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
-    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
-    games: [
-      {
-        name: "Hikaye Şehri",
-        file: "hikayesehri.html",
-        desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏙️",
-        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)",
-        isNew: true
-      },
-      {
-        name: "1. Sınıflar Yarışması",
-        file: "yarisma.html",
-        desc: "Sınıfta bilgimizi yarıştıralım!",
-        sinif: "1. Sınıf",
-        emoji: "🏆",
-        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
-      },
-      {
-        name: "5N1K Dedektifi",
-        file: "5n1k.html",
-        desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🕵️",
-        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
-      },
-      {
-        name: "Hecelerden Kelimelere",
-        file: "hece.html",
-        desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
-        sinif: "1. Sınıf",
-        emoji: "🔤",
-        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
-      },
-      {
-        name: "Noktalama Parşomeni",
-        file: "nokta.html",
-        desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
-        sinif: "1. Sınıf",
-        emoji: "📜",
-        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
-      },
-      {
-        name: "Zoxi'ye Türkçe Öğretiyoruz",
-        file: "zoxi.html",
-        desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
-        sinif: "1. Sınıf",
-        emoji: "👽",
-        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
-      },
-      {
-        name: "Noktalama Treni",
-        file: "tren.html",
-        desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
-        sinif: "1. Sınıf",
-        emoji: "🚂",
-        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
-      },
-      {
-        name: "Düşler Şatosu",
-        file: "duslersatosu.html",
-        desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏰",
-        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
-      },
-      {
-        name: "Lilo & Stitch Sörf Yarışması",
-        file: "sorf.html",
-        desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏄",
-        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
-      },
-      {
-        name: "Düşler Şatosu 2",
-        file: "duslersatosu2.html",
-        desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🍬",
-        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
       }
     ]
   },
