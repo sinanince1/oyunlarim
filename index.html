@@ -226,7 +226,61 @@
       gap: 22px;
     }
 
-    /* GAME CARD */
+    /* --- Dino'nun Roketi thumbnail --- */
+    .dino-roket-thumb {
+      position: absolute; inset: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 2px; padding-bottom: 8px;
+      overflow: hidden;
+    }
+    .drt-yildizlar {
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 28% 42%, #fff 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 45% 12%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 62% 35%, #fff 50%, transparent 50%),
+        radial-gradient(2px 2px at 78% 15%, #FFD84D 50%, transparent 50%),
+        radial-gradient(1px 1px at 88% 48%, #fff 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 35% 65%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 72% 58%, #fff 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 92% 72%, #fff 50%, transparent 50%),
+        radial-gradient(1px 1px at 18% 75%, #fff 50%, transparent 50%),
+        radial-gradient(2px 2px at 55% 78%, #FFD84D 50%, transparent 50%),
+        radial-gradient(1px 1px at 8% 55%, #fff 50%, transparent 50%);
+      animation: drtTwinkle 3s ease-in-out infinite alternate;
+    }
+    @keyframes drtTwinkle {
+      0%   { opacity: .6; }
+      100% { opacity: 1; }
+    }
+    .drt-dino {
+      position: relative; z-index: 1;
+      width: 82px; height: auto;
+      animation: drtBounce 2.2s ease-in-out infinite;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,.4));
+    }
+    @keyframes drtBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      30%      { transform: translateY(-6px) rotate(-3deg); }
+      60%      { transform: translateY(-2px) rotate(2deg); }
+    }
+    .drt-dino .drt-kol-sol { animation: drtArmL 2.2s ease-in-out infinite; }
+    .drt-dino .drt-kol-sag { animation: drtArmR 2.2s ease-in-out infinite; }
+    @keyframes drtArmL { 0%,100%{ transform:rotate(0) } 50%{ transform:rotate(-18deg) } }
+    @keyframes drtArmR { 0%,100%{ transform:rotate(0) } 50%{ transform:rotate(18deg) } }
+    .drt-roket {
+      position: relative; z-index: 1;
+      width: 54px; height: auto;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,.5));
+      animation: drtRocketGlow 2s ease-in-out infinite alternate;
+    }
+    @keyframes drtRocketGlow {
+      0%   { filter: drop-shadow(0 3px 8px rgba(0,0,0,.5)); }
+      100% { filter: drop-shadow(0 3px 12px rgba(255,216,77,.5)); }
+    }
+
+        /* GAME CARD */
     .game-card {
       background: white;
       border-radius: 24px;
@@ -509,100 +563,51 @@
 // ============================================================
 const categories = [
   {
-    name: "📖 Türkçe",
-    color: "#00C9A7",
-    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
-    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
-    games: [
-      {
-        name: "Hikaye Şehri",
-        file: "hikayesehri.html",
-        desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏙️",
-        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)",
-        isNew: true
-      },
-      {
-        name: "1. Sınıflar Yarışması",
-        file: "yarisma.html",
-        desc: "Sınıfta bilgimizi yarıştıralım!",
-        sinif: "1. Sınıf",
-        emoji: "🏆",
-        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
-      },
-      {
-        name: "5N1K Dedektifi",
-        file: "5n1k.html",
-        desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🕵️",
-        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
-      },
-      {
-        name: "Hecelerden Kelimelere",
-        file: "hece.html",
-        desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
-        sinif: "1. Sınıf",
-        emoji: "🔤",
-        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
-      },
-      {
-        name: "Noktalama Parşomeni",
-        file: "nokta.html",
-        desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
-        sinif: "1. Sınıf",
-        emoji: "📜",
-        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
-      },
-      {
-        name: "Zoxi'ye Türkçe Öğretiyoruz",
-        file: "zoxi.html",
-        desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
-        sinif: "1. Sınıf",
-        emoji: "👽",
-        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
-      },
-      {
-        name: "Noktalama Treni",
-        file: "tren.html",
-        desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
-        sinif: "1. Sınıf",
-        emoji: "🚂",
-        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
-      },
-      {
-        name: "Düşler Şatosu",
-        file: "duslersatosu.html",
-        desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏰",
-        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
-      },
-      {
-        name: "Lilo & Stitch Sörf Yarışması",
-        file: "sorf.html",
-        desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏄",
-        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
-      },
-      {
-        name: "Düşler Şatosu 2",
-        file: "duslersatosu2.html",
-        desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🍬",
-        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
-      }
-    ]
-  },
-  {
     name: "➕ Matematik",
     color: "#FF6B35",
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Dino'nun Roketi",
+        file: "dino_roket_ay.html",
+        desc: "Roketimizi geliştirip Ay'a gidelim!",
+        sinif: "1. ve 2. Sınıf — Toplama çıkarma problemleri",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #0A0F26 0%, #1B2E6B 55%, #3E5C9A 100%)",
+        customThumb: `
+<div class="dino-roket-thumb">
+  <div class="drt-yildizlar"></div>
+  <svg class="drt-dino" viewBox="0 0 380 400" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <ellipse cx="190" cy="272" rx="86" ry="76" fill="#92B9A1"/>
+      <ellipse cx="190" cy="288" rx="53" ry="56" fill="#E0E6DD"/>
+      <g class="drt-kol-sol"><ellipse cx="103" cy="252" rx="23" ry="33" fill="#8CB69C" transform="rotate(-14 103 252)"/></g>
+      <g class="drt-kol-sag"><ellipse cx="277" cy="252" rx="23" ry="33" fill="#8CB69C" transform="rotate(14 277 252)"/></g>
+      <ellipse cx="141" cy="341" rx="45" ry="27" fill="#8CB69C"/>
+      <ellipse cx="239" cy="341" rx="45" ry="27" fill="#8CB69C"/>
+      <g>
+        <ellipse cx="190" cy="160" rx="89" ry="73" fill="#92B9A1"/>
+        <ellipse cx="190" cy="192" rx="69" ry="49" fill="#9DC2AA"/>
+        <path d="M140 205 Q190 232 240 205" stroke="#6E9480" stroke-width="3" fill="none"/>
+        <ellipse cx="163" cy="173" rx="11" ry="8" fill="#E6DBB8" transform="rotate(-18 163 173)"/>
+        <ellipse cx="217" cy="173" rx="11" ry="8" fill="#E6DBB8" transform="rotate(18 217 173)"/>
+        <circle cx="165" cy="126" r="7.6" fill="#FBFDFA"/><circle cx="165" cy="126" r="5.2" fill="#22201E"/>
+        <circle cx="215" cy="126" r="7.6" fill="#FBFDFA"/><circle cx="215" cy="126" r="5.2" fill="#22201E"/>
+      </g>
+    </g>
+  </svg>
+  <svg class="drt-roket" viewBox="0 0 72 104" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="drt-g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF5C7A"/><stop offset="1" stop-color="#E63950"/></linearGradient></defs>
+    <path d="M36 2 C36 2 14 30 14 62 L14 78 L58 78 L58 62 C58 30 36 2 36 2Z" fill="url(#drt-g1)"/>
+    <rect x="22" y="78" width="28" height="10" rx="2" fill="#C0C8D8"/>
+    <circle cx="36" cy="44" r="10" fill="#B8D8FF" opacity=".85"/>
+    <rect x="8" y="68" width="12" height="22" rx="4" fill="#3E5C9A"/>
+    <rect x="52" y="68" width="12" height="22" rx="4" fill="#3E5C9A"/>
+    <path d="M28 88 L36 104 L44 88" fill="#FFD84D" opacity=".9"/>
+  </svg>
+</div>`,
+      },
       {
         name: "Matematik Penaltı Kupası",
         file: "penalti.html",
@@ -694,6 +699,95 @@ const categories = [
     ]
   },
   {
+    name: "📖 Türkçe",
+    color: "#00C9A7",
+    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
+    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
+    games: [
+      {
+        name: "Hikaye Şehri",
+        file: "hikayesehri.html",
+        desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏙️",
+        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)",
+        isNew: true
+      },
+      {
+        name: "1. Sınıflar Yarışması",
+        file: "yarisma.html",
+        desc: "Sınıfta bilgimizi yarıştıralım!",
+        sinif: "1. Sınıf",
+        emoji: "🏆",
+        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
+      },
+      {
+        name: "5N1K Dedektifi",
+        file: "5n1k.html",
+        desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🕵️",
+        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
+      },
+      {
+        name: "Hecelerden Kelimelere",
+        file: "hece.html",
+        desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
+        sinif: "1. Sınıf",
+        emoji: "🔤",
+        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
+      },
+      {
+        name: "Noktalama Parşomeni",
+        file: "nokta.html",
+        desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
+        sinif: "1. Sınıf",
+        emoji: "📜",
+        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
+      },
+      {
+        name: "Zoxi'ye Türkçe Öğretiyoruz",
+        file: "zoxi.html",
+        desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
+        sinif: "1. Sınıf",
+        emoji: "👽",
+        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
+      },
+      {
+        name: "Noktalama Treni",
+        file: "tren.html",
+        desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
+        sinif: "1. Sınıf",
+        emoji: "🚂",
+        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
+      },
+      {
+        name: "Düşler Şatosu",
+        file: "duslersatosu.html",
+        desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏰",
+        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
+      },
+      {
+        name: "Lilo & Stitch Sörf Yarışması",
+        file: "sorf.html",
+        desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏄",
+        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
+      },
+      {
+        name: "Düşler Şatosu 2",
+        file: "duslersatosu2.html",
+        desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🍬",
+        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
+      }
+    ]
+  },
+  {
     name: "🌱 Hayat Bilgisi",
     color: "#4CAF50",
     iconBg: "linear-gradient(135deg, #4CAF50, #00C9A7)",
@@ -749,6 +843,7 @@ const categories = [
       }
     ]
   }
+
 ];
 
 // ============================================================
@@ -786,7 +881,7 @@ function buildPage() {
       card.style.animationDelay = `${ci * 0.1 + gi * 0.08}s`;
       card.innerHTML = `
         <div class="game-thumb" style="background:${game.thumbBg}">
-          ${game.emoji}
+          ${game.customThumb || game.emoji}
           ${game.isNew ? '<div class="new-badge">✨ Yeni!</div>' : ''}
           ${game.isSpecial ? '<div class="special-badge">⭐ ÖZEL ETKİNLİK</div>' : ''}
         </div>
