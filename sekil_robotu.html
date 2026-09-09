@@ -344,20 +344,23 @@ button{ font:inherit; color:inherit; }
 .tur-nokta.yanlis{ background:var(--yanlis); border-color:var(--yanlis); }
 .tur-nokta.simdi{ border-color:var(--ana); }
 
-#soru-metni{ margin:0 0 12px; font-size:24px; font-weight:bold; }
-#soru-sahnesi{
-  background:linear-gradient(180deg,#ffffff 0%,#f2f7ff 100%);
-  border:2px solid var(--cizgi);
-  border-radius:var(--r-kart);
-  padding:8px;
+/* Soru bloğu: seçeneklerle karışmasın diye çerçevesiz, altı çizgili */
+#soru-ust{
+  padding-bottom:14px;
+  border-bottom:3px solid var(--cizgi);
 }
-#soru-sahnesi svg{ width:100%; height:auto; max-height:36vh; display:block; }
+#soru-metni{ margin:0 0 10px; font-size:24px; font-weight:bold; }
+#soru-sahnesi{ padding:0; }
+#soru-sahnesi svg{
+  width:100%; height:auto; max-height:34vh; display:block;
+  margin:0 auto;
+}
 
 #secenek-listesi{
   display:grid;
   grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
   gap:12px;
-  margin-top:14px;
+  margin-top:16px;
 }
 .secenek{
   display:flex;
@@ -1117,8 +1120,11 @@ button{ font:inherit; color:inherit; }
         </div>
 
         <div class="kart">
-          <p id="soru-metni"></p>
-          <div id="soru-sahnesi"></div>
+          <!-- Soru ve görseli: kutu değil; altındaki çizgi seçeneklerden ayırır -->
+          <div id="soru-ust">
+            <p id="soru-metni"></p>
+            <div id="soru-sahnesi"></div>
+          </div>
           <div id="secenek-listesi"></div>
         </div>
 
