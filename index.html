@@ -241,6 +241,71 @@
       gap: 22px;
     }
 
+    /* --- Şekil Robotu thumbnail (dans eden robot) --- */
+    .sekil-robot-thumb {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .sekil-robot-thumb .srt-s {          /* arka planda süzülen geometrik şekiller */
+      position: absolute;
+      opacity: .5;
+      animation: srtSuzul 4.5s ease-in-out infinite;
+    }
+    .srt-kare {
+      width: 22px; height: 22px; border-radius: 4px;
+      background: #f5b942; left: 14%; top: 22%;
+      animation-delay: -.4s;
+    }
+    .srt-daire {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #e0559a; right: 13%; top: 18%;
+      animation-delay: -2.2s;
+    }
+    .srt-dikdortgen {
+      width: 30px; height: 15px; border-radius: 4px;
+      background: #4aab6b; right: 10%; bottom: 20%;
+      animation-delay: -1.3s;
+    }
+    .srt-ucgen {
+      width: 0; height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 21px solid #4f8ce8;
+      left: 10%; bottom: 18%;
+      animation-delay: -3.1s;
+    }
+    @keyframes srtSuzul {
+      0%, 100% { transform: translateY(0)    rotate(0deg); }
+      50%      { transform: translateY(-9px) rotate(12deg); }
+    }
+    .srt-robot {
+      position: relative; z-index: 1;
+      height: 128px; width: auto;
+      filter: drop-shadow(0 4px 8px rgba(22,35,58,.28));
+      animation: srtDans 0.9s ease-in-out infinite;
+      transform-origin: 50% 92%;
+    }
+    @keyframes srtDans {                 /* gövde zıplar ve hafifçe yalpalar */
+      0%, 100% { transform: translateY(0)    rotate(-3deg); }
+      25%      { transform: translateY(-6px) rotate(0deg); }
+      50%      { transform: translateY(0)    rotate(3deg); }
+      75%      { transform: translateY(-6px) rotate(0deg); }
+    }
+    /* Uzuvlar kendi ekleminden döner */
+    .srt-kol-sag { transform-origin: 216px 206px; animation: srtKol 0.9s ease-in-out infinite; }
+    .srt-kol-sol { transform-origin:  84px 206px; animation: srtKol 0.9s ease-in-out infinite; animation-delay: -.45s; }
+    .srt-bacak-sag { transform-origin: 180px 286px; animation: srtBacak 0.9s ease-in-out infinite; animation-delay: -.45s; }
+    .srt-bacak-sol { transform-origin: 120px 286px; animation: srtBacak 0.9s ease-in-out infinite; }
+    .srt-kafa { transform-origin: 150px 152px; animation: srtKafa 1.8s ease-in-out infinite; }
+    @keyframes srtKol   { 0%,100% { transform: rotate(-30deg); } 50% { transform: rotate(30deg); } }
+    @keyframes srtBacak { 0%,100% { transform: rotate(-13deg); } 50% { transform: rotate(13deg); } }
+    @keyframes srtKafa  { 0%,100% { transform: rotate(-6deg);  } 50% { transform: rotate(6deg);  } }
+    @media (prefers-reduced-motion: reduce) {
+      .sekil-robot-thumb .srt-s, .srt-robot,
+      .srt-kol-sag, .srt-kol-sol, .srt-bacak-sag, .srt-bacak-sol, .srt-kafa { animation: none; }
+    }
+
     /* --- Dino'nun Roketi thumbnail --- */
     .dino-roket-thumb {
       position: absolute; inset: 0;
@@ -583,6 +648,69 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Şekil Robotu",
+        file: "sekil_robotu.html",
+        desc: "Geometrik şekilleri öğren ve onlardan robotunu yap!",
+        sinif: "1. ve 2. Sınıf",
+        isNew: true,
+        thumbBg: "linear-gradient(160deg, #eef4fd 0%, #d7e5f7 55%, #bcd3f0 100%)",
+        customThumb: `
+<div class="sekil-robot-thumb">
+  <span class="srt-s srt-kare"></span>
+  <span class="srt-s srt-daire"></span>
+  <span class="srt-s srt-dikdortgen"></span>
+  <span class="srt-s srt-ucgen"></span>
+  <svg class="srt-robot" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="150" cy="366" rx="86" ry="14" fill="#16233a" opacity=".12"/>
+    <!-- bacaklar -->
+    <g class="srt-bacak-sol"><g transform="translate(120,286) scale(-1,1)">
+      <rect x="-13" y="-8" width="26" height="58" rx="10" fill="#163fae" stroke="#0f2c7a" stroke-width="4"/>
+      <rect x="-22" y="46" width="44" height="18" rx="8" fill="#0f2c7a"/>
+    </g></g>
+    <g class="srt-bacak-sag"><g transform="translate(180,286)">
+      <rect x="-13" y="-8" width="26" height="58" rx="10" fill="#163fae" stroke="#0f2c7a" stroke-width="4"/>
+      <rect x="-22" y="46" width="44" height="18" rx="8" fill="#0f2c7a"/>
+    </g></g>
+    <!-- kollar -->
+    <g class="srt-kol-sol"><g transform="translate(84,206) scale(-1,1)">
+      <rect x="-12" y="-12" width="24" height="62" rx="12" fill="#d97706" stroke="#8d4d04" stroke-width="4"/>
+      <rect x="-16" y="46" width="32" height="24" rx="8" fill="#8d4d04"/>
+    </g></g>
+    <g class="srt-kol-sag"><g transform="translate(216,206)">
+      <rect x="-12" y="-12" width="24" height="62" rx="12" fill="#d97706" stroke="#8d4d04" stroke-width="4"/>
+      <rect x="-16" y="46" width="32" height="24" rx="8" fill="#8d4d04"/>
+    </g></g>
+    <!-- gövde -->
+    <g transform="translate(150,228)">
+      <rect x="-55" y="-62" width="110" height="124" rx="16" fill="#3b82f6" stroke="#2655a0" stroke-width="4"/>
+      <circle cx="0" cy="-6" r="16" fill="#fdf0d9" stroke="#2655a0" stroke-width="4"/>
+      <rect x="-26" y="26" width="52" height="14" rx="7" fill="#2655a0" opacity=".55"/>
+    </g>
+    <!-- kafa, anten, göz, ağız -->
+    <g class="srt-kafa">
+      <g transform="translate(150,66)">
+        <rect x="-3" y="-36" width="6" height="42" rx="3" fill="#824704"/>
+        <polygon points="0,-58 15,-34 -15,-34" fill="#d97706" stroke="#824704" stroke-width="3" stroke-linejoin="round"/>
+      </g>
+      <g transform="translate(150,110)">
+        <rect x="-44" y="-44" width="88" height="88" rx="12" fill="#1d4ed8" stroke="#13338c" stroke-width="4"/>
+        <rect x="-30" y="-32" width="60" height="26" rx="8" fill="#ffffff" opacity=".18"/>
+      </g>
+      <g transform="translate(150,104)">
+        <circle cx="-22" cy="0" r="15" fill="#ffffff" stroke="#102b77" stroke-width="3"/>
+        <circle cx="22"  cy="0" r="15" fill="#ffffff" stroke="#102b77" stroke-width="3"/>
+        <circle cx="-22" cy="0" r="7" fill="#1d4ed8"/>
+        <circle cx="22"  cy="0" r="7" fill="#1d4ed8"/>
+      </g>
+      <g transform="translate(150,138)">
+        <rect x="-26" y="-9" width="52" height="18" rx="5" fill="#d97706" stroke="#824704" stroke-width="3"/>
+        <path d="M-13 -9 V9 M0 -9 V9 M13 -9 V9" stroke="#ffffff" stroke-width="3" opacity=".7"/>
+      </g>
+    </g>
+  </svg>
+</div>`,
+      },
       {
         name: "Dino'nun Roketi",
         file: "dino_roket_ay.html",
