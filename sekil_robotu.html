@@ -1,0 +1,3887 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<title>Şekil Robotu</title>
+<style>
+/* ==========================================================================
+   ŞEKİL ROBOTU — AŞAMA 1: İSKELET
+   Bölümler:
+     1) Tasarım değişkenleri
+     2) Temel sıfırlama ve gövde
+     3) Üst çubuk (geri + başlık + vida)
+     4) Sahne sistemi
+     5) Düğmeler ve kartlar
+     6) Ekrana özel yerleşimler
+     7) Altbilgi
+     8) Duyarlı düzen (tahta / tablet / telefon)
+   ========================================================================== */
+
+/* --- 1) TASARIM DEĞİŞKENLERİ -------------------------------------------- */
+:root{
+  --zemin:        #e9f0fa;
+  --zemin-2:      #d7e5f7;
+  --kart:         #ffffff;
+  --cizgi:        #c2d4ea;
+  --metin:        #16233a;
+  --metin-soluk:  #4a5c78;
+
+  --ana:          #1d4ed8;   /* birincil mavi  */
+  --ana-koyu:     #163fae;
+  --ana-acik:     #e3ecfd;
+  --vurgu:        #d97706;   /* vida / turuncu */
+  --vurgu-acik:   #fdf0d9;
+  --dogru:        #15803d;
+  --yanlis:       #b91c1c;
+
+  --r-kart: 20px;
+  --r-dugme: 16px;
+  --golge: 0 4px 0 rgba(22,35,58,.14);
+  --golge-kart: 0 6px 18px rgba(22,35,58,.10);
+
+  --dokunma: 56px;          /* en küçük dokunma hedefi */
+  --metin-tabani: 20px;     /* en küçük metin boyu     */
+}
+
+/* --- 2) TEMEL SIFIRLAMA VE GÖVDE ---------------------------------------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family:"Trebuchet MS","Segoe UI",Verdana,system-ui,sans-serif;
+  font-size:var(--metin-tabani);
+  line-height:1.35;
+  color:var(--metin);
+  background:
+    radial-gradient(900px 600px at 15% -10%, #ffffff 0%, transparent 60%),
+    linear-gradient(160deg, var(--zemin) 0%, var(--zemin-2) 100%);
+  background-attachment:fixed;
+  -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;               /* kaydırma sahne içinde olur */
+}
+button{ font:inherit; color:inherit; }
+:focus-visible{ outline:4px solid var(--vurgu); outline-offset:3px; }
+
+#uygulama{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  max-width:1400px;
+  margin:0 auto;
+}
+
+/* --- 3) ÜST ÇUBUK ------------------------------------------------------- */
+#ust-cubuk{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  background:rgba(255,255,255,.72);
+  border-bottom:2px solid var(--cizgi);
+  backdrop-filter:blur(6px);
+}
+#geri-dugmesi{
+  display:none;                       /* menüde gizli */
+  align-items:center;
+  gap:8px;
+  min-height:var(--dokunma);
+  min-width:var(--dokunma);
+  padding:0 16px;
+  border:none;
+  border-radius:var(--r-dugme);
+  background:var(--ana-acik);
+  color:var(--ana);
+  font-weight:bold;
+  cursor:pointer;
+}
+#geri-dugmesi.gorunur{ display:inline-flex; }
+#geri-dugmesi:active{ transform:translateY(2px); }
+
+#ekran-basligi{
+  flex:1 1 auto;
+  min-width:0;                 /* dar ekranda kısalabilsin */
+  margin:0;
+  font-size:24px;
+  letter-spacing:.3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#vida-serisi{ display:flex; gap:6px; flex:0 0 auto; }
+.vida-kesesi{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-height:var(--dokunma);
+  padding:0 12px;
+  border-radius:var(--r-dugme);
+  border:2px solid;
+  font-weight:bold;
+  font-variant-numeric:tabular-nums;
+}
+.vida-kesesi svg{ width:24px; height:24px; }
+.vida-kesesi.artti{ animation:vida-zipla .45s ease; }
+@keyframes vida-zipla{
+  0%{ transform:scale(1); } 40%{ transform:scale(1.16); } 100%{ transform:scale(1); }
+}
+
+/* --- 4) SAHNE SİSTEMİ --------------------------------------------------- */
+#sahne-alani{
+  position:relative;
+  flex:1 1 auto;
+  min-height:0;                        /* iç kaydırma için şart */
+}
+.sahne{
+  position:absolute;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:18px 16px 24px;
+}
+.sahne.aktif{
+  display:flex;
+  animation:sahne-gir .22s ease-out;
+}
+@keyframes sahne-gir{
+  from{ opacity:0; transform:translateY(10px); }
+  to  { opacity:1; transform:none; }
+}
+@media (prefers-reduced-motion: reduce){
+  .sahne.aktif{ animation:none; }
+  .vida-kesesi.artti{ animation:none; }
+}
+
+/* --- 5) DÜĞMELER VE KARTLAR --------------------------------------------- */
+.dugme{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:var(--dokunma);
+  padding:14px 22px;
+  border:none;
+  border-radius:var(--r-dugme);
+  background:var(--ana);
+  color:#fff;
+  font-weight:bold;
+  font-size:22px;
+  cursor:pointer;
+  box-shadow:var(--golge);
+  transition:transform .08s ease, background .15s ease;
+}
+.dugme:active{ transform:translateY(3px); box-shadow:none; }
+.dugme.ikincil{ background:var(--kart); color:var(--ana); border:2px solid var(--cizgi); }
+.dugme.tehlike{ background:var(--yanlis); }
+.dugme.onay{ background:var(--dogru); }
+
+.kart{
+  background:var(--kart);
+  border:2px solid var(--cizgi);
+  border-radius:var(--r-kart);
+  box-shadow:var(--golge-kart);
+  padding:18px;
+}
+.yer-tutucu{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:140px;
+  border:3px dashed var(--cizgi);
+  border-radius:var(--r-kart);
+  color:var(--metin-soluk);
+  text-align:center;
+  padding:18px;
+  background:rgba(255,255,255,.55);
+}
+.yer-tutucu strong{ color:var(--metin); }
+
+/* --- 6) EKRANA ÖZEL YERLEŞİMLER ----------------------------------------- */
+
+/* 6a) Ana menü */
+/* "safe center": içerik ekrandan taşarsa üstten kırpmaz, yukarı yaslar */
+#sahne-menu{
+  align-items:center;
+  justify-content:center;
+  justify-content:safe center;
+  gap:16px;
+}
+#menu-logo{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+#menu-logo h1{
+  margin:0;
+  font-size:40px;
+  color:var(--ana);
+  text-shadow:0 2px 0 #fff;
+  letter-spacing:.5px;
+}
+#menu-logo p{ margin:0; color:var(--metin-soluk); font-size:20px; }
+/* Menüdeki robot olduğu yerde yürür: kollar ve bacaklar çapraz sallanır,
+   gövde her adımda hafifçe zıplar, kafa yavaşça eğilir.
+   Adım süresi 1,6 sn; zıplama bunun yarısı (her adımda bir).             */
+#menu-robot{
+  width:150px;
+  animation:robot-zipla 1.6s ease-in-out infinite;
+}
+#menu-robot svg{
+  width:100%; height:auto; display:block;
+  transform-origin:50% 92%;
+  animation:robot-sallan 4.8s ease-in-out infinite;
+}
+@keyframes robot-zipla{
+  0%, 50%, 100% { transform:translateY(0); }
+  25%, 75%      { transform:translateY(-5px); }
+}
+@keyframes robot-sallan{
+  0%, 100% { transform:rotate(-1.6deg); }
+  50%      { transform:rotate(1.6deg); }
+}
+
+/* Uzuvlar — dönüş noktası betikte her slotun eklemine ayarlanır */
+#menu-robot .canli-uzuv.kol{   animation:kol-salla   1.6s ease-in-out infinite; }
+#menu-robot .canli-uzuv.bacak{ animation:bacak-salla 1.6s ease-in-out infinite; }
+/* Ters faz: kısayol animasyon kuralıyla aynı özgüllükte olmalı ki geçerli olsun */
+#menu-robot .canli-uzuv.faz-b{ animation-delay:-0.8s; }   /* çapraz yürüyüş */
+#menu-robot .canli-kafa{ animation:kafa-egil 3.2s ease-in-out infinite; }
+
+@keyframes kol-salla{
+  0%, 100% { transform:rotate(-17deg); }
+  50%      { transform:rotate(17deg); }
+}
+@keyframes bacak-salla{
+  0%, 100% { transform:rotate(-11deg); }
+  50%      { transform:rotate(11deg); }
+}
+@keyframes kafa-egil{
+  0%, 100% { transform:rotate(-2.5deg); }
+  50%      { transform:rotate(2.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  #menu-robot, #menu-robot svg,
+  #menu-robot .canli-uzuv, #menu-robot .canli-kafa{ animation:none; }
+}
+
+#menu-dugmeleri{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(220px, 300px));
+  grid-auto-flow:row dense;      /* geniş düğme boşluk bırakmasın */
+  gap:16px;
+  width:100%;
+  justify-content:center;
+}
+/* Tam satır kaplayan menü düğmesi */
+.menu-dugme.genis{ grid-column:1 / -1; }
+/* Tüm menü düğmeleri aynı hizada: simge solda, yazı sola yaslı */
+.menu-dugme{
+  flex-direction:row;
+  justify-content:flex-start;
+  gap:14px;
+  min-height:82px;
+  font-size:24px;
+  padding:14px 20px;
+  text-align:left;
+}
+.menu-dugme svg{ flex:0 0 auto; width:40px; height:40px; }
+.menu-dugme.ikincil svg{ color:var(--ana); }
+
+/* 6b) Alıştırma */
+.zorluk-listesi{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:14px;
+  margin-top:14px;
+}
+.zorluk-kart{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  min-height:150px;
+  padding:16px;
+  border-radius:var(--r-kart);
+  border:3px solid var(--cizgi);
+  background:var(--kart);
+  cursor:pointer;
+  box-shadow:var(--golge-kart);
+  transition:transform .08s ease, border-color .15s ease;
+}
+.zorluk-kart:active{ transform:translateY(3px); }
+/* Kart çerçevesi kazanılan vidanın rengini taşır */
+.zorluk-kart[data-zorluk="kolay"]{ border-color:#9ad3ae; }
+.zorluk-kart[data-zorluk="orta"] { border-color:#a9c4fb; }
+.zorluk-kart[data-zorluk="zor"]  { border-color:#f2b0b0; }
+.zorluk-kart .ad{ font-size:26px; font-weight:bold; }
+.zorluk-kart .odul{
+  font-size:19px; border-radius:12px; padding:4px 12px; border:2px solid;
+}
+.zorluk-kart .odul[data-vida="yesil"]  { color:#0d5427; background:#e4f6ea; border-color:#9ad3ae; }
+.zorluk-kart .odul[data-vida="mavi"]   { color:#123290; background:#e3ecfd; border-color:#a9c4fb; }
+.zorluk-kart .odul[data-vida="kirmizi"]{ color:#8f1717; background:#fdecec; border-color:#f2b0b0; }
+.zorluk-kart .aciklama{ font-size:18px; color:var(--metin-soluk); text-align:center; }
+
+/* 6b-2) Alıştırma turu (Aşama 5) */
+#tur-ust{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+#tur-ilerleme{ font-weight:bold; color:var(--metin-soluk); }
+#tur-noktalar{ display:flex; gap:8px; }
+.tur-nokta{
+  width:16px; height:16px; border-radius:50%;
+  background:#fff; border:3px solid var(--cizgi);
+}
+.tur-nokta.dogru{ background:var(--dogru); border-color:var(--dogru); }
+.tur-nokta.yanlis{ background:var(--yanlis); border-color:var(--yanlis); }
+.tur-nokta.simdi{ border-color:var(--ana); }
+
+#soru-metni{ margin:0 0 12px; font-size:24px; font-weight:bold; }
+#soru-sahnesi{
+  background:linear-gradient(180deg,#ffffff 0%,#f2f7ff 100%);
+  border:2px solid var(--cizgi);
+  border-radius:var(--r-kart);
+  padding:8px;
+}
+#soru-sahnesi svg{ width:100%; height:auto; max-height:36vh; display:block; }
+
+#secenek-listesi{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:12px;
+  margin-top:14px;
+}
+.secenek{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:76px;
+  padding:12px;
+  border-radius:var(--r-kart);
+  border:3px solid var(--cizgi);
+  background:var(--kart);
+  font-size:24px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:var(--golge-kart);
+}
+.secenek svg{ width:100%; height:80px; }
+.secenek:active{ transform:translateY(3px); }
+.secenek[disabled]{ cursor:default; }
+.secenek .isaret{ font-size:26px; line-height:1; }
+.secenek.dogru{ border-color:var(--dogru); background:#e9f8ee; color:var(--dogru); }
+.secenek.yanlis{ border-color:var(--yanlis); background:#fdecec; color:var(--yanlis); }
+.secenek.soluk{ opacity:.5; }
+
+#geri-bildirim{
+  margin-top:14px;
+  padding:16px;
+  border-radius:var(--r-kart);
+  border:3px solid var(--cizgi);
+  background:var(--kart);
+}
+#geri-bildirim.iyi{   border-color:var(--dogru); background:#e9f8ee; }
+#geri-bildirim.kotu{  border-color:#f0c98a;      background:var(--vurgu-acik); }
+#gb-baslik{ display:flex; align-items:center; gap:10px; font-size:24px; font-weight:bold; }
+#gb-gorsel{ display:flex; justify-content:center; margin:10px 0; }
+#gb-gorsel svg{ width:190px; height:150px; }
+#gb-aciklama{ margin:0 0 12px; font-size:21px; }
+#devam-dugmesi{ width:100%; }
+
+/* Kenar ve köşe vurgusu — yanlışta kısa animasyon */
+.vurgu-kenar{
+  stroke-dasharray:var(--uzunluk);
+  stroke-dashoffset:var(--uzunluk);
+  animation:kenar-ciz .45s ease forwards;
+}
+@keyframes kenar-ciz{ to{ stroke-dashoffset:0; } }
+.vurgu-kose{ transform-box:fill-box; transform-origin:center; animation:kose-bit .3s ease backwards; }
+@keyframes kose-bit{ from{ transform:scale(0); } to{ transform:scale(1); } }
+@media (prefers-reduced-motion: reduce){
+  .vurgu-kenar{ animation:none; stroke-dashoffset:0; }
+  .vurgu-kose{ animation:none; }
+}
+
+#ozet-dugmeleri{ display:flex; flex-wrap:wrap; gap:12px; }
+#ozet-dugmeleri .dugme{ flex:1 1 180px; }
+
+/* 6c) Market */
+.sekme-serisi{
+  flex:0 0 auto;                 /* dar ekranda sekme şeridi ezilmesin */
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding-bottom:6px;
+  margin-top:12px;
+  scrollbar-width:thin;
+}
+.sekme{
+  flex:0 0 auto;
+  min-height:var(--dokunma);
+  padding:0 20px;
+  border-radius:999px;
+  border:2px solid var(--cizgi);
+  background:var(--kart);
+  font-weight:bold;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.sekme.secili{ background:var(--ana); color:#fff; border-color:var(--ana-koyu); }
+
+/* 6c-2) Market rafı (Aşama 4) */
+#market-not{
+  flex:0 0 auto;
+  margin:12px 0 0;
+  font-size:18px;
+  color:var(--metin-soluk);
+}
+#market-listesi{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);   /* 6 parça → 3 satır (telefon) */
+  gap:14px;
+  margin-top:12px;
+  padding-bottom:8px;
+}
+.market-kart{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  padding:14px 12px 12px;
+  background:var(--kart);
+  border:2px solid var(--cizgi);
+  border-radius:var(--r-kart);
+  box-shadow:var(--golge-kart);
+}
+.market-kart.alinmis{ border-color:#9ad3ae; background:#f4fbf6; }
+.market-gorsel{ width:100%; height:96px; display:flex; align-items:center; justify-content:center; }
+.market-gorsel svg{ width:auto; height:100%; max-width:100%; }
+.market-ad{ font-weight:bold; font-size:18px; text-align:center; }
+
+.kademe{
+  align-self:flex-start;
+  padding:3px 10px;
+  border-radius:999px;
+  font-size:15px;
+  font-weight:bold;
+  border:2px solid;
+}
+/* Kademe rozetinin renkleri betikten gelir (vida türüne göre) */
+
+.satin-al{ width:100%; font-size:19px; padding:10px 12px; gap:8px; }
+/* "Uygula" hiçbir vida rengiyle karışmasın diye kehribar */
+.uygula{ width:100%; font-size:19px; padding:10px 12px; background:#b45309; }
+.satin-al.yetersiz{ background:var(--cizgi); color:var(--metin-soluk); box-shadow:none; }
+.market-sahip{
+  width:100%;
+  min-height:var(--dokunma);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border-radius:var(--r-dugme);
+  background:#e4f6ea;
+  color:var(--dogru);
+  border:2px solid #9ad3ae;
+  font-weight:bold;
+}
+.market-sahip::before{ content:"✓"; font-size:22px; }
+
+/* Geniş ekranda 6 parça iki satır hâlinde üçerli dursun */
+@media (min-width: 700px){
+  #market-listesi{ grid-template-columns:repeat(3, 1fr); }
+}
+
+/* 6d) Atölye */
+#atolye-duzen{
+  display:grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+  gap:16px;
+  align-items:start;
+  margin-top:12px;
+}
+#robot-tuvali{
+  aspect-ratio:3 / 4;              /* spec: sabit oran */
+  max-height:60vh;
+  margin:0 auto;
+  flex:1 1 auto;
+  min-width:0;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,#ffffff 0%,#f2f7ff 100%);
+  border:3px solid var(--cizgi);
+  border-radius:var(--r-kart);
+}
+
+/* 6d-1) Robotun kimliği (ad alanları) */
+#robot-kimlik{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+.kimlik-satiri{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-weight:bold;
+}
+.kimlik-satiri span{ flex:0 0 auto; }
+.kimlik-satiri input{
+  flex:1 1 140px;
+  min-width:0;
+  min-height:var(--dokunma);
+  padding:8px 12px;
+  font:inherit;
+  font-weight:bold;
+  color:var(--metin);
+  background:#fbfdff;
+  border:2px solid var(--cizgi);
+  border-radius:12px;
+}
+.kimlik-satiri input::placeholder{ color:#93a3b8; font-weight:normal; }
+.kimlik-satiri input[readonly]{ background:#eef2f7; color:var(--metin-soluk); }
+.kilit-notu{ margin:-4px 0 0; font-size:16px; color:#5d3c08; font-weight:bold; }
+.kimlik-satiri input:focus{ border-color:var(--ana); outline:none; box-shadow:0 0 0 3px var(--ana-acik); }
+
+/* 6d-2) Atölye — slot ve parça paneli (Aşama 2) */
+#robot-tuvali svg{ width:100%; height:100%; display:block; }
+#robot-tuvali .slot{ cursor:pointer; }
+#robot-tuvali .slot-vurgu{ pointer-events:none; }
+
+.panel-baslik{
+  margin:14px 0 8px;
+  font-weight:bold;
+  font-size:19px;
+  color:var(--metin-soluk);
+}
+.panel-baslik:first-child{ margin-top:0; }
+
+#slot-listesi{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:8px;
+}
+.slot-dugme{
+  min-height:var(--dokunma);
+  padding:6px 8px;
+  border-radius:14px;
+  border:2px solid var(--cizgi);
+  background:var(--kart);
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+  line-height:1.15;
+}
+.slot-dugme.secili{
+  background:var(--ana);
+  color:#fff;
+  border-color:var(--ana-koyu);
+}
+
+#parca-listesi{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+}
+.parca-dugme{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  min-height:96px;
+  padding:8px 6px;
+  border-radius:14px;
+  border:3px solid var(--cizgi);
+  background:var(--kart);
+  cursor:pointer;
+  font-size:15px;
+  font-weight:bold;
+}
+.parca-dugme svg{ width:100%; height:52px; }
+.parca-dugme.secili{ border-color:var(--ana); background:var(--ana-acik); }
+.parca-dugme.kilitli{ opacity:.5; }
+.parca-dugme .kilit{ font-size:14px; color:var(--metin-soluk); font-weight:normal; }
+
+/* 6d-3) Atölye — renk / çevirme / boyut kontrolleri (Aşama 3) */
+#renk-listesi{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:8px;
+}
+.renk-dugme{
+  min-height:44px;
+  border-radius:12px;
+  border:3px solid var(--cizgi);
+  cursor:pointer;
+  padding:0;
+}
+.renk-dugme.secili{
+  border-color:var(--metin);
+  box-shadow:0 0 0 3px #fff inset;
+}
+
+/* Tuvalin iki yanındaki parça kontrolleri */
+#tuval-alani{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.tuval-kolon{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.tuval-dugme{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:var(--dokunma);
+  height:var(--dokunma);
+  border-radius:50%;
+  border:3px solid var(--cizgi);
+  background:var(--kart);
+  color:var(--ana);
+  cursor:pointer;
+  box-shadow:var(--golge);
+}
+.tuval-dugme svg{ width:28px; height:28px; }
+.tuval-dugme:active{ background:var(--ana-acik); transform:translateY(2px); box-shadow:none; }
+.tuval-dugme[disabled]{ opacity:.35; cursor:default; box-shadow:none; }
+
+#secili-bilgi{
+  margin:10px 0 0;
+  text-align:center;
+  font-weight:bold;
+  font-size:19px;
+  color:var(--metin-soluk);
+  font-variant-numeric:tabular-nums;
+}
+#secili-slot-adi{ color:var(--ana); }
+#secili-bilgi .ayrac{ margin:0 8px; color:var(--cizgi); }
+
+/* 6f) Arkadaşlarımın Robotları — sergi stantları */
+#galeri-not{
+  flex:0 0 auto;
+  margin:0 0 12px;
+  font-size:18px;
+  color:var(--metin-soluk);
+}
+#galeri-listesi{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:18px;
+  padding-bottom:10px;
+}
+@media (min-width: 700px){  #galeri-listesi{ grid-template-columns:repeat(3, 1fr); } }
+@media (min-width: 1100px){ #galeri-listesi{ grid-template-columns:repeat(4, 1fr); } }
+
+.stant{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  filter:drop-shadow(0 10px 18px rgba(22,35,58,.18));
+}
+
+/* Işıklı sergi sahnesi: tepeden spot, zeminde ışık havuzu, yansıma */
+.stant-robot{
+  position:relative;
+  overflow:hidden;
+  padding:12px 10px 0;
+  border:2px solid #33456d;
+  border-bottom:none;
+  border-radius:var(--r-kart) var(--r-kart) 0 0;
+  background:
+    radial-gradient(115% 62% at 50% 8%,  #f2f7ff 0%, #cbdcf6 26%, #7f9cc9 58%, #3d5686 82%, #24345a 100%),
+    linear-gradient(180deg, #24345a 0%, #1a2745 100%);
+}
+.stant-robot::before{            /* spot ışığı hüzmesi */
+  content:"";
+  position:absolute;
+  left:50%; top:-4%;
+  width:150%; height:78%;
+  transform:translateX(-50%);
+  clip-path:polygon(43% 0, 57% 0, 92% 100%, 8% 100%);
+  background:linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(255,255,255,0) 100%);
+  opacity:.45;
+  pointer-events:none;
+}
+.stant-robot::after{             /* zemindeki ışık havuzu */
+  content:"";
+  position:absolute;
+  left:50%; bottom:2%;
+  width:78%; height:16%;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(closest-side, rgba(255,255,255,.95), rgba(255,255,255,0));
+  pointer-events:none;
+}
+.stant-robot svg{ position:relative; z-index:1; width:100%; height:auto; display:block; }
+
+/* Zeminde soluk yansıma */
+.stant-yansima{
+  position:relative;
+  z-index:1;
+  height:38px;
+  margin:-6px 10px 0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.stant-yansima svg{
+  width:100%; height:auto; display:block;
+  transform:scaleY(-1);            /* yerinde ters çevrilir; pencerede ayaklar görünür */
+  opacity:.22;
+  filter:blur(1px);
+  -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,0));
+  mask-image:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,0));
+}
+
+/* Kalın, metalik sergi kaidesi */
+.stant-govde{
+  position:relative;
+  z-index:2;
+  padding:16px 10px 16px;
+  text-align:center;
+  border-radius:6px 6px 16px 16px;
+  background:linear-gradient(180deg, #63799f 0%, #45597f 40%, #2e4066 100%);
+  border:2px solid #33456d;
+  box-shadow:0 7px 0 #1d2b4b, 0 12px 18px rgba(22,35,58,.28),
+             inset 0 1px 0 rgba(255,255,255,.35);
+  color:#eaf1ff;
+}
+.stant-govde::before{           /* kaidenin ışık alan üst yüzeyi */
+  content:"";
+  position:absolute;
+  left:-6px; right:-6px; top:-9px;
+  height:15px;
+  border-radius:8px;
+  background:linear-gradient(180deg,#e9f1ff 0%,#a9bfe2 55%,#7d95bd 100%);
+  border:2px solid #33456d;
+  box-shadow:0 2px 6px rgba(22,35,58,.3);
+}
+.stant-ad{
+  display:inline-block;
+  max-width:100%;
+  padding:6px 14px;
+  border-radius:12px;
+  background:#fffdf6;
+  border:2px solid #e0c48c;
+  color:#5d3c08;
+  font-weight:bold;
+  font-size:19px;
+  overflow-wrap:anywhere;
+}
+.stant-sahip{
+  display:block;
+  margin-top:6px;
+  font-size:16px;
+  font-weight:bold;
+  color:#cfdcf5;
+  overflow-wrap:anywhere;
+}
+.stant.benim .stant-robot{ border-color:#a8801f; }
+.stant.benim .stant-govde{
+  background:linear-gradient(180deg,#e9b955 0%,#c9922f 45%,#a8761f 100%);
+  border-color:#8a6118;
+  box-shadow:0 7px 0 #6d4c12, 0 12px 18px rgba(22,35,58,.28),
+             inset 0 1px 0 rgba(255,255,255,.4);
+  color:#fff6e4;
+}
+.stant.benim .stant-govde::before{
+  background:linear-gradient(180deg,#fff3d6 0%,#e2c079 55%,#c39c3c 100%);
+  border-color:#8a6118;
+}
+.stant.benim .stant-sahip{ color:#fff0cf; }
+.stant-benim{
+  display:block;
+  margin-top:4px;
+  font-size:15px;
+  font-weight:bold;
+  color:#fffaf0;
+}
+
+/* 6e) Ayarlar */
+.ayar-satiri{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  padding:16px 0;
+}
+.ayar-satiri + .ayar-satiri{ border-top:2px solid var(--cizgi); }
+.ayar-satiri .baslik{ font-weight:bold; }
+.ayar-satiri .not{ font-size:18px; color:var(--metin-soluk); }
+#sifirla-onay{ display:none; gap:12px; flex-wrap:wrap; }
+#sifirla-onay.gorunur{ display:flex; }
+
+/* Bilgi şeridi (kısa geri bildirim) */
+#serit{
+  position:fixed;
+  left:50%;
+  bottom:76px;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--metin);
+  color:#fff;
+  padding:12px 22px;
+  border-radius:999px;
+  font-weight:bold;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:50;
+  max-width:90vw;
+  text-align:center;
+}
+#serit.gorunur{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* 6f-2) Yönetici — pencereler ve stant düğmeleri */
+#ortu{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(22,35,58,.55);
+  z-index:60;
+}
+#ortu[hidden]{ display:none; }   /* display:flex, hidden'ı ezmesin */
+.pencere{
+  width:100%;
+  max-width:380px;
+  background:var(--kart);
+  border:3px solid var(--cizgi);
+  border-radius:var(--r-kart);
+  box-shadow:0 12px 32px rgba(22,35,58,.3);
+  padding:20px;
+}
+.pencere-baslik{ margin:0 0 12px; font-weight:bold; font-size:22px; }
+.pencere-not{ margin:10px 0 0; font-size:17px; color:var(--metin-soluk); }
+.pencere input{
+  width:100%;
+  min-height:var(--dokunma);
+  padding:10px 14px;
+  font:inherit;
+  font-weight:bold;
+  letter-spacing:.06em;
+  border:2px solid var(--cizgi);
+  border-radius:12px;
+  background:#fbfdff;
+  color:var(--metin);
+}
+.pencere input:focus{ outline:none; border-color:var(--ana); box-shadow:0 0 0 3px var(--ana-acik); }
+.pencere-dugmeleri{ display:flex; gap:10px; margin-top:16px; }
+.pencere-dugmeleri .dugme{ flex:1 1 0; font-size:19px; }
+
+#yonetici-serit{
+  flex:0 0 auto;
+  display:none;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+  padding:10px 14px;
+  border-radius:14px;
+  background:#fdecec;
+  border:2px solid #f2b0b0;
+  color:#8f1717;
+  font-weight:bold;
+}
+#yonetici-serit.acik{ display:flex; }
+#yonetici-serit button{
+  margin-left:auto;
+  min-height:44px;
+  padding:0 14px;
+  border:2px solid #f2b0b0;
+  border-radius:12px;
+  background:#fff;
+  color:#8f1717;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.stant-yonetim{ display:flex; gap:8px; margin-top:10px; }
+.stant-yonetim button{
+  flex:1 1 0;
+  min-height:44px;
+  border-radius:12px;
+  border:2px solid #7f9cc4;
+  background:#fdfefe;
+  color:#243c5e;
+  font-weight:bold;
+  font-size:16px;
+  cursor:pointer;
+}
+.stant-yonetim button.sil{ border-color:#e79a9a; color:#8f1717; }
+.stant-kilitli{ display:block; margin-top:4px; font-size:15px; color:#5d3c08; }
+
+/* --- 7) ALTBİLGİ -------------------------------------------------------- */
+#altbilgi{
+  flex:0 0 auto;
+  padding:8px 14px;
+  text-align:center;
+  font-size:16px;
+  color:var(--metin-soluk);
+  border-top:2px solid var(--cizgi);
+  background:rgba(255,255,255,.6);
+}
+
+/* --- 8) DUYARLI DÜZEN --------------------------------------------------- */
+
+/* Telefon: tek sütun, daha küçük başlık */
+@media (max-width: 640px){
+  :root{ --dokunma:48px; }
+  #menu-dugmeleri{ grid-template-columns:1fr; max-width:420px; }
+  .menu-dugme{ flex-direction:row; justify-content:flex-start; min-height:64px; font-size:22px; }
+  .menu-dugme svg{ width:36px; height:36px; }
+  #menu-logo h1{ font-size:32px; }
+  #menu-robot{ width:110px; }
+  .zorluk-listesi{ grid-template-columns:1fr; }
+  #atolye-duzen{ grid-template-columns:1fr; }
+  #ekran-basligi{ font-size:19px; }
+  .vida-kesesi{ padding:0 8px; gap:4px; }
+  #geri-dugmesi{ padding:0 12px; }
+  #geri-dugmesi span{ display:none; }   /* dar ekranda yalnız ok; aria-label kalır */
+  /* Telefonda başlık görsel olarak gizlenir (ekran okuyucuda kalır),
+     yer üç vida kesesine bırakılır */
+  #ekran-basligi{
+    position:absolute; width:1px; height:1px;
+    overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+  }
+  #vida-serisi{ margin-left:auto; }
+  #robot-tuvali{ max-height:48vh; }
+  #slot-listesi{ grid-template-columns:repeat(2, 1fr); }
+  .kimlik-satiri{ flex-direction:column; align-items:stretch; gap:6px; }
+  .kimlik-satiri input{ flex:1 1 auto; width:100%; }
+}
+
+/* Tablet dikey: iki sütun menü, atölye tek sütun */
+@media (min-width: 641px) and (max-width: 900px){
+  #atolye-duzen{ grid-template-columns:1fr; }
+}
+
+/* Akıllı tahta: daha büyük dokunma hedefi ve metin */
+@media (min-width: 1024px){
+  :root{ --dokunma:64px; --metin-tabani:21px; }
+  #menu-logo h1{ font-size:46px; }
+  #menu-robot{ width:170px; }
+}
+
+/* Yatayda alçak ekran (tahta 1024×768 vb.): dikey boşlukları kıs */
+@media (orientation: landscape) and (max-height: 800px){
+  #sahne-menu{ gap:12px; }
+  #menu-robot{ width:110px; }
+  .menu-dugme{ min-height:70px; }
+}
+/* Çok alçak ekranda robot iyice küçülsün ki menü sığsın */
+@media (max-height: 620px){
+  #menu-robot{ width:84px; }
+  #menu-logo h1{ font-size:30px; }
+  #menu-logo p{ display:none; }
+  .menu-dugme{ min-height:60px; font-size:21px; }
+}
+
+/* Dokunmatik cihazda hover yok */
+@media (hover: hover){
+  .dugme:hover{ background:var(--ana-koyu); }
+  .dugme.ikincil:hover{ background:var(--ana-acik); }
+  .zorluk-kart:hover{ border-color:var(--ana); }
+  .sekme:hover{ border-color:var(--ana); }
+}
+</style>
+</head>
+<body>
+
+<div id="uygulama">
+
+  <!-- ==================== ÜST ÇUBUK ==================== -->
+  <header id="ust-cubuk">
+    <button id="geri-dugmesi" type="button" aria-label="Geri dön">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Geri</span>
+    </button>
+
+    <h2 id="ekran-basligi">Şekil Robotu</h2>
+
+    <!-- Üç vida kesesi (yeşil / mavi / kırmızı) — betikte doldurulur -->
+    <div id="vida-serisi" aria-live="polite"></div>
+  </header>
+
+  <!-- ==================== SAHNELER ==================== -->
+  <main id="sahne-alani">
+
+    <!-- ---------- 1) ANA MENÜ ---------- -->
+    <section class="sahne" id="sahne-menu" data-baslik="Şekil Robotu" aria-label="Ana menü">
+      <div id="menu-logo">
+        <!-- Çocuğun kendi robotu menüde görünür (betik: menuyuAc) -->
+        <div id="menu-robot"></div>
+        <h1>Şekil Robotu</h1>
+        <p>Soruları çöz, vida kazan, robotunu kur!</p>
+      </div>
+
+      <nav id="menu-dugmeleri" aria-label="Bölümler">
+        <button class="dugme menu-dugme" type="button" data-git="alistirma">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <polygon points="24,6 42,38 6,38" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+          </svg>
+          <span>Alıştırma</span>
+        </button>
+
+        <button class="dugme menu-dugme ikincil" type="button" data-git="atolye">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="12" y="6" width="24" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>
+            <rect x="8" y="28" width="32" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>
+          </svg>
+          <span>Robotum</span>
+        </button>
+
+        <button class="dugme menu-dugme ikincil" type="button" data-git="market">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="17" fill="none" stroke="currentColor" stroke-width="4"/>
+            <path d="M16 24 L32 24 M24 16 L24 32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <span>Market</span>
+        </button>
+
+        <button class="dugme menu-dugme ikincil genis" type="button" data-git="galeri">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="14" y="6" width="20" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>
+            <circle cx="20" cy="14" r="2" fill="currentColor"/>
+            <circle cx="28" cy="14" r="2" fill="currentColor"/>
+            <rect x="8" y="30" width="32" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="4"/>
+            <path d="M24 22 V30" stroke="currentColor" stroke-width="4"/>
+          </svg>
+          <span>Arkadaşlarımın Robotları</span>
+        </button>
+
+        <button class="dugme menu-dugme ikincil" type="button" data-git="ayarlar">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="9" y="9" width="30" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="4"/>
+            <circle cx="24" cy="24" r="7" fill="none" stroke="currentColor" stroke-width="4"/>
+          </svg>
+          <span>Ayarlar</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- ---------- 2) ALIŞTIRMA ---------- -->
+    <section class="sahne" id="sahne-alistirma" data-baslik="Alıştırma" aria-label="Alıştırma">
+
+      <!-- 2a) Zorluk seçimi -->
+      <div id="alistirma-giris" class="kart">
+        <p style="margin:0 0 4px; font-weight:bold;">Hangi zorlukta çalışmak istersin?</p>
+        <p style="margin:0; color:var(--metin-soluk); font-size:18px;">Her turda 5 soru var.</p>
+
+        <div class="zorluk-listesi">
+          <button class="zorluk-kart" type="button" data-zorluk="kolay">
+            <span class="ad">Kolay</span>
+            <span class="odul" data-vida="yesil">Doğru: 5 yeşil vida</span>
+            <span class="aciklama">Şeklin adını bul</span>
+          </button>
+          <button class="zorluk-kart" type="button" data-zorluk="orta">
+            <span class="ad">Orta</span>
+            <span class="odul" data-vida="mavi">Doğru: 5 mavi vida</span>
+            <span class="aciklama">Kenar ve köşeleri düşün</span>
+          </button>
+          <button class="zorluk-kart" type="button" data-zorluk="zor">
+            <span class="ad">Zor</span>
+            <span class="odul" data-vida="kirmizi">Doğru: 5 kırmızı vida</span>
+            <span class="aciklama">Say ve akıl yürüt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2b) Soru -->
+      <div id="alistirma-soru" hidden>
+        <div id="tur-ust">
+          <span id="tur-ilerleme">Soru 1 / 5</span>
+          <div id="tur-noktalar" aria-hidden="true"></div>
+        </div>
+
+        <div class="kart">
+          <p id="soru-metni"></p>
+          <div id="soru-sahnesi"></div>
+          <div id="secenek-listesi"></div>
+        </div>
+
+        <div id="geri-bildirim" role="status" aria-live="polite" hidden>
+          <div id="gb-baslik"></div>
+          <div id="gb-gorsel"></div>
+          <p id="gb-aciklama"></p>
+          <button class="dugme" type="button" id="devam-dugmesi">Devam</button>
+        </div>
+      </div>
+
+      <!-- 2c) Tur sonu özeti -->
+      <div id="alistirma-ozet" class="kart" hidden>
+        <h3 id="ozet-baslik" style="margin:0; font-size:28px;">Tur bitti!</h3>
+        <p id="ozet-metin" style="font-size:22px;"></p>
+        <div id="ozet-dugmeleri">
+          <button class="dugme" type="button" id="ozet-tekrar">Yeniden dene</button>
+          <button class="dugme ikincil" type="button" id="ozet-market">Markete git</button>
+          <button class="dugme ikincil" type="button" id="ozet-menu">Ana menü</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 3) MARKET ---------- -->
+    <section class="sahne" id="sahne-market" data-baslik="Market" aria-label="Market">
+      <p style="margin:0; font-weight:bold;">Parça almak için bir bölüm seç.</p>
+      <div class="sekme-serisi" role="tablist" aria-label="Market bölümleri">
+        <button class="sekme secili" type="button" role="tab" data-kategori="kafa">Kafa</button>
+        <button class="sekme" type="button" role="tab" data-kategori="govde">Gövde</button>
+        <button class="sekme" type="button" role="tab" data-kategori="goz">Göz</button>
+        <button class="sekme" type="button" role="tab" data-kategori="agiz">Ağız</button>
+        <button class="sekme" type="button" role="tab" data-kategori="kol">Kol</button>
+        <button class="sekme" type="button" role="tab" data-kategori="bacak">Bacak</button>
+        <button class="sekme" type="button" role="tab" data-kategori="anten">Anten</button>
+      </div>
+
+      <p id="market-not"></p>
+      <div id="market-listesi"></div>
+    </section>
+
+    <!-- ---------- 4) ROBOTUM (ATÖLYE) ---------- -->
+    <section class="sahne" id="sahne-atolye" data-baslik="Robotum" aria-label="Robotum">
+      <div id="atolye-duzen">
+        <div class="kart" style="padding:12px;">
+          <!-- Tuval ve iki yanındaki parça kontrolleri -->
+          <div id="tuval-alani">
+            <div class="tuval-kolon">
+              <button class="tuval-dugme" type="button" data-olcek="-0.1" aria-label="Küçült">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="tuval-dugme" type="button" data-aci="-15" aria-label="Sola çevir">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4 A8 8 0 1 0 20 12" fill="none" stroke="currentColor"
+                        stroke-width="3" stroke-linecap="round"/>
+                  <polygon points="13,0.5 6.5,4 13,7.5" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Robot SVG'si buraya çizilir (bkz. betik: robotuCiz) -->
+            <div id="robot-tuvali"></div>
+
+            <div class="tuval-kolon">
+              <button class="tuval-dugme" type="button" data-olcek="0.1" aria-label="Büyüt">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="tuval-dugme" type="button" data-aci="15" aria-label="Sağa çevir">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4 A8 8 0 1 1 4 12" fill="none" stroke="currentColor"
+                        stroke-width="3" stroke-linecap="round"/>
+                  <polygon points="11,0.5 17.5,4 11,7.5" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="secili-bilgi">
+            <span id="secili-slot-adi">Kafa</span>
+            <span class="ayrac">·</span><span id="aci-degeri">0°</span>
+            <span class="ayrac">·</span><span id="olcek-degeri">1,0×</span>
+          </p>
+
+          <!-- Robotun ve çocuğun adı — sergide bu iki bilgi görünür -->
+          <div id="robot-kimlik">
+            <label class="kimlik-satiri">
+              <span>Robotumun adı:</span>
+              <input type="text" id="robot-adi" maxlength="20" autocomplete="off"
+                     placeholder="Robotuna bir ad ver">
+            </label>
+            <p id="ad-kilit-notu" class="kilit-notu" hidden>Bu adı öğretmenin belirledi.</p>
+            <label class="kimlik-satiri">
+              <span>Benim adım:</span>
+              <input type="text" id="ogrenci-adi" maxlength="20" autocomplete="off"
+                     placeholder="Adını yaz">
+            </label>
+          </div>
+        </div>
+
+        <div class="kart" id="atolye-panel">
+          <p class="panel-baslik">1) Değiştirmek istediğin yeri seç</p>
+          <div id="slot-listesi"></div>
+
+          <p class="panel-baslik" id="parca-listesi-basligi">2) Görünüşünü seç</p>
+          <div id="parca-listesi"></div>
+
+          <p class="panel-baslik">3) Rengini seç</p>
+          <div id="renk-listesi"></div>
+
+          <p class="panel-baslik">4) Düzeltmek istersen</p>
+          <button class="dugme ikincil" type="button" id="parca-sifirla"
+                  style="width:100%; font-size:18px;">Bu parçayı eski hâline getir</button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 6) ARKADAŞLARIMIN ROBOTLARI ---------- -->
+    <section class="sahne" id="sahne-galeri" data-baslik="Arkadaşlarımın Robotları"
+             aria-label="Arkadaşlarımın robotları">
+      <div id="yonetici-serit">
+        <span>Yönetici modu açık</span>
+        <button type="button" id="yonetici-kapat">Kapat</button>
+      </div>
+      <p id="galeri-not"></p>
+      <div id="galeri-listesi"></div>
+    </section>
+
+    <!-- ---------- 5) AYARLAR ---------- -->
+    <section class="sahne" id="sahne-ayarlar" data-baslik="Ayarlar" aria-label="Ayarlar">
+      <div class="kart">
+
+        <div class="ayar-satiri">
+          <div>
+            <div class="baslik">Ses</div>
+            <div class="not">Oyun seslerini aç veya kapat.</div>
+          </div>
+          <button class="dugme ikincil" type="button" id="ses-dugmesi" aria-pressed="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" id="ses-simgesi-acik">
+              <path d="M4 9 h4 l5 -4 v14 l-5 -4 H4 z" fill="currentColor"/>
+              <path d="M16 8 a6 6 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" id="ses-simgesi-kapali" style="display:none;">
+              <path d="M4 9 h4 l5 -4 v14 l-5 -4 H4 z" fill="currentColor"/>
+              <path d="M16 9 l6 6 M22 9 l-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+            <span id="ses-yazisi">Açık</span>
+          </button>
+        </div>
+
+        <div class="ayar-satiri">
+          <div>
+            <div class="baslik">İlerlemeyi sıfırla</div>
+            <div class="not">Vidalar, parçalar ve robotun silinir.</div>
+          </div>
+          <button class="dugme tehlike" type="button" id="sifirla-dugmesi">Sıfırla</button>
+        </div>
+
+        <div id="sifirla-onay">
+          <span style="font-weight:bold;">Emin misin? Bu geri alınamaz.</span>
+          <button class="dugme tehlike" type="button" id="sifirla-evet">Evet, sil</button>
+          <button class="dugme ikincil" type="button" id="sifirla-hayir">Vazgeç</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== ALTBİLGİ ==================== -->
+  <!-- "İnce" sözcüğü düğme gibi görünmez; sergi ekranında altı kez
+       dokunulunca yönetici şifre panelini açar. -->
+  <footer id="altbilgi">Sinan <span id="gizli-anahtar">İnce</span> 2026</footer>
+</div>
+
+<!-- Yönetici pencereleri -->
+<div id="ortu" hidden>
+  <div class="pencere" id="sifre-penceresi" role="dialog" aria-label="Şifre">
+    <p class="pencere-baslik">Şifre</p>
+    <input type="password" id="sifre-kutusu" inputmode="numeric" autocomplete="off" maxlength="12">
+    <div class="pencere-dugmeleri">
+      <button class="dugme" type="button" id="sifre-tamam">Aç</button>
+      <button class="dugme ikincil" type="button" id="sifre-iptal">Vazgeç</button>
+    </div>
+  </div>
+
+  <div class="pencere" id="ad-penceresi" role="dialog" aria-label="Adı değiştir" hidden>
+    <p class="pencere-baslik">Robotun yeni adı</p>
+    <input type="text" id="yeni-ad-kutusu" maxlength="20" autocomplete="off">
+    <p class="pencere-not">Bu addan sonra öğrenci adı değiştiremez.</p>
+    <div class="pencere-dugmeleri">
+      <button class="dugme" type="button" id="ad-tamam">Kaydet</button>
+      <button class="dugme ikincil" type="button" id="ad-iptal">Vazgeç</button>
+    </div>
+  </div>
+
+  <div class="pencere" id="sil-penceresi" role="dialog" aria-label="Sil" hidden>
+    <p class="pencere-baslik">Bu robot silinsin mi?</p>
+    <p class="pencere-not" id="sil-metni"></p>
+    <div class="pencere-dugmeleri">
+      <button class="dugme tehlike" type="button" id="sil-tamam">Sil</button>
+      <button class="dugme ikincil" type="button" id="sil-iptal">Vazgeç</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kısa bilgi şeridi -->
+<div id="serit" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   ŞEKİL ROBOTU — AŞAMA 1 BETİĞİ
+   Bölümler:
+     A) Sabitler
+     B) Durum (localStorage, sürüm v:1)
+     C) Sahne yöneticisi
+     D) Arayüz yardımcıları
+     E) Ekran bağlamaları
+     F) Başlangıç
+   ========================================================================== */
+
+/* --- A) SABİTLER -------------------------------------------------------- */
+const DEPO_ANAHTARI = "sekilRobotu";
+const SURUM = 2;   /* v2: tek vida yerine üç renkli vida */
+
+const KATEGORILER = {
+  kafa:  "Kafa",
+  govde: "Gövde",
+  goz:   "Göz",
+  agiz:  "Ağız",
+  kol:   "Kol",
+  bacak: "Bacak",
+  anten: "Anten"
+};
+
+/* Üç ayrı vida türü. Her doğru cevap 5 vida verir; vidanın RENGİ zorluğa
+   göre değişir. Market parçaları belirli renkte vida ister; bu yüzden çocuk
+   üç zorluğu da oynamaya ihtiyaç duyar. */
+const VIDA = {
+  yesil:   { ad:"Yeşil",   renk:"#15803d", koyu:"#0d5427", acik:"#e4f6ea", kenar:"#9ad3ae" },
+  mavi:    { ad:"Mavi",    renk:"#1d4ed8", koyu:"#123290", acik:"#e3ecfd", kenar:"#a9c4fb" },
+  kirmizi: { ad:"Kırmızı", renk:"#dc2626", koyu:"#8f1717", acik:"#fdecec", kenar:"#f2b0b0" }
+};
+const VIDA_SIRASI  = ["yesil","mavi","kirmizi"];
+const ZORLUK_VIDASI = { kolay:"yesil", orta:"mavi", zor:"kirmizi" };
+const ODUL_ADEDI    = 5;                 /* doğru cevap başına */
+
+/* Vida simgesi: daire gövde + çentik */
+function vidaSimgesi(tur, boy){
+  const v = VIDA[tur];
+  const b = boy || 24;
+  return `<svg viewBox="0 0 24 24" width="${b}" height="${b}" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" fill="${v.renk}" stroke="${v.koyu}" stroke-width="2"/>
+    <path d="M7 9 L17 15 M7 15 L17 9" stroke="${v.koyu}" stroke-width="2.4" stroke-linecap="round"/>
+  </svg>`;
+}
+/* "25 mavi vida" gibi bir etiket */
+function vidaEtiketi(tur, adet){
+  return adet + " " + VIDA[tur].ad.toLowerCase() + " vida";
+}
+
+/* --- B) DURUM ----------------------------------------------------------- */
+/* Şema (v:2):
+   {
+     v: 2,
+     vida: { yesil:0, mavi:0, kirmizi:0 },
+     ses: true,
+     sahip: { kafa:[...], govde:[...], ... },        // satın alınan parça id'leri
+     robot: { kafa:{...}, govde:{...}, ... },        // slot -> {parca,renk,aci,olcek}
+     sonTur: { kolay:[], orta:[], zor:[] }           // tekrar önleme için son tur id'leri
+   }
+   Not: sahip / robot / sonTur alanları 2.–5. aşamalarda doldurulacak;
+   şimdiden boş olarak tutuluyor ki sonraki aşamalar sadece EKLEME yapsın.
+*/
+function bosDurum(){
+  const sahip = {};
+  Object.keys(KATEGORILER).forEach(k => sahip[k] = []);
+  return {
+    v: SURUM,
+    vida: { yesil:0, mavi:0, kirmizi:0 },
+    ses: true,
+    robotAdi: "",                  /* robotun adı  — Robotum ekranında girilir */
+    ogrenciAdi: "",                /* çocuğun adı  — sergide "Oluşturan" satırı */
+    sahip: sahip,
+    robot: varsayilanRobot(),      /* Aşama 2: 7 ücretsiz parçayla dolu robot */
+    sonTur: { kolay:[], orta:[], zor:[] }
+  };
+}
+
+/* İlk değer başlatmada (baslat → durumuYukle) atanır; bosDurum() parça
+   kataloğuna bağlı olduğu için burada çağrılmaz. */
+let durum = null;
+
+function durumuYukle(){
+  let ham = null;
+  try { ham = localStorage.getItem(DEPO_ANAHTARI); }
+  catch(e){ /* gizli sekme vb. — varsayılanla devam */ }
+
+  if(!ham){ durum = bosDurum(); return; }
+
+  try{
+    const okunan = JSON.parse(ham);
+    if(!okunan || okunan.v !== SURUM){ durum = bosDurum(); return; }  // göç noktası
+    durum = Object.assign(bosDurum(), okunan);
+  }catch(e){
+    durum = bosDurum();
+  }
+}
+
+/* Tek kayıt noktası: yerelde saklar, sonra sergiyi (Firebase) eşitler.
+   Böylece robotta yapılan HER değişiklik otomatik olarak yayına gider.      */
+function durumuKaydet(){
+  try { localStorage.setItem(DEPO_ANAHTARI, JSON.stringify(durum)); }
+  catch(e){ /* yazılamazsa oyun yine de çalışır */ }
+  if(typeof Senk !== "undefined") Senk.planla();
+}
+
+function durumuSifirla(){
+  try { localStorage.removeItem(DEPO_ANAHTARI); } catch(e){}
+  durum = bosDurum();
+  durumuKaydet();
+}
+
+/* Vida ekleme — 5. aşamada alıştırma buradan besleyecek */
+function vidaEkle(tur, miktar){
+  durum.vida[tur] = Math.max(0, (durum.vida[tur] || 0) + miktar);
+  durumuKaydet();
+  vidayiCiz(tur);
+}
+
+/* --- C) SAHNE YÖNETİCİSİ ------------------------------------------------ */
+const Sahne = {
+  aktif: null,
+  gecmis: [],
+
+  /* ad: "menu" | "alistirma" | "market" | "atolye" | "ayarlar" */
+  git(ad, secenekler){
+    const ayar = secenekler || {};
+    const hedef = document.getElementById("sahne-" + ad);
+    if(!hedef) return;
+
+    /* Geçmiş yönetimi: menüye dönüşte yığın temizlenir */
+    if(ad === "menu"){
+      this.gecmis = [];
+    }else if(this.aktif && this.aktif !== ad && ayar.gecmiseEkle !== false){
+      this.gecmis.push(this.aktif);
+    }
+
+    /* Eski sahneyi kapat, yenisini aç */
+    document.querySelectorAll(".sahne.aktif").forEach(s => {
+      s.classList.remove("aktif");
+      s.setAttribute("aria-hidden", "true");
+    });
+    hedef.classList.add("aktif");
+    hedef.removeAttribute("aria-hidden");
+    hedef.scrollTop = 0;
+
+    this.aktif = ad;
+    ustCubuguGuncelle(hedef);
+
+    /* Sahneye giriş kancaları — sonraki aşamalar buraya ekleme yapar */
+    if(typeof Sahne.girisKancalari[ad] === "function"){
+      Sahne.girisKancalari[ad]();
+    }
+  },
+
+  geri(){
+    const onceki = this.gecmis.pop();
+    this.git(onceki || "menu", { gecmiseEkle:false });
+  },
+
+  /* Sahne açılırken çalışacak işlevler (2.–5. aşamalarda doldurulacak) */
+  girisKancalari: {
+    menu: null,
+    alistirma: null,
+    market: null,
+    atolye: null,
+    ayarlar: null
+  }
+};
+
+function ustCubuguGuncelle(sahneElemani){
+  document.getElementById("ekran-basligi").textContent =
+    sahneElemani.dataset.baslik || "Şekil Robotu";
+  document.getElementById("geri-dugmesi")
+          .classList.toggle("gorunur", Sahne.aktif !== "menu");
+}
+
+/* --- D) ARAYÜZ YARDIMCILARI --------------------------------------------- */
+/* Üç keseyi de çizer; vurgulanan tür verilirse o kese zıplar */
+function vidayiCiz(vurgulanan){
+  const serit = document.getElementById("vida-serisi");
+  if(!serit.childElementCount){
+    serit.innerHTML = VIDA_SIRASI.map(t =>
+      `<span class="vida-kesesi" data-vida="${t}" title="${VIDA[t].ad} vida"
+             style="background:${VIDA[t].acik}; border-color:${VIDA[t].kenar}; color:${VIDA[t].koyu};">
+         ${vidaSimgesi(t)}<span class="vida-sayisi">0</span>
+       </span>`).join("");
+  }
+  VIDA_SIRASI.forEach(t => {
+    const kese = serit.querySelector('[data-vida="' + t + '"]');
+    kese.querySelector(".vida-sayisi").textContent = durum.vida[t] || 0;
+    kese.setAttribute("aria-label", (durum.vida[t] || 0) + " " + VIDA[t].ad.toLowerCase() + " vida");
+    if(t === vurgulanan){
+      kese.classList.remove("artti");
+      void kese.offsetWidth;            /* animasyonu yeniden tetikle */
+      kese.classList.add("artti");
+    }
+  });
+}
+
+let seritZamanlayici = null;
+function seritGoster(mesaj){
+  const serit = document.getElementById("serit");
+  serit.textContent = mesaj;
+  serit.classList.add("gorunur");
+  clearTimeout(seritZamanlayici);
+  seritZamanlayici = setTimeout(() => serit.classList.remove("gorunur"), 1800);
+}
+
+function sesArayuzunuCiz(){
+  const acik = durum.ses;
+  document.getElementById("ses-yazisi").textContent = acik ? "Açık" : "Kapalı";
+  document.getElementById("ses-simgesi-acik").style.display   = acik ? "" : "none";
+  document.getElementById("ses-simgesi-kapali").style.display = acik ? "none" : "";
+  document.getElementById("ses-dugmesi").setAttribute("aria-pressed", String(acik));
+}
+
+/* --- E) EKRAN BAĞLAMALARI ----------------------------------------------- */
+function baglantilariKur(){
+
+  /* E1) Menü düğmeleri ve geri */
+  document.querySelectorAll("[data-git]").forEach(dugme => {
+    dugme.addEventListener("click", () => Sahne.git(dugme.dataset.git));
+  });
+  document.getElementById("geri-dugmesi")
+          .addEventListener("click", () => Sahne.geri());
+
+  /* E2) Alıştırma — zorluk seçimi ve tur akışı (Aşama 5) */
+  document.querySelectorAll(".zorluk-kart").forEach(kart => {
+    kart.addEventListener("click", () => turBaslat(kart.dataset.zorluk));
+  });
+  document.getElementById("devam-dugmesi").addEventListener("click", sonrakiSoru);
+  document.getElementById("ozet-tekrar").addEventListener("click", () => turBaslat(tur.zorluk));
+  document.getElementById("ozet-market").addEventListener("click", () => Sahne.git("market"));
+  document.getElementById("ozet-menu").addEventListener("click", () => Sahne.git("menu"));
+
+  /* E3) Market — kategori sekmeleri (raf: Aşama 4) */
+  document.querySelectorAll(".sekme").forEach(sekme => {
+    sekme.addEventListener("click", () => {
+      document.querySelectorAll(".sekme").forEach(s => s.classList.remove("secili"));
+      sekme.classList.add("secili");
+      seciliKategori = sekme.dataset.kategori;
+      marketiCiz();
+    });
+  });
+
+  /* E4) Ayarlar — ses aç/kapa */
+  document.getElementById("ses-dugmesi").addEventListener("click", () => {
+    durum.ses = !durum.ses;
+    durumuKaydet();
+    sesArayuzunuCiz();
+    if(durum.ses) Ses.cal("dogru");              /* açılınca örnek ses duyulsun */
+    seritGoster(durum.ses ? "Ses açıldı." : "Ses kapatıldı.");
+  });
+
+  /* E5) Ayarlar — sıfırlama (iki adımlı onay, tarayıcı uyarısı yok) */
+  const onayKutusu = document.getElementById("sifirla-onay");
+  document.getElementById("sifirla-dugmesi").addEventListener("click", () => {
+    onayKutusu.classList.add("gorunur");
+    document.getElementById("sifirla-evet").focus();
+  });
+  document.getElementById("sifirla-hayir").addEventListener("click", () => {
+    onayKutusu.classList.remove("gorunur");
+  });
+  document.getElementById("sifirla-evet").addEventListener("click", () => {
+    durumuSifirla();
+    onayKutusu.classList.remove("gorunur");
+    vidayiCiz();
+    sesArayuzunuCiz();
+    seritGoster("Her şey sıfırlandı.");
+  });
+
+  /* E6) Klavye: Esc = geri (tahtaya bağlı klavyeler için) */
+  document.addEventListener("keydown", olay => {
+    if(olay.key === "Escape" && Sahne.aktif !== "menu") Sahne.geri();
+  });
+}
+
+/* ==========================================================================
+   AŞAMA 2 — ROBOT RENDER MOTORU
+     G) Renk yardımcıları
+     H) Parça kataloğu (SVG bileşenleri)
+     I) Slotlar ve oransal koordinatlar
+     J) Çizim motoru
+     K) Atölye arayüzü (slot seçimi + parça değiştirme)
+   ========================================================================== */
+
+/* --- G) RENK YARDIMCILARI ----------------------------------------------- */
+/* Her parça tek bir renk alır; kenar çizgisi o rengin koyusudur. */
+function renkKoyult(hex, oran){
+  const s = hex.replace("#","");
+  const t = s.length === 3 ? s.split("").map(k => k+k).join("") : s;
+  const say = parseInt(t, 16);
+  const r = Math.round(((say >> 16) & 255) * (1 - oran));
+  const g = Math.round(((say >> 8)  & 255) * (1 - oran));
+  const b = Math.round(( say        & 255) * (1 - oran));
+  return "#" + [r,g,b].map(n => n.toString(16).padStart(2,"0")).join("");
+}
+
+/* --- H) PARÇA KATALOĞU -------------------------------------------------- */
+/* Her parça kendi yerel koordinat sisteminde, (0,0) bağlantı noktası olacak
+   şekilde çizilir. kutu = [x, y, en, boy] → küçük önizleme için viewBox.
+   ciz(renk) yalnızca SVG parçası döndürür; konum/açı/boyut motorun işidir.
+   NOT: Market parçalarının tamamı (35) 4. aşamada bu nesneye EKLENECEK;
+        burada her kategoriden 1 ücretsiz + 1 örnek market parçası var.      */
+const PARCALAR = {
+
+  /* ---- KAFA ---- */
+  "kafa-kare": {
+    kategori:"kafa", ad:"Kare Kafa", ucretsiz:true, renk:"#1d4ed8",
+    kutu:[-50,-50,100,100],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-44" y="-44" width="88" height="88" rx="12" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <rect x="-30" y="-32" width="60" height="26" rx="8" fill="#ffffff" opacity=".18"/>`; }
+  },
+  "kafa-cember": {
+    kategori:"kafa", ad:"Daire Kafa", vida:"yesil", fiyat:10, renk:"#2563eb",
+    kutu:[-50,-50,100,100],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <circle cx="0" cy="0" r="45" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <ellipse cx="-12" cy="-20" rx="18" ry="10" fill="#ffffff" opacity=".20"/>`; }
+  },
+  "kafa-kulakli": {
+    kategori:"kafa", ad:"Kulaklı Kafa", vida:"kirmizi", fiyat:10, renk:"#334155",
+    kutu:[-66,-52,132,104],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <circle cx="-52" cy="0" r="14" fill="${k}"/>
+      <circle cx="52"  cy="0" r="14" fill="${k}"/>
+      <rect x="-42" y="-42" width="84" height="84" rx="12" fill="${r}" stroke="${k}" stroke-width="4"/>`; }
+  },
+  "kafa-ucgen": {
+    kategori:"kafa", ad:"Üçgen Kafa", vida:"yesil", fiyat:15, renk:"#0ea5e9",
+    kutu:[-54,-54,108,104],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <polygon points="0,-46 48,42 -48,42" fill="${r}" stroke="${k}" stroke-width="4" stroke-linejoin="round"/>`; }
+  },
+  "kafa-genis": {
+    kategori:"kafa", ad:"Geniş Kafa", vida:"mavi", fiyat:10, renk:"#15803d",
+    kutu:[-62,-46,124,92],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-50" y="-34" width="100" height="68" rx="14" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <rect x="-58" y="-12" width="10" height="24" rx="5" fill="${k}"/>
+      <rect x="48"  y="-12" width="10" height="24" rx="5" fill="${k}"/>`; }
+  },
+  "kafa-vizorlu": {
+    kategori:"kafa", ad:"Vizörlü Kafa", vida:"mavi", fiyat:15, renk:"#7c3aed",
+    kutu:[-52,-52,104,104],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-44" y="-42" width="88" height="84" rx="14" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="-6" r="24" fill="#ffffff" opacity=".30"/>
+      <circle cx="0" cy="-6" r="24" fill="none" stroke="${k}" stroke-width="3"/>`; }
+  },
+  "kafa-kuleli": {
+    kategori:"kafa", ad:"Kuleli Kafa", vida:"kirmizi", fiyat:15, renk:"#db2777",
+    kutu:[-48,-84,96,128],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-38" y="-30" width="76" height="72" rx="10" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <polygon points="0,-66 42,-28 -42,-28" fill="${k}" stroke-linejoin="round"/>
+      <circle cx="0" cy="-74" r="8" fill="${r}" stroke="${k}" stroke-width="3"/>`; }
+  },
+
+  /* ---- GÖVDE ---- */
+  "govde-dikdortgen": {
+    kategori:"govde", ad:"Dikdörtgen Gövde", ucretsiz:true, renk:"#3b82f6",
+    kutu:[-62,-70,124,140],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-55" y="-62" width="110" height="124" rx="16" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="-6" r="16" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>
+      <rect x="-26" y="26" width="52" height="14" rx="7" fill="${k}" opacity=".55"/>`; }
+  },
+  "govde-ucgen": {
+    kategori:"govde", ad:"Üçgen Gövde", vida:"yesil", fiyat:10, renk:"#60a5fa",
+    kutu:[-72,-72,144,140],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <polygon points="0,-64 64,58 -64,58" fill="${r}" stroke="${k}" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="0" cy="14" r="15" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>`; }
+  },
+  "govde-omuzlu": {
+    kategori:"govde", ad:"Omuzlu Gövde", vida:"kirmizi", fiyat:10, renk:"#7c3aed",
+    kutu:[-76,-70,152,140],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <circle cx="-56" cy="-38" r="18" fill="${k}"/>
+      <circle cx="56"  cy="-38" r="18" fill="${k}"/>
+      <rect x="-48" y="-58" width="96" height="118" rx="14" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="0" r="15" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>`; }
+  },
+  "govde-kare": {
+    kategori:"govde", ad:"Kare Gövde", vida:"yesil", fiyat:15, renk:"#0ea5e9",
+    kutu:[-60,-60,120,120],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-52" y="-52" width="104" height="104" rx="14" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="0" r="15" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>`; }
+  },
+  "govde-cember": {
+    kategori:"govde", ad:"Daire Gövde", vida:"mavi", fiyat:10, renk:"#15803d",
+    kutu:[-66,-66,132,132],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <circle cx="0" cy="0" r="58" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="0" r="16" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>`; }
+  },
+  "govde-katli": {
+    kategori:"govde", ad:"Katlı Gövde", vida:"mavi", fiyat:15, renk:"#d97706",
+    kutu:[-58,-70,116,140],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-50" y="-62" width="100" height="50" rx="12" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <rect x="-42" y="-4"  width="84"  height="66" rx="12" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="28" r="14" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>`; }
+  },
+  "govde-roket": {
+    kategori:"govde", ad:"Roket Gövde", vida:"kirmizi", fiyat:15, renk:"#dc2626",
+    kutu:[-86,-70,172,140],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <polygon points="-46,-56 -78,14 -46,14" fill="${k}" stroke-linejoin="round"/>
+      <polygon points="46,-56 78,14 46,14"   fill="${k}" stroke-linejoin="round"/>
+      <rect x="-46" y="-60" width="92" height="122" rx="18" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="0" r="16" fill="#fdf0d9" stroke="${k}" stroke-width="4"/>`; }
+  },
+
+  /* ---- GÖZ ---- */
+  "goz-cember-ikili": {
+    kategori:"goz", ad:"Daire Göz", ucretsiz:true, renk:"#1d4ed8",
+    kutu:[-42,-22,84,44],
+    ciz(r){ const k = renkKoyult(r,.45); return `
+      <circle cx="-22" cy="0" r="15" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <circle cx="22"  cy="0" r="15" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <circle cx="-22" cy="0" r="7" fill="${r}"/>
+      <circle cx="22"  cy="0" r="7" fill="${r}"/>`; }
+  },
+  "goz-kare-ikili": {
+    kategori:"goz", ad:"Kare Göz", vida:"yesil", fiyat:10, renk:"#163fae",
+    kutu:[-42,-22,84,44],
+    ciz(r){ const k = renkKoyult(r,.45); return `
+      <rect x="-36" y="-14" width="28" height="28" rx="4" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <rect x="8"   y="-14" width="28" height="28" rx="4" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <rect x="-28" y="-6" width="12" height="12" fill="${r}"/>
+      <rect x="16"  y="-6" width="12" height="12" fill="${r}"/>`; }
+  },
+  "goz-cember-halka": {
+    kategori:"goz", ad:"Çember Göz", vida:"kirmizi", fiyat:10, renk:"#dc2626",
+    kutu:[-44,-22,88,44],
+    ciz(r){ return `
+      <circle cx="-22" cy="0" r="12" fill="none" stroke="${r}" stroke-width="7"/>
+      <circle cx="22"  cy="0" r="12" fill="none" stroke="${r}" stroke-width="7"/>`; }
+  },
+  "goz-ucgen-ikili": {
+    kategori:"goz", ad:"Üçgen Göz", vida:"yesil", fiyat:15, renk:"#dc2626",
+    kutu:[-44,-20,88,42],
+    ciz(r){ const k = renkKoyult(r,.45); return `
+      <polygon points="-36,-12 -8,-12 -22,16" fill="#ffffff" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="8,-12 36,-12 22,16"   fill="#ffffff" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="-22" cy="-2" r="6" fill="${r}"/>
+      <circle cx="22"  cy="-2" r="6" fill="${r}"/>`; }
+  },
+  "goz-tekli": {
+    kategori:"goz", ad:"Tek Göz", vida:"mavi", fiyat:10, renk:"#15803d",
+    kutu:[-28,-28,56,56],
+    ciz(r){ const k = renkKoyult(r,.45); return `
+      <circle cx="0" cy="0" r="22" fill="#ffffff" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="0" r="11" fill="${r}"/>`; }
+  },
+  "goz-uclu": {
+    kategori:"goz", ad:"Üç Göz", vida:"mavi", fiyat:15, renk:"#7c3aed",
+    kutu:[-44,-18,88,36],
+    ciz(r){ const k = renkKoyult(r,.45); return `
+      <circle cx="-26" cy="0" r="11" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <circle cx="0"   cy="0" r="11" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <circle cx="26"  cy="0" r="11" fill="#ffffff" stroke="${k}" stroke-width="3"/>
+      <circle cx="-26" cy="0" r="5" fill="${r}"/>
+      <circle cx="0"   cy="0" r="5" fill="${r}"/>
+      <circle cx="26"  cy="0" r="5" fill="${r}"/>`; }
+  },
+  "goz-vizor": {
+    kategori:"goz", ad:"Vizör Göz", vida:"kirmizi", fiyat:15, renk:"#0ea5e9",
+    kutu:[-48,-22,96,44],
+    ciz(r){ const k = renkKoyult(r,.45); return `
+      <rect x="-42" y="-15" width="84" height="30" rx="10" fill="${k}"/>
+      <rect x="-34" y="-8"  width="68" height="16" rx="8"  fill="${r}"/>`; }
+  },
+
+  /* ---- AĞIZ ---- */
+  "agiz-dikdortgen": {
+    kategori:"agiz", ad:"Dikdörtgen Ağız", ucretsiz:true, renk:"#d97706",
+    kutu:[-32,-16,64,32],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-26" y="-9" width="52" height="18" rx="5" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <path d="M-13 -9 V9 M0 -9 V9 M13 -9 V9" stroke="#ffffff" stroke-width="3" opacity=".7"/>`; }
+  },
+  "agiz-ucgen": {
+    kategori:"agiz", ad:"Üçgen Ağız", vida:"yesil", fiyat:10, renk:"#b45309",
+    kutu:[-30,-16,60,36],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <polygon points="-24,-9 24,-9 0,14" fill="${r}" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>`; }
+  },
+  "agiz-cember": {
+    kategori:"agiz", ad:"Daire Ağız", vida:"yesil", fiyat:15, renk:"#dc2626",
+    kutu:[-20,-20,40,40],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <circle cx="0" cy="0" r="14" fill="${r}" stroke="${k}" stroke-width="3"/>`; }
+  },
+  "agiz-cember-halka": {
+    kategori:"agiz", ad:"Çember Ağız", vida:"kirmizi", fiyat:10, renk:"#334155",
+    kutu:[-22,-22,44,44],
+    ciz(r){ return `
+      <circle cx="0" cy="0" r="14" fill="none" stroke="${r}" stroke-width="7"/>`; }
+  },
+  "agiz-kare-dizi": {
+    kategori:"agiz", ad:"Kare Ağız", vida:"mavi", fiyat:10, renk:"#334155",
+    kutu:[-34,-16,68,32],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-27" y="-6" width="12" height="12" rx="2" fill="${r}" stroke="${k}" stroke-width="2"/>
+      <rect x="-9"  y="-6" width="12" height="12" rx="2" fill="${r}" stroke="${k}" stroke-width="2"/>
+      <rect x="9"   y="-6" width="12" height="12" rx="2" fill="${r}" stroke="${k}" stroke-width="2"/>`; }
+  },
+  "agiz-cift-cizgi": {
+    kategori:"agiz", ad:"Çift Çizgi Ağız", vida:"mavi", fiyat:15, renk:"#7c3aed",
+    kutu:[-32,-18,64,36],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-24" y="-11" width="48" height="8" rx="4" fill="${r}" stroke="${k}" stroke-width="2"/>
+      <rect x="-24" y="3"   width="48" height="8" rx="4" fill="${r}" stroke="${k}" stroke-width="2"/>`; }
+  },
+  "agiz-disli": {
+    kategori:"agiz", ad:"Dişli Ağız", vida:"kirmizi", fiyat:15, renk:"#15803d",
+    kutu:[-34,-18,68,36],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-28" y="-11" width="56" height="22" rx="5" fill="${k}"/>
+      <polygon points="-24,-11 -12,-11 -18,5"  fill="#ffffff"/>
+      <polygon points="-8,-11 4,-11 -2,5"      fill="#ffffff"/>
+      <polygon points="8,-11 20,-11 14,5"      fill="#ffffff"/>
+      <rect x="-28" y="6" width="56" height="5" rx="2" fill="${r}"/>`; }
+  },
+
+  /* ---- KOL (sağ taraf için çizilir, sol tarafta aynalanır) ---- */
+  "kol-dikdortgen": {
+    kategori:"kol", ad:"Dikdörtgen Kol", ucretsiz:true, renk:"#d97706",
+    kutu:[-22,-20,44,100],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-12" y="-12" width="24" height="62" rx="12" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <rect x="-16" y="46" width="32" height="24" rx="8" fill="${k}"/>`; }
+  },
+  "kol-cember": {
+    kategori:"kol", ad:"Daire Kol", vida:"yesil", fiyat:10, renk:"#f59e0b",
+    kutu:[-22,-20,44,116],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <circle cx="0" cy="2"  r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="26" r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="50" r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="76" r="15" fill="${k}"/>`; }
+  },
+  "kol-ucgen": {
+    kategori:"kol", ad:"Üçgen Kol", vida:"yesil", fiyat:15, renk:"#dc2626",
+    kutu:[-22,-18,44,100],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <polygon points="-14,-10 14,-10 0,58" fill="${r}" stroke="${k}" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="0" cy="66" r="14" fill="${k}"/>`; }
+  },
+  "kol-bayrakli": {
+    kategori:"kol", ad:"Bayraklı Kol", vida:"kirmizi", fiyat:10, renk:"#15803d",
+    kutu:[-24,-18,58,100],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-10" y="-10" width="20" height="66" rx="9" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <polygon points="10,-6 46,10 10,26" fill="${k}" stroke-linejoin="round"/>
+      <circle cx="0" cy="68" r="14" fill="${k}"/>`; }
+  },
+  "kol-kare-dizi": {
+    kategori:"kol", ad:"Kare Kol", vida:"mavi", fiyat:10, renk:"#15803d",
+    kutu:[-22,-18,44,106],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-12" y="-12" width="24" height="24" rx="4" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-12" y="14"  width="24" height="24" rx="4" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-12" y="40"  width="24" height="24" rx="4" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-16" y="66"  width="32" height="20" rx="6" fill="${k}"/>`; }
+  },
+  "kol-pense": {
+    kategori:"kol", ad:"Pense Kol", vida:"mavi", fiyat:15, renk:"#334155",
+    kutu:[-24,-18,48,100],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-11" y="-10" width="22" height="52" rx="9" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <polygon points="-16,40 -3,40 -10,70" fill="${k}" stroke-linejoin="round"/>
+      <polygon points="16,40 3,40 10,70"   fill="${k}" stroke-linejoin="round"/>`; }
+  },
+  "kol-halka": {
+    kategori:"kol", ad:"Halka Kol", vida:"kirmizi", fiyat:15, renk:"#db2777",
+    kutu:[-26,-18,52,102],
+    ciz(r){ const k = renkKoyult(r,.35); return `
+      <rect x="-10" y="-10" width="20" height="48" rx="9" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="60" r="16" fill="none" stroke="${r}" stroke-width="10"/>
+      <circle cx="0" cy="60" r="21" fill="none" stroke="${k}" stroke-width="3"/>`; }
+  },
+
+  /* ---- BACAK (sağ taraf için çizilir, sol tarafta aynalanır) ---- */
+  "bacak-dikdortgen": {
+    kategori:"bacak", ad:"Dikdörtgen Bacak", ucretsiz:true, renk:"#163fae",
+    kutu:[-28,-14,56,88],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <rect x="-13" y="-8" width="26" height="58" rx="10" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <rect x="-22" y="46" width="44" height="18" rx="8" fill="${k}"/>`; }
+  },
+  "bacak-ucgen": {
+    kategori:"bacak", ad:"Üçgen Bacak", vida:"yesil", fiyat:10, renk:"#1d4ed8",
+    kutu:[-28,-14,56,90],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <polygon points="-16,-6 16,-6 0,52" fill="${r}" stroke="${k}" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="0" cy="56" r="14" fill="${k}"/>`; }
+  },
+  "bacak-cember-dizi": {
+    kategori:"bacak", ad:"Daire Bacak", vida:"yesil", fiyat:15, renk:"#0ea5e9",
+    kutu:[-28,-16,56,94],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <circle cx="0" cy="2"  r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="26" r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="50" r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-22" y="62" width="44" height="16" rx="8" fill="${k}"/>`; }
+  },
+  "bacak-paletli": {
+    kategori:"bacak", ad:"Paletli Bacak", vida:"kirmizi", fiyat:10, renk:"#0ea5e9",
+    kutu:[-34,-14,68,90],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <rect x="-11" y="-6" width="22" height="40" rx="8" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="40" r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-30" y="54" width="60" height="18" rx="9" fill="${k}"/>`; }
+  },
+  "bacak-kare-dizi": {
+    kategori:"bacak", ad:"Kare Bacak", vida:"mavi", fiyat:10, renk:"#15803d",
+    kutu:[-28,-14,56,86],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <rect x="-13" y="-6" width="26" height="26" rx="5" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-13" y="22" width="26" height="26" rx="5" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <rect x="-24" y="50" width="48" height="18" rx="8" fill="${k}"/>`; }
+  },
+  "bacak-tekerlek": {
+    kategori:"bacak", ad:"Tekerlek Bacak", vida:"mavi", fiyat:15, renk:"#334155",
+    kutu:[-26,-14,52,84],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <rect x="-11" y="-6" width="22" height="30" rx="8" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="44" r="20" fill="${r}" stroke="${k}" stroke-width="4"/>
+      <circle cx="0" cy="44" r="7"  fill="${k}"/>`; }
+  },
+  "bacak-yayli": {
+    kategori:"bacak", ad:"Yaylı Bacak", vida:"kirmizi", fiyat:15, renk:"#db2777",
+    kutu:[-28,-14,56,92],
+    ciz(r){ const k = renkKoyult(r,.3); return `
+      <rect x="-9" y="-6" width="18" height="26" rx="7" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="0" cy="30" r="12" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <polygon points="-22,72 22,72 0,44" fill="${k}" stroke-linejoin="round"/>`; }
+  },
+
+  /* ---- ANTEN ---- */
+  "anten-ucgen": {
+    kategori:"anten", ad:"Üçgen Anten", ucretsiz:true, renk:"#d97706",
+    kutu:[-22,-64,44,74],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-3" y="-36" width="6" height="42" rx="3" fill="${k}"/>
+      <polygon points="0,-58 15,-34 -15,-34" fill="${r}" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>`; }
+  },
+  "anten-cember": {
+    kategori:"anten", ad:"Daire Anten", vida:"yesil", fiyat:10, renk:"#f59e0b",
+    kutu:[-22,-68,44,78],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-3" y="-40" width="6" height="46" rx="3" fill="${k}"/>
+      <circle cx="0" cy="-48" r="14" fill="${r}" stroke="${k}" stroke-width="3"/>`; }
+  },
+  "anten-cember-halka": {
+    kategori:"anten", ad:"Çember Anten", vida:"kirmizi", fiyat:10, renk:"#dc2626",
+    kutu:[-24,-70,48,80],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-3" y="-40" width="6" height="46" rx="3" fill="${k}"/>
+      <circle cx="0" cy="-50" r="14" fill="none" stroke="${r}" stroke-width="8"/>`; }
+  },
+  "anten-kare": {
+    kategori:"anten", ad:"Kare Anten", vida:"yesil", fiyat:15, renk:"#0ea5e9",
+    kutu:[-22,-62,44,72],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-3" y="-36" width="6" height="42" rx="3" fill="${k}"/>
+      <rect x="-14" y="-56" width="28" height="24" rx="4" fill="${r}" stroke="${k}" stroke-width="3"/>`; }
+  },
+  "anten-ikili": {
+    kategori:"anten", ad:"İkili Anten", vida:"mavi", fiyat:10, renk:"#15803d",
+    kutu:[-36,-56,72,66],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <path d="M0 6 L-22 -32" stroke="${k}" stroke-width="6" stroke-linecap="round"/>
+      <path d="M0 6 L22 -32"  stroke="${k}" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="-26" cy="-40" r="10" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <circle cx="26"  cy="-40" r="10" fill="${r}" stroke="${k}" stroke-width="3"/>`; }
+  },
+  "anten-ucgen-cift": {
+    kategori:"anten", ad:"Çift Üçgen Anten", vida:"mavi", fiyat:15, renk:"#7c3aed",
+    kutu:[-32,-60,64,70],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-3" y="-34" width="6" height="40" rx="3" fill="${k}"/>
+      <polygon points="-4,-52 -28,-30 -4,-30" fill="${r}" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="4,-52 28,-30 4,-30"    fill="${r}" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>`; }
+  },
+  "anten-tac": {
+    kategori:"anten", ad:"Taç Anten", vida:"kirmizi", fiyat:15, renk:"#f59e0b",
+    kutu:[-40,-70,80,80],
+    ciz(r){ const k = renkKoyult(r,.4); return `
+      <rect x="-3" y="-48" width="6" height="54" rx="3" fill="${k}"/>
+      <rect x="-30" y="-34" width="6" height="40" rx="3" fill="${k}" transform="rotate(-18)"/>
+      <rect x="30"  y="-34" width="6" height="40" rx="3" fill="${k}" transform="rotate(18)"/>
+      <circle cx="0" cy="-58" r="11" fill="${r}" stroke="${k}" stroke-width="3"/>
+      <polygon points="-30,-56 -18,-36 -42,-36" fill="${r}" stroke="${k}" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="20" y="-54" width="20" height="20" rx="3" fill="${r}" stroke="${k}" stroke-width="3"/>`; }
+  }
+};
+
+/* Bir kategorinin parçaları */
+function kategorininParcalari(kategori){
+  return Object.keys(PARCALAR).filter(id => PARCALAR[id].kategori === kategori);
+}
+/* Ücretsiz parçalar her zaman kullanılabilir; ötekiler satın alınmalı (Aşama 4) */
+function sahipMi(id){
+  const p = PARCALAR[id];
+  if(!p) return false;
+  if(p.ucretsiz) return true;
+  return (durum.sahip[p.kategori] || []).indexOf(id) !== -1;
+}
+
+/* --- I) SLOTLAR VE ORANSAL KOORDİNATLAR --------------------------------- */
+/* Tuval her zaman 3:4 (viewBox 300×400). Bağlantı noktaları 0–1 arasında
+   ORANSAL saklanır; ekran boyutu değişince robot bozulmaz.                 */
+const TUVAL_EN = 300, TUVAL_BOY = 400;
+
+const SLOTLAR = {
+  bacakSol: { kategori:"bacak", ad:"Sol Bacak", x:0.400, y:0.715, ayna:true  },
+  bacakSag: { kategori:"bacak", ad:"Sağ Bacak", x:0.600, y:0.715, ayna:false },
+  kolSol:   { kategori:"kol",   ad:"Sol Kol",   x:0.280, y:0.515, ayna:true  },
+  kolSag:   { kategori:"kol",   ad:"Sağ Kol",   x:0.720, y:0.515, ayna:false },
+  govde:    { kategori:"govde", ad:"Gövde",     x:0.500, y:0.570, ayna:false },
+  anten:    { kategori:"anten", ad:"Anten",     x:0.500, y:0.165, ayna:false },
+  kafa:     { kategori:"kafa",  ad:"Kafa",      x:0.500, y:0.275, ayna:false },
+  goz:      { kategori:"goz",   ad:"Gözler",    x:0.500, y:0.260, ayna:false },
+  agiz:     { kategori:"agiz",  ad:"Ağız",      x:0.500, y:0.345, ayna:false }
+};
+
+/* Çizim sırası = katman sırası (arkadan öne) */
+const CIZIM_SIRASI = ["bacakSol","bacakSag","kolSol","kolSag","govde","anten","kafa","goz","agiz"];
+
+/* Panelde gösterim sırası (çocuğa mantıklı gelen sıra) */
+const SLOT_SIRASI = ["kafa","goz","agiz","anten","govde","kolSag","kolSol","bacakSag","bacakSol"];
+
+/* Ücretsiz başlangıç seti: her kategorinin ücretsiz parçası ilgili slotlara */
+function varsayilanRobot(){
+  const robot = {};
+  Object.keys(SLOTLAR).forEach(slotAd => {
+    const kategori = SLOTLAR[slotAd].kategori;
+    const id = Object.keys(PARCALAR)
+      .find(p => PARCALAR[p].kategori === kategori && PARCALAR[p].ucretsiz);
+    robot[slotAd] = { parca:id, renk:PARCALAR[id].renk, aci:0, olcek:1 };
+  });
+  return robot;
+}
+
+/* --- J) ÇİZİM MOTORU ---------------------------------------------------- */
+/* Tek bir slotun dönüşümü: konum → aynalama → döndürme → boyut */
+function slotDonusumu(slotAd, robot){
+  const s = SLOTLAR[slotAd];
+  const y = (robot || durum.robot)[slotAd] || {};
+  const x0 = (s.x * TUVAL_EN).toFixed(2);
+  const y0 = (s.y * TUVAL_BOY).toFixed(2);
+  const ayna = s.ayna ? -1 : 1;
+  const aci = y.aci || 0;
+  const olcek = y.olcek || 1;
+  return `translate(${x0},${y0}) scale(${ayna},1) rotate(${aci}) scale(${olcek})`;
+}
+
+/* robot verilmezse çocuğun kendi robotu çizilir (galeri başka robot geçirir).
+   canli = true ise kollar, bacaklar ve kafa ayrı gruplara sarılır; menüdeki
+   yürüme animasyonu bu grupları döndürür (parçaların kendi dönüşümü bozulmaz). */
+function robotSvgUret(secili, robot, canli){
+  const kaynak = robot || durum.robot;
+  let icerik = "";
+
+  /* Zemin gölgesi */
+  icerik += `<ellipse cx="150" cy="366" rx="86" ry="14" fill="#16233a" opacity=".10"/>`;
+
+  function parcaSvg(slotAd){
+    const yapi = kaynak[slotAd];
+    if(!yapi || !yapi.parca || !PARCALAR[yapi.parca]) return "";
+    const parca = PARCALAR[yapi.parca];
+    return `<g class="slot" data-slot="${slotAd}" transform="${slotDonusumu(slotAd, kaynak)}">`
+         +   parca.ciz(yapi.renk || parca.renk)
+         + `</g>`;
+  }
+  /* Eklem noktası = slotun bağlantı noktası (oransal → viewBox birimi) */
+  function eklem(slotAd){
+    return (SLOTLAR[slotAd].x * TUVAL_EN).toFixed(1) + "px "
+         + (SLOTLAR[slotAd].y * TUVAL_BOY).toFixed(1) + "px";
+  }
+
+  if(!canli){
+    CIZIM_SIRASI.forEach(slotAd => { icerik += parcaSvg(slotAd); });
+  }else{
+    const UZUV = { bacakSol:"bacak faz-a", bacakSag:"bacak faz-b",
+                   kolSol:"kol faz-b",     kolSag:"kol faz-a" };
+    ["bacakSol","bacakSag","kolSol","kolSag"].forEach(slotAd => {
+      icerik += `<g class="canli-uzuv ${UZUV[slotAd]}" style="transform-origin:${eklem(slotAd)}">`
+              + parcaSvg(slotAd) + `</g>`;
+    });
+    icerik += parcaSvg("govde");
+    /* Anten, kafa, göz ve ağız tek grup: yüz dağılmadan birlikte eğilir */
+    icerik += `<g class="canli-kafa" style="transform-origin:150px 152px">`
+            + ["anten","kafa","goz","agiz"].map(parcaSvg).join("")
+            + `</g>`;
+  }
+
+  /* Seçili slotun vurgusu — en üstte, tıklamayı engellemez */
+  if(secili && kaynak[secili] && PARCALAR[kaynak[secili].parca]){
+    const kutu = PARCALAR[kaynak[secili].parca].kutu;
+    const p = 8;
+    icerik += `<g class="slot-vurgu" transform="${slotDonusumu(secili, kaynak)}">`
+            + `<rect x="${kutu[0]-p}" y="${kutu[1]-p}" width="${kutu[2]+2*p}" height="${kutu[3]+2*p}"`
+            + ` rx="14" fill="none" stroke="#d97706" stroke-width="4" stroke-dasharray="10 8"/></g>`;
+  }
+
+  return `<svg viewBox="0 0 ${TUVAL_EN} ${TUVAL_BOY}" role="img" aria-label="Senin robotun">`
+       + icerik + `</svg>`;
+}
+
+/* Küçük önizleme (market ve atölye listeleri ortak kullanır) */
+function parcaOnizleme(id, renk){
+  const p = PARCALAR[id];
+  const k = p.kutu;
+  return `<svg viewBox="${k[0]} ${k[1]} ${k[2]} ${k[3]}" aria-hidden="true">`
+       + p.ciz(renk || p.renk) + `</svg>`;
+}
+
+/* --- K) ATÖLYE ARAYÜZÜ -------------------------------------------------- */
+let seciliSlot = "kafa";
+
+function robotuCiz(){
+  document.getElementById("robot-tuvali").innerHTML = robotSvgUret(seciliSlot);
+  /* Robotun üstüne dokununca o bölüm seçilir */
+  document.querySelectorAll("#robot-tuvali .slot").forEach(g => {
+    g.addEventListener("click", () => slotSec(g.dataset.slot));
+  });
+}
+
+function slotListesiniCiz(){
+  document.getElementById("slot-listesi").innerHTML = SLOT_SIRASI.map(slotAd =>
+    `<button class="slot-dugme${slotAd === seciliSlot ? " secili" : ""}" type="button"
+             data-slot="${slotAd}" aria-pressed="${slotAd === seciliSlot}">
+       ${SLOTLAR[slotAd].ad}
+     </button>`
+  ).join("");
+  document.querySelectorAll(".slot-dugme").forEach(d => {
+    d.addEventListener("click", () => slotSec(d.dataset.slot));
+  });
+}
+
+function parcaListesiniCiz(){
+  const kategori = SLOTLAR[seciliSlot].kategori;
+  const takili = (durum.robot[seciliSlot] || {}).parca;
+  /* Önizlemeler slotun mevcut renginde gösterilir (Aşama 3) */
+  const mevcutRenk = (durum.robot[seciliSlot] || {}).renk;
+
+  document.getElementById("parca-listesi-basligi").textContent =
+    "2) " + SLOTLAR[seciliSlot].ad + " görünüşünü seç";
+
+  document.getElementById("parca-listesi").innerHTML =
+    kategorininParcalari(kategori).map(id => {
+      const acik = sahipMi(id);
+      return `<button class="parca-dugme${id === takili ? " secili" : ""}${acik ? "" : " kilitli"}"
+                      type="button" data-parca="${id}" ${acik ? "" : "disabled"}
+                      aria-pressed="${id === takili}">
+                ${parcaOnizleme(id, mevcutRenk)}
+                <span>${PARCALAR[id].ad}</span>
+                ${acik ? "" : `<span class="kilit">Markette</span>`}
+              </button>`;
+    }).join("");
+
+  document.querySelectorAll(".parca-dugme").forEach(d => {
+    d.addEventListener("click", () => parcaTak(d.dataset.parca));
+  });
+}
+
+function slotSec(slotAd){
+  if(!SLOTLAR[slotAd]) return;
+  seciliSlot = slotAd;
+  robotuCiz();
+  slotListesiniCiz();
+  parcaListesiniCiz();
+  renkListesiniCiz();          /* Aşama 3 */
+  kontrolleriGuncelle();       /* Aşama 3 */
+}
+
+/* Parça değiştirme — kol/bacak stili sağ ve sola AYRI AYRI uygulanır */
+function parcaTak(parcaId){
+  if(!PARCALAR[parcaId] || !sahipMi(parcaId)) return;
+  const eski = durum.robot[seciliSlot] || {};
+  durum.robot[seciliSlot] = {
+    parca: parcaId,
+    renk:  eski.renk || PARCALAR[parcaId].renk,   /* renk seçimi korunur */
+    aci:   eski.aci   || 0,
+    olcek: eski.olcek || 1
+  };
+  durumuKaydet();                                  /* otomatik kayıt */
+  robotuCiz();
+  parcaListesiniCiz();
+  Ses.cal("tak");
+  seritGoster(PARCALAR[parcaId].ad + " takıldı.");
+}
+
+/* ==========================================================================
+   AŞAMA 3 — ATÖLYE KONTROLLERİ (renk · çevirme · boyut · otomatik kayıt)
+     L) Sabitler ve palet
+     M) Kontrollerin çizimi
+     N) Değer değiştirme
+   ========================================================================== */
+
+/* --- L) SABİTLER VE PALET ----------------------------------------------- */
+const ACI_ADIMI   = 15;      /* spec önerisi: 15° adımlarla döndürme */
+const OLCEK_ADIMI = 0.1;
+const OLCEK_MIN   = 0.7;     /* spec önerisi: 0,7× – 1,3×            */
+const OLCEK_MAX   = 1.3;
+
+/* Renklerin adı ekran okuyucu ve ipucu balonu için tutulur */
+const RENK_PALETI = [
+  { k:"#1d4ed8", ad:"Koyu mavi" }, { k:"#3b82f6", ad:"Mavi" },
+  { k:"#0ea5e9", ad:"Gök mavisi" }, { k:"#15803d", ad:"Yeşil" },
+  { k:"#65a30d", ad:"Fıstık yeşili" }, { k:"#f59e0b", ad:"Sarı" },
+  { k:"#d97706", ad:"Turuncu" }, { k:"#dc2626", ad:"Kırmızı" },
+  { k:"#db2777", ad:"Pembe" }, { k:"#7c3aed", ad:"Mor" },
+  { k:"#78350f", ad:"Kahverengi" }, { k:"#334155", ad:"Gri" }
+];
+
+/* Seçili slotun yapılandırması (her zaman bir nesne döner) */
+function seciliYapi(){
+  if(!durum.robot[seciliSlot]) durum.robot[seciliSlot] = { parca:null, renk:"#1d4ed8", aci:0, olcek:1 };
+  return durum.robot[seciliSlot];
+}
+
+/* --- M) KONTROLLERİN ÇİZİMİ --------------------------------------------- */
+function renkListesiniCiz(){
+  const mevcut = seciliYapi().renk;
+  document.getElementById("renk-listesi").innerHTML = RENK_PALETI.map(r =>
+    `<button class="renk-dugme${r.k === mevcut ? " secili" : ""}" type="button"
+             data-renk="${r.k}" style="background:${r.k};" title="${r.ad}"
+             aria-label="${r.ad}" aria-pressed="${r.k === mevcut}"></button>`
+  ).join("");
+  document.querySelectorAll(".renk-dugme").forEach(d => {
+    d.addEventListener("click", () => renkUygula(d.dataset.renk));
+  });
+}
+
+function kontrolleriGuncelle(){
+  const y = seciliYapi();
+  document.getElementById("secili-slot-adi").textContent = SLOTLAR[seciliSlot].ad;
+  /* Gösterilen açı, ekranda görünen yöne göre yazılır */
+  document.getElementById("aci-degeri").textContent = ((y.aci || 0) * aynaYonu()) + "°";
+  document.getElementById("olcek-degeri").textContent =
+    (y.olcek || 1).toFixed(1).replace(".", ",") + "×";
+
+  /* Sınıra gelince küçült/büyüt düğmesi pasifleşir */
+  const olcek = y.olcek || 1;
+  document.querySelector('[data-olcek="-0.1"]').disabled = olcek <= OLCEK_MIN + 0.001;
+  document.querySelector('[data-olcek="0.1"]').disabled  = olcek >= OLCEK_MAX - 0.001;
+}
+
+/* --- N) DEĞER DEĞİŞTİRME (her değişiklikte otomatik kayıt) --------------- */
+function degisikligiUygula(){
+  durumuKaydet();
+  robotuCiz();
+  kontrolleriGuncelle();
+}
+
+function renkUygula(renk){
+  seciliYapi().renk = renk;
+  degisikligiUygula();
+  renkListesiniCiz();
+  parcaListesiniCiz();          /* önizlemeler de yeni renge geçsin */
+}
+
+/* Sol kol ve sol bacak aynalandığı için ekranda ters döner; düğmenin yönü
+   her parçada aynı olsun diye bu slotlarda işaret çevrilir. */
+function aynaYonu(){ return SLOTLAR[seciliSlot].ayna ? -1 : 1; }
+
+function aciDegistir(fark){
+  const y = seciliYapi();
+  let aci = (y.aci || 0) + fark * aynaYonu();
+  aci = ((aci + 180) % 360 + 360) % 360 - 180;   /* -180° … +180° arası tut */
+  y.aci = aci;
+  degisikligiUygula();
+}
+
+function olcekDegistir(fark){
+  const y = seciliYapi();
+  let olcek = Math.round(((y.olcek || 1) + fark) * 10) / 10;
+  y.olcek = Math.min(OLCEK_MAX, Math.max(OLCEK_MIN, olcek));
+  degisikligiUygula();
+}
+
+/* Yalnızca seçili parçanın renk/açı/boyutunu varsayılana döndürür */
+function seciliParcayiSifirla(){
+  const y = seciliYapi();
+  const varsayilan = PARCALAR[y.parca];
+  y.renk  = varsayilan ? varsayilan.renk : "#1d4ed8";
+  y.aci   = 0;
+  y.olcek = 1;
+  degisikligiUygula();
+  renkListesiniCiz();
+  parcaListesiniCiz();
+  seritGoster(SLOTLAR[seciliSlot].ad + " eski hâline döndü.");
+}
+
+/* Menüde çocuğun güncel robotu gösterilir (Aşama 7 cilası) */
+function menuyuAc(){
+  document.getElementById("menu-robot").innerHTML = robotSvgUret(null, null, true);
+}
+Sahne.girisKancalari.menu = menuyuAc;
+
+/* Atölye sahnesi her açıldığında tazelenir */
+let atolyeBagliMi = false;
+function atolyeyiAc(){
+  if(!atolyeBagliMi){
+    atolyeBagliMi = true;
+
+    /* Aşama 3: çevirme, boyut ve sıfırlama düğmeleri */
+    document.querySelectorAll("[data-aci]").forEach(d => {
+      d.addEventListener("click", () => aciDegistir(Number(d.dataset.aci)));
+    });
+    document.querySelectorAll("[data-olcek]").forEach(d => {
+      d.addEventListener("click", () => olcekDegistir(Number(d.dataset.olcek)));
+    });
+    document.getElementById("parca-sifirla")
+            .addEventListener("click", seciliParcayiSifirla);
+
+    /* Ad alanları: yazdıkça kaydedilir; alandan çıkınca süzgeçten geçer */
+    [["robot-adi","robotAdi","robot"], ["ogrenci-adi","ogrenciAdi","ogrenci"]]
+      .forEach(([kimlik, alan, tur]) => {
+        const kutu = document.getElementById(kimlik);
+        kutu.addEventListener("input", olay => {
+          durum[alan] = olay.target.value.slice(0, 20);
+          durumuKaydet();
+        });
+        kutu.addEventListener("change", () => {
+          const suzulmus = adiSuz(durum[alan], tur);
+          if(suzulmus !== durum[alan]){
+            durum[alan] = suzulmus;
+            kutu.value = suzulmus;
+            durumuKaydet();
+            seritGoster("Bu ad kullanılamaz. Sana yeni bir ad seçtim: " + suzulmus);
+          }
+        });
+      });
+
+  }
+  const adKutusu = document.getElementById("robot-adi");
+  adKutusu.value = durum.robotAdi || "";
+  document.getElementById("ogrenci-adi").value = durum.ogrenciAdi || "";
+
+  /* Öğretmen adı kilitlediyse alan salt okunur olur */
+  adKutusu.readOnly = !!durum.adKilitli;
+  adKutusu.title = durum.adKilitli ? "Bu adı öğretmenin belirledi." : "";
+  const kilitNotu = document.getElementById("ad-kilit-notu");
+  kilitNotu.hidden = !durum.adKilitli;
+
+  robotuCiz();
+  slotListesiniCiz();
+  parcaListesiniCiz();
+  renkListesiniCiz();
+  kontrolleriGuncelle();
+}
+Sahne.girisKancalari.atolye = atolyeyiAc;
+
+/* ==========================================================================
+   AŞAMA 4 — MARKET (kategoriler · fiyat · satın alma · sahiplik)
+     O) Fiyat kademeleri
+     P) Market rafının çizimi
+     R) Satın alma
+   ========================================================================== */
+
+/* --- O) FİYATLAR VE VİDA RENKLERİ --------------------------------------- */
+/* Her kategoride 6 parça: 2'si yeşil, 2'si mavi, 2'si kırmızı vida ister.
+   Fiyatlar 10 ve 15. Kusursuz bir tur 25 vida getirir; yani bir tur o renkten
+   ucuz bir parçayı fazlasıyla, pahalısını da tek turda karşılar. Renk ve fiyat yalnızca görünüşü belirler;
+   hiçbir parça oynanış avantajı vermez.                                     */
+let seciliKategori = "kafa";
+
+/* Bir kategorinin satın alınabilir parçaları: yeşil → mavi → kırmızı, ucuzdan */
+function marketParcalari(kategori){
+  return kategorininParcalari(kategori)
+    .filter(id => !PARCALAR[id].ucretsiz)
+    .sort((a,b) => {
+      const fark = VIDA_SIRASI.indexOf(PARCALAR[a].vida) - VIDA_SIRASI.indexOf(PARCALAR[b].vida);
+      return fark !== 0 ? fark : PARCALAR[a].fiyat - PARCALAR[b].fiyat;
+    });
+}
+
+/* --- P) MARKET RAFININ ÇİZİMİ ------------------------------------------- */
+function marketiCiz(){
+  const not = document.getElementById("market-not");
+  not.innerHTML = ((seciliKategori === "kol" || seciliKategori === "bacak")
+      ? "Bir kez al; \"Uygula\" iki tarafa da takar, Robotum'da tek tek değiştirebilirsin. "
+      : "Aldığın parçayı \"Uygula\" ile hemen takarsın. ")
+    + "<br>Yeşil vidalar Kolay turdan, maviler Orta'dan, kırmızılar Zor'dan gelir.";
+
+  document.getElementById("market-listesi").innerHTML =
+    marketParcalari(seciliKategori).map(id => {
+      const p = PARCALAR[id];
+      const v = VIDA[p.vida];
+      const bende = sahipMi(id);
+      const yeter = (durum.vida[p.vida] || 0) >= p.fiyat;
+
+      /* Üç durum: satın al → Uygula → Takılı */
+      const dugme = !bende
+        ? `<button class="dugme satin-al${yeter ? "" : " yetersiz"}" type="button"
+                   data-parca="${id}" ${yeter ? "" : "disabled"}
+                   style="${yeter ? "background:" + v.renk + ";" : ""}">
+             ${vidaSimgesi(p.vida, 22)}<span>${p.fiyat}</span>
+           </button>`
+        : (parcaTakiliMi(id)
+            ? `<span class="market-sahip">Takılı</span>`
+            : `<button class="dugme uygula" type="button" data-uygula="${id}">Uygula</button>`);
+
+      return `<div class="market-kart${bende ? " alinmis" : ""}">
+                <span class="kademe" style="background:${v.acik}; color:${v.koyu}; border-color:${v.kenar};">
+                  ${v.ad} vida
+                </span>
+                <div class="market-gorsel">${parcaOnizleme(id)}</div>
+                <span class="market-ad">${p.ad}</span>
+                ${dugme}
+              </div>`;
+    }).join("");
+
+  document.querySelectorAll(".satin-al").forEach(d => {
+    d.addEventListener("click", () => parcaSatinAl(d.dataset.parca));
+  });
+  document.querySelectorAll(".uygula").forEach(d => {
+    d.addEventListener("click", () => marketteUygula(d.dataset.uygula));
+  });
+}
+
+/* Bir kategorinin beslediği slotlar (kol ve bacak ikişer slota hizmet eder) */
+function kategorininSlotlari(kategori){
+  return Object.keys(SLOTLAR).filter(s => SLOTLAR[s].kategori === kategori);
+}
+
+/* Parça, kategorisinin BÜTÜN slotlarında takılıysa "Takılı" sayılır */
+function parcaTakiliMi(id){
+  const p = PARCALAR[id];
+  if(!p) return false;
+  return kategorininSlotlari(p.kategori)
+    .every(slot => durum.robot[slot] && durum.robot[slot].parca === id);
+}
+
+/* Marketten doğrudan takma — kol/bacakta iki tarafa birden uygulanır.
+   Slotun rengi, açısı ve boyutu korunur.                                    */
+function marketteUygula(id){
+  const p = PARCALAR[id];
+  if(!p || !sahipMi(id)) return;
+
+  const slotlar = kategorininSlotlari(p.kategori);
+  slotlar.forEach(slot => {
+    const eski = durum.robot[slot] || {};
+    durum.robot[slot] = {
+      parca: id,
+      renk:  eski.renk  || p.renk,
+      aci:   eski.aci   || 0,
+      olcek: eski.olcek || 1
+    };
+  });
+  durumuKaydet();
+
+  marketiCiz();
+  Ses.cal("tak");
+  seritGoster(p.ad + (slotlar.length > 1 ? " iki tarafa da takıldı." : " takıldı."));
+}
+
+/* --- R) SATIN ALMA ------------------------------------------------------ */
+function parcaSatinAl(id){
+  const p = PARCALAR[id];
+  if(!p || p.ucretsiz || sahipMi(id)) return;          /* iki kez satın alınmaz */
+
+  if((durum.vida[p.vida] || 0) < p.fiyat){
+    seritGoster("Bunun için biraz daha " + VIDA[p.vida].ad.toLowerCase() + " vida gerek.");
+    return;
+  }
+
+  durum.vida[p.vida] -= p.fiyat;
+  durum.sahip[p.kategori].push(id);
+  durumuKaydet();
+
+  vidayiCiz(p.vida);
+  marketiCiz();
+  Ses.cal("satin");
+  seritGoster(p.ad + " alındı! Şimdi \"Uygula\" ile takabilirsin.");
+}
+
+Sahne.girisKancalari.market = marketiCiz;
+
+/* ==========================================================================
+   AŞAMA 5 — ALIŞTIRMA MEKANİĞİ
+     S) Ortak SVG şekil bileşenleri
+     T) Soru verisi (3 örnek — 60 taslak 6. aşamada)
+     U) Tur akışı ve soru seçimi
+     V) Cevap, geri bildirim ve tur sonu
+   ========================================================================== */
+
+/* --- S) ORTAK SVG ŞEKİL BİLEŞENLERİ ------------------------------------- */
+/* Her şekil (0,0) merkezli, ~100 birimlik kutuda tanımlıdır. Soru görselleri
+   tekil SVG dosyası değildir; hepsi bu bileşenlerden parametreyle üretilir.  */
+const SEKIL_BILGI = {
+  ucgen: {
+    ad:"Üçgen", kenar:3, kose:3,
+    noktalar:[[0,-46],[46,38],[-46,38]]
+  },
+  kare: {
+    ad:"Kare", kenar:4, kose:4,
+    noktalar:[[-42,-42],[42,-42],[42,42],[-42,42]]
+  },
+  dikdortgen: {
+    ad:"Dikdörtgen", kenar:4, kose:4,
+    noktalar:[[-56,-30],[56,-30],[56,30],[-56,30]]
+  },
+  daire: {
+    ad:"Daire", kenar:0, kose:0, yuvarlak:true, r:44
+  },
+  cember: {
+    ad:"Çember", kenar:0, kose:0, yuvarlak:true, bos:true, r:44
+  }
+};
+
+function sekilCiz(tip, renk){
+  /* "soru" gerçek bir geometrik şekil değil; örüntülerde boş yeri gösterir */
+  if(tip === "soru"){
+    const g = renk || "#334155";
+    return `<rect x="-44" y="-44" width="88" height="88" rx="12" fill="#ffffff"
+              stroke="${g}" stroke-width="5" stroke-dasharray="12 9"/>
+            <text x="0" y="16" text-anchor="middle" font-size="52"
+              font-family="Trebuchet MS, sans-serif" font-weight="bold" fill="${g}">?</text>`;
+  }
+
+  const s = SEKIL_BILGI[tip];
+  if(!s) return "";
+  const r = renk || "#1d4ed8";
+  const k = renkKoyult(r, .35);
+
+  /* Daire içi doludur; çember yalnızca eğridir, içi boştur */
+  if(s.yuvarlak){
+    return s.bos
+      ? `<circle cx="0" cy="0" r="${s.r - 5}" fill="none" stroke="${r}" stroke-width="10"/>`
+      : `<circle cx="0" cy="0" r="${s.r}" fill="${r}" stroke="${k}" stroke-width="4"/>`;
+  }
+  return `<polygon points="${s.noktalar.map(n => n.join(",")).join(" ")}"
+           fill="${r}" stroke="${k}" stroke-width="4" stroke-linejoin="round"/>`;
+}
+
+/* Soru sahnesi: konumlar 0–1 arası oransal (viewBox 400×240) */
+function sahneSvg(sahne){
+  const icerik = (sahne || []).map(o =>
+    `<g transform="translate(${(o.x*400).toFixed(1)},${(o.y*240).toFixed(1)})`
+    + ` rotate(${o.aci || 0}) scale(${o.olcek == null ? 1 : o.olcek})">`
+    + sekilCiz(o.sekil, o.renk) + `</g>`
+  ).join("");
+  return `<svg viewBox="0 0 400 240" role="img" aria-label="Soru görseli">${icerik}</svg>`;
+}
+
+/* Kenar ve köşeleri sırayla vurgulayan öğretici görsel */
+function vurguSvg(tip){
+  const s = SEKIL_BILGI[tip];
+  if(!s) return "";
+  const r = "#1d4ed8", k = renkKoyult(r,.35);
+
+  if(s.yuvarlak){
+    const cevre = (2 * Math.PI * s.r).toFixed(1);
+    return `<svg viewBox="-70 -70 140 140" aria-hidden="true">
+      ${s.bos ? "" : `<circle cx="0" cy="0" r="${s.r}" fill="#dbe7ff"/>`}
+      <circle cx="0" cy="0" r="${s.r}" fill="none" stroke="${k}" stroke-width="6"
+              stroke-linecap="round" class="vurgu-kenar" style="--uzunluk:${cevre}"/>
+    </svg>`;
+  }
+
+  const n = s.noktalar;
+  let kenarlar = "", koseler = "";
+  n.forEach((p, i) => {
+    const q = n[(i+1) % n.length];
+    const uzunluk = Math.hypot(q[0]-p[0], q[1]-p[1]).toFixed(1);
+    kenarlar += `<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"
+                   stroke="${k}" stroke-width="7" stroke-linecap="round"
+                   class="vurgu-kenar" style="--uzunluk:${uzunluk}; animation-delay:${(i*0.18).toFixed(2)}s"/>`;
+    koseler  += `<circle cx="${p[0]}" cy="${p[1]}" r="9" fill="#d97706" stroke="#fff" stroke-width="3"
+                   class="vurgu-kose" style="animation-delay:${(n.length*0.18 + i*0.12).toFixed(2)}s"/>`;
+  });
+
+  return `<svg viewBox="-70 -70 140 140" aria-hidden="true">
+    <polygon points="${n.map(p => p.join(",")).join(" ")}" fill="#dbe7ff"/>
+    ${kenarlar}${koseler}
+  </svg>`;
+}
+
+/* --- T) SORU VERİSİ ----------------------------------------------------- */
+/* Şema: {id, zorluk, tip, metin, sahne[], secenekTipi, secenekler[], dogru,
+          vurgu, aciklama}
+   Sahne öğeleri: sk(şekil, renk, x, y, ölçek, açı) — x/y 0–1 arası oransal.
+   Hiçbir soru için ayrı SVG dosyası yok; hepsi S bölümündeki ortak
+   bileşenlerden üretilir.                                                   */
+
+const R = {
+  mavi:"#1d4ed8", gok:"#0ea5e9", yesil:"#15803d", turuncu:"#d97706",
+  kirmizi:"#dc2626", mor:"#7c3aed", pembe:"#db2777", sari:"#f59e0b",
+  kahve:"#78350f", gri:"#334155", beyaz:"#ffffff"
+};
+
+function sk(sekil, renk, x, y, olcek, aci){
+  return { sekil:sekil, renk:renk, x:x, y:y,
+           olcek:(olcek == null ? 1 : olcek), aci:(aci || 0) };
+}
+
+/* Günlük yaşam nesneleri — hepsi aynı dört şekilden kurulur */
+const NESNELER = {
+  saat: (x,y,s) => [
+    sk("daire", R.gok, x, y, 1.15*s),
+    sk("dikdortgen", R.beyaz, x, y-0.075*s, 0.24*s, 90),
+    sk("dikdortgen", R.beyaz, x+0.06*s, y, 0.19*s, 0)
+  ],
+  kitap: (x,y,s) => [
+    sk("dikdortgen", R.mavi, x, y, 1.0*s),
+    sk("dikdortgen", R.beyaz, x-0.11*s, y, 0.2*s, 90)
+  ],
+  pizza: (x,y,s) => [
+    sk("ucgen", R.sari, x, y, 1.1*s, 180),
+    sk("daire", R.kirmizi, x-0.035*s, y-0.10*s, 0.13*s),
+    sk("daire", R.kirmizi, x+0.04*s, y-0.06*s, 0.13*s),
+    sk("daire", R.kirmizi, x, y+0.06*s, 0.13*s)
+  ],
+  pencere: (x,y,s) => [
+    sk("kare", R.kahve, x, y, 1.15*s),
+    sk("kare", R.gok, x-0.058*s, y-0.098*s, 0.5*s),
+    sk("kare", R.gok, x+0.058*s, y-0.098*s, 0.5*s),
+    sk("kare", R.gok, x-0.058*s, y+0.098*s, 0.5*s),
+    sk("kare", R.gok, x+0.058*s, y+0.098*s, 0.5*s)
+  ],
+  top: (x,y,s) => [
+    sk("daire", R.pembe, x, y, 1.15*s),
+    sk("daire", R.beyaz, x-0.04*s, y-0.07*s, 0.28*s)
+  ],
+  yelkenli: (x,y,s) => [
+    sk("ucgen", R.beyaz, x, y-0.10*s, 0.95*s),
+    sk("dikdortgen", R.kirmizi, x, y+0.14*s, 0.7*s)
+  ],
+  kapi: (x,y,s) => [
+    sk("dikdortgen", R.kahve, x, y, 1.0*s, 90),
+    sk("daire", R.sari, x+0.05*s, y, 0.12*s)
+  ],
+  ev: (x,y,s) => [
+    sk("kare", R.sari, x, y+0.13*s, 0.8*s),
+    sk("ucgen", R.kirmizi, x, y-0.15*s, 0.9*s)
+  ],
+  tekerlek: (x,y,s) => [
+    sk("daire", R.gri, x, y, 1.2*s),
+    sk("daire", R.sari, x, y, 0.5*s),
+    sk("daire", R.gri, x, y, 0.18*s)
+  ],
+  tablet: (x,y,s) => [
+    sk("dikdortgen", R.gri, x, y, 1.05*s),
+    sk("dikdortgen", R.gok, x, y, 0.8*s)
+  ]
+};
+function nesne(ad, x, y, s){ return NESNELER[ad](x, y, s == null ? 1 : s); }
+
+const SORULAR = [
+
+  /* ======================= KOLAY (20) =======================
+     Şeklin adını seçme · doğru şekle dokunma · aynısını bulma  */
+
+  { id:"k1", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("kare", R.mavi, 0.5, 0.5, 1.3)],
+    secenekTipi:"metin", secenekler:["Üçgen","Kare","Daire"], dogru:1,
+    vurgu:"kare", aciklama:"Karenin 4 kenarı ve 4 köşesi vardır." },
+
+  { id:"k2", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("ucgen", R.turuncu, 0.5, 0.5, 1.3)],
+    secenekTipi:"metin", secenekler:["Üçgen","Dikdörtgen","Daire"], dogru:0,
+    vurgu:"ucgen", aciklama:"Üçgenin 3 kenarı ve 3 köşesi vardır." },
+
+  { id:"k3", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("daire", R.pembe, 0.5, 0.5, 1.3)],
+    secenekTipi:"metin", secenekler:["Kare","Üçgen","Daire"], dogru:2,
+    vurgu:"daire", aciklama:"Dairenin köşesi yoktur, çevresi yuvarlaktır." },
+
+  { id:"k4", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("dikdortgen", R.yesil, 0.5, 0.5, 1.3)],
+    secenekTipi:"metin", secenekler:["Daire","Dikdörtgen","Üçgen"], dogru:1,
+    vurgu:"dikdortgen", aciklama:"Dikdörtgenin 4 kenarı vardır; kenarlarının ikisi uzun, ikisi kısadır." },
+
+  { id:"k5", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("kare", R.mor, 0.5, 0.5, 1.25, 45)],
+    secenekTipi:"metin", secenekler:["Kare","Üçgen","Daire"], dogru:0,
+    vurgu:"kare", aciklama:"Şekli döndürsek de kare karedir: 4 kenarı ve 4 köşesi vardır." },
+
+  { id:"k6", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("ucgen", R.gok, 0.5, 0.5, 1.3, 180)],
+    secenekTipi:"metin", secenekler:["Dikdörtgen","Daire","Üçgen"], dogru:2,
+    vurgu:"ucgen", aciklama:"Ters dursa da üçgendir: 3 kenarı ve 3 köşesi vardır." },
+
+  { id:"k7", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("dikdortgen", R.kirmizi, 0.5, 0.5, 1.2, 90)],
+    secenekTipi:"metin", secenekler:["Dikdörtgen","Kare","Daire"], dogru:0,
+    vurgu:"dikdortgen", aciklama:"Ayakta dursa da dikdörtgendir: uzun ve kısa kenarları vardır." },
+
+  { id:"k8", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
+    sahne:[sk("daire", R.sari, 0.5, 0.5, 0.85)],
+    secenekTipi:"metin", secenekler:["Üçgen","Daire","Kare"], dogru:1,
+    vurgu:"daire", aciklama:"Küçük de olsa dairedir; dairenin hiç köşesi yoktur." },
+
+  { id:"k9", zorluk:"kolay", tip:"dokun", metin:"Üçgene dokun.",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:1,
+    vurgu:"ucgen", aciklama:"Üçgenin 3 kenarı ve 3 köşesi vardır." },
+
+  { id:"k10", zorluk:"kolay", tip:"dokun", metin:"Kareye dokun.",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["daire","dikdortgen","kare"], dogru:2,
+    vurgu:"kare", aciklama:"Karenin 4 kenarı eşit uzunluktadır." },
+
+  { id:"k11", zorluk:"kolay", tip:"dokun", metin:"Daireye dokun.",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["daire","ucgen","kare"], dogru:0,
+    vurgu:"daire", aciklama:"Dairenin köşesi yoktur." },
+
+  { id:"k12", zorluk:"kolay", tip:"dokun", metin:"Dikdörtgene dokun.",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["ucgen","dikdortgen","daire"], dogru:1,
+    vurgu:"dikdortgen", aciklama:"Dikdörtgenin uzun ve kısa kenarları vardır." },
+
+  { id:"k13", zorluk:"kolay", tip:"dokun", metin:"İçi dolu olan yuvarlak şekle dokun.",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["cember","daire","kare"], dogru:1,
+    vurgu:"daire", aciklama:"Dairenin içi doludur; çemberin içi boştur." },
+
+  { id:"k14", zorluk:"kolay", tip:"dokun", metin:"Üç köşesi olan şekle dokun.",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["dikdortgen","daire","ucgen"], dogru:2,
+    vurgu:"ucgen", aciklama:"Üçgenin 3 köşesi vardır." },
+
+  { id:"k15", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+    sahne:[sk("kare", R.turuncu, 0.5, 0.5, 1.0)],
+    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:1,
+    vurgu:"kare", aciklama:"İkisi de karedir; rengi farklı olsa da şekli aynıdır." },
+
+  { id:"k16", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+    sahne:[sk("daire", R.yesil, 0.5, 0.5, 1.0)],
+    secenekTipi:"sekil", secenekler:["daire","dikdortgen","ucgen"], dogru:0,
+    vurgu:"daire", aciklama:"İkisi de dairedir." },
+
+  { id:"k17", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+    sahne:[sk("dikdortgen", R.mor, 0.5, 0.5, 1.0)],
+    secenekTipi:"sekil", secenekler:["kare","ucgen","dikdortgen"], dogru:2,
+    vurgu:"dikdortgen", aciklama:"İkisi de dikdörtgendir." },
+
+  { id:"k18", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+    sahne:[sk("ucgen", R.pembe, 0.5, 0.5, 1.0)],
+    secenekTipi:"sekil", secenekler:["ucgen","daire","kare"], dogru:0,
+    vurgu:"ucgen", aciklama:"İkisi de üçgendir." },
+
+  { id:"k19", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+    sahne:[sk("kare", R.gok, 0.5, 0.5, 1.0, 45)],
+    secenekTipi:"sekil", secenekler:["ucgen","daire","kare"], dogru:2,
+    vurgu:"kare", aciklama:"Yukarıdaki şekil döndürülmüş bir karedir." },
+
+  { id:"k20", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+    sahne:[sk("daire", R.kirmizi, 0.5, 0.5, 0.9)],
+    secenekTipi:"sekil", secenekler:["kare","daire","dikdortgen"], dogru:1,
+    vurgu:"daire", aciklama:"Büyüklük değişse de şekil aynıdır: ikisi de daire." },
+
+  /* ======================= ORTA (20) =========================
+     Kenar–köşe özelliğinden şekli bulma · günlük nesne eşleştirme */
+
+  { id:"o1", zorluk:"orta", tip:"ozellik", metin:"3 kenarı ve 3 köşesi olan şekil hangisidir?",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:1,
+    vurgu:"ucgen", aciklama:"Üçgenin 3 kenarı ve 3 köşesi vardır." },
+
+  { id:"o2", zorluk:"orta", tip:"ozellik", metin:"Hiç köşesi olmayan şekil hangisidir?",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["daire","dikdortgen","ucgen"], dogru:0,
+    vurgu:"daire", aciklama:"Dairenin hiç köşesi yoktur." },
+
+  { id:"o3", zorluk:"orta", tip:"ozellik", metin:"4 kenarı da eşit olan şekil hangisidir?",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["dikdortgen","daire","kare"], dogru:2,
+    vurgu:"kare", aciklama:"Karenin 4 kenarı da birbirine eşittir." },
+
+  { id:"o4", zorluk:"orta", tip:"ozellik", metin:"Uzun ve kısa kenarları olan şekil hangisidir?",
+    sahne:[],
+    secenekTipi:"sekil", secenekler:["ucgen","dikdortgen","daire"], dogru:1,
+    vurgu:"dikdortgen", aciklama:"Dikdörtgenin karşılıklı kenarları eşittir; ikisi uzun, ikisi kısadır." },
+
+  { id:"o5", zorluk:"orta", tip:"sayi", metin:"Üçgenin kaç köşesi vardır?",
+    sahne:[sk("ucgen", R.turuncu, 0.5, 0.5, 1.2)],
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"ucgen", aciklama:"Üçgenin 3 köşesi vardır." },
+
+  { id:"o6", zorluk:"orta", tip:"sayi", metin:"Karenin kaç kenarı vardır?",
+    sahne:[sk("kare", R.mavi, 0.5, 0.5, 1.2)],
+    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
+    vurgu:"kare", aciklama:"Karenin 4 kenarı vardır." },
+
+  { id:"o7", zorluk:"orta", tip:"sayi", metin:"Dairenin kaç köşesi vardır?",
+    sahne:[sk("daire", R.pembe, 0.5, 0.5, 1.2)],
+    secenekTipi:"metin", secenekler:["Hiç yok","2","4"], dogru:0,
+    vurgu:"daire", aciklama:"Dairenin hiç köşesi yoktur." },
+
+  { id:"o8", zorluk:"orta", tip:"sayi", metin:"Dikdörtgenin kaç kenarı vardır?",
+    sahne:[sk("dikdortgen", R.yesil, 0.5, 0.5, 1.2)],
+    secenekTipi:"sayi", secenekler:["3","4","6"], dogru:1,
+    vurgu:"dikdortgen", aciklama:"Dikdörtgenin 4 kenarı vardır." },
+
+  { id:"o9", zorluk:"orta", tip:"ad", metin:"İçi boş olan bu şeklin adı nedir?",
+    sahne:[sk("cember", R.mavi, 0.5, 0.5, 1.25)],
+    secenekTipi:"metin", secenekler:["Daire","Çember","Kare"], dogru:1,
+    vurgu:"cember", aciklama:"Çember yalnızca yuvarlak bir çizgidir; içi boştur. İçi dolu olsaydı daire olurdu." },
+
+  { id:"o10", zorluk:"orta", tip:"sayi", metin:"Karenin kaç köşesi vardır?",
+    sahne:[sk("kare", R.mor, 0.5, 0.5, 1.2)],
+    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
+    vurgu:"kare", aciklama:"Karenin 4 köşesi vardır." },
+
+  { id:"o11", zorluk:"orta", tip:"esleme", metin:"Bu saat hangi şekle benzer?",
+    sahne:nesne("saat", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["kare","daire","ucgen"], dogru:1,
+    vurgu:"daire", aciklama:"Saatin çerçevesi daire şeklindedir." },
+
+  { id:"o12", zorluk:"orta", tip:"esleme", metin:"Bu kitap hangi şekle benzer?",
+    sahne:nesne("kitap", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["dikdortgen","daire","ucgen"], dogru:0,
+    vurgu:"dikdortgen", aciklama:"Kitabın kapağı dikdörtgen şeklindedir." },
+
+  { id:"o13", zorluk:"orta", tip:"esleme", metin:"Bu pizza dilimi hangi şekle benzer?",
+    sahne:nesne("pizza", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["kare","dikdortgen","ucgen"], dogru:2,
+    vurgu:"ucgen", aciklama:"Pizza dilimi üçgene benzer: 3 kenarı ve 3 köşesi vardır." },
+
+  { id:"o14", zorluk:"orta", tip:"esleme", metin:"Bu pencerenin çerçevesi hangi şekle benzer?",
+    sahne:nesne("pencere", 0.5, 0.5, 1.05),
+    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:1,
+    vurgu:"kare", aciklama:"Pencerenin çerçevesi kare şeklindedir." },
+
+  { id:"o15", zorluk:"orta", tip:"esleme", metin:"Bu top hangi şekle benzer?",
+    sahne:nesne("top", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["daire","kare","ucgen"], dogru:0,
+    vurgu:"daire", aciklama:"Topun kenarı yuvarlaktır; daireye benzer." },
+
+  { id:"o16", zorluk:"orta", tip:"esleme", metin:"Bu teknenin yelkeni hangi şekle benzer?",
+    sahne:nesne("yelkenli", 0.5, 0.48, 1.1),
+    secenekTipi:"sekil", secenekler:["daire","ucgen","kare"], dogru:1,
+    vurgu:"ucgen", aciklama:"Yelken üçgen şeklindedir." },
+
+  { id:"o17", zorluk:"orta", tip:"esleme", metin:"Bu kapı hangi şekle benzer?",
+    sahne:nesne("kapi", 0.5, 0.5, 1.05),
+    secenekTipi:"sekil", secenekler:["ucgen","kare","dikdortgen"], dogru:2,
+    vurgu:"dikdortgen", aciklama:"Kapı dikdörtgen şeklindedir: iki kenarı uzun, iki kenarı kısadır." },
+
+  { id:"o18", zorluk:"orta", tip:"esleme", metin:"Bu evin çatısı hangi şekle benzer?",
+    sahne:nesne("ev", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["ucgen","dikdortgen","daire"], dogru:0,
+    vurgu:"ucgen", aciklama:"Çatı üçgen şeklindedir." },
+
+  { id:"o19", zorluk:"orta", tip:"esleme", metin:"Bu tekerlek hangi şekle benzer?",
+    sahne:nesne("tekerlek", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:2,
+    vurgu:"daire", aciklama:"Tekerlek daire şeklindedir, bu yüzden yuvarlanır." },
+
+  { id:"o20", zorluk:"orta", tip:"esleme", metin:"Bu tabletin ekranı hangi şekle benzer?",
+    sahne:nesne("tablet", 0.5, 0.5, 1.1),
+    secenekTipi:"sekil", secenekler:["dikdortgen","daire","ucgen"], dogru:0,
+    vurgu:"dikdortgen", aciklama:"Tabletin ekranı dikdörtgen şeklindedir." },
+
+  /* ======================= ZOR (20) ==========================
+     Şekil sayma · eksik şekli bulma · karşılaştırma ve toplam   */
+
+  { id:"z1", zorluk:"zor", tip:"sayma", sayilan:"ucgen", metin:"Bu resimde kaç üçgen var?",
+    sahne:[
+      sk("ucgen",  R.turuncu, 0.18, 0.30, 0.62),
+      sk("kare",   R.mavi,    0.50, 0.30, 0.62),
+      sk("ucgen",  R.yesil,   0.82, 0.30, 0.62, 180),
+      sk("daire", R.pembe,   0.18, 0.72, 0.62),
+      sk("ucgen",  R.mor,     0.50, 0.72, 0.62),
+      sk("kare",   R.gok,     0.82, 0.72, 0.62, 45)
+    ],
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"ucgen", aciklama:"Resimde 3 üçgen var. Üçgenin 3 kenarı ve 3 köşesi vardır." },
+
+  { id:"z2", zorluk:"zor", tip:"sayma", sayilan:"kare", metin:"Bu resimde kaç kare var?",
+    sahne:[
+      sk("kare",   R.mavi,    0.15, 0.30, 0.55),
+      sk("ucgen",  R.turuncu, 0.38, 0.30, 0.55),
+      sk("kare",   R.yesil,   0.62, 0.30, 0.55),
+      sk("daire", R.pembe,   0.85, 0.30, 0.55),
+      sk("kare",   R.mor,     0.28, 0.72, 0.55),
+      sk("ucgen",  R.gok,     0.50, 0.72, 0.55),
+      sk("kare",   R.kirmizi, 0.72, 0.72, 0.55)
+    ],
+    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
+    vurgu:"kare", aciklama:"Resimde 4 kare var. Karenin 4 kenarı eşittir." },
+
+  { id:"z3", zorluk:"zor", tip:"sayma", sayilan:"daire", metin:"Bu resimde kaç daire var?",
+    sahne:[
+      sk("daire", R.pembe,   0.15, 0.30, 0.55),
+      sk("daire", R.gok,     0.38, 0.30, 0.55),
+      sk("kare",   R.mavi,    0.62, 0.30, 0.55),
+      sk("daire", R.sari,    0.85, 0.30, 0.55),
+      sk("daire", R.yesil,   0.28, 0.72, 0.55),
+      sk("kare",   R.turuncu, 0.50, 0.72, 0.55),
+      sk("daire", R.mor,     0.72, 0.72, 0.55)
+    ],
+    secenekTipi:"sayi", secenekler:["4","5","6"], dogru:1,
+    vurgu:"daire", aciklama:"Resimde 5 daire var. Dairenin köşesi yoktur." },
+
+  { id:"z4", zorluk:"zor", tip:"sayma", sayilan:"cember", metin:"Bu resimde kaç çember var?",
+    sahne:[
+      sk("cember", R.mavi,    0.15, 0.30, 0.6),
+      sk("daire",  R.pembe,   0.38, 0.30, 0.6),
+      sk("cember", R.yesil,   0.62, 0.30, 0.6),
+      sk("daire",  R.gok,     0.85, 0.30, 0.6),
+      sk("daire",  R.turuncu, 0.30, 0.74, 0.6),
+      sk("cember", R.mor,     0.70, 0.74, 0.6)
+    ],
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"cember", aciklama:"Resimde 3 çember var; içi dolu olanlar daire, içi boş olanlar çemberdir." },
+
+  { id:"z5", zorluk:"zor", tip:"sayma", sayilan:"tumu", metin:"Bu resimde toplam kaç şekil var?",
+    sahne:[
+      sk("ucgen",  R.turuncu, 0.18, 0.30, 0.6),
+      sk("kare",   R.mavi,    0.50, 0.30, 0.6),
+      sk("daire", R.pembe,   0.82, 0.30, 0.6),
+      sk("kare",   R.yesil,   0.18, 0.72, 0.6),
+      sk("daire", R.sari,    0.50, 0.72, 0.6),
+      sk("ucgen",  R.mor,     0.82, 0.72, 0.6)
+    ],
+    secenekTipi:"sayi", secenekler:["5","6","7"], dogru:1,
+    vurgu:"kare", aciklama:"Resimde toplam 6 şekil var: 2 üçgen, 2 kare ve 2 daire." },
+
+  { id:"z6", zorluk:"zor", tip:"sayma", sayilan:"dikdortgen", metin:"Bu resimde kaç dikdörtgen var?",
+    sahne:[
+      sk("dikdortgen", R.yesil,   0.22, 0.30, 0.5),
+      sk("ucgen",      R.mavi,    0.60, 0.30, 0.55),
+      sk("dikdortgen", R.kirmizi, 0.85, 0.30, 0.5, 90),
+      sk("daire",     R.pembe,   0.22, 0.74, 0.55),
+      sk("dikdortgen", R.mor,     0.55, 0.74, 0.5),
+      sk("daire",     R.gok,     0.85, 0.74, 0.55)
+    ],
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"dikdortgen", aciklama:"Resimde 3 dikdörtgen var; biri ayakta dursa da dikdörtgendir." },
+
+  { id:"z7", zorluk:"zor", tip:"sayma", sayilan:"kare", metin:"Bu resimde kaç kare var?",
+    sahne:[
+      sk("kare",   R.mavi,    0.18, 0.30, 0.6, 45),
+      sk("ucgen",  R.turuncu, 0.50, 0.30, 0.6),
+      sk("kare",   R.yesil,   0.82, 0.30, 0.6),
+      sk("daire", R.pembe,   0.18, 0.74, 0.6),
+      sk("kare",   R.mor,     0.50, 0.74, 0.6, 30),
+      sk("ucgen",  R.gok,     0.82, 0.74, 0.6, 180)
+    ],
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"kare", aciklama:"Resimde 3 kare var; döndürülmüş kareler de karedir." },
+
+  { id:"z8", zorluk:"zor", tip:"sayma", sayilan:"ucgen", metin:"Bu resimde kaç üçgen var?",
+    sahne:[
+      sk("ucgen",  R.turuncu, 0.15, 0.30, 0.55),
+      sk("ucgen",  R.kirmizi, 0.38, 0.30, 0.55, 180),
+      sk("kare",   R.mavi,    0.62, 0.30, 0.55),
+      sk("ucgen",  R.yesil,   0.85, 0.30, 0.55),
+      sk("daire", R.pembe,   0.30, 0.74, 0.55),
+      sk("ucgen",  R.mor,     0.70, 0.74, 0.55, 180)
+    ],
+    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
+    vurgu:"ucgen", aciklama:"Resimde 4 üçgen var; ters duranlar da üçgendir." },
+
+  { id:"z9", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+    sahne:[
+      sk("ucgen", R.turuncu, 0.10, 0.5, 0.45),
+      sk("kare",  R.mavi,    0.26, 0.5, 0.45),
+      sk("ucgen", R.turuncu, 0.42, 0.5, 0.45),
+      sk("kare",  R.mavi,    0.58, 0.5, 0.45),
+      sk("ucgen", R.turuncu, 0.74, 0.5, 0.45),
+      sk("soru",  R.gri,     0.90, 0.5, 0.45)
+    ],
+    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:1,
+    vurgu:"kare", aciklama:"Örüntü üçgen–kare diye gidiyor, bu yüzden sırada kare var." },
+
+  { id:"z10", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+    sahne:[
+      sk("daire", R.pembe, 0.10, 0.5, 0.45),
+      sk("daire", R.pembe, 0.26, 0.5, 0.45),
+      sk("kare",   R.mavi,  0.42, 0.5, 0.45),
+      sk("daire", R.pembe, 0.58, 0.5, 0.45),
+      sk("daire", R.pembe, 0.74, 0.5, 0.45),
+      sk("soru",   R.gri,   0.90, 0.5, 0.45)
+    ],
+    secenekTipi:"sekil", secenekler:["daire","kare","ucgen"], dogru:1,
+    vurgu:"kare", aciklama:"Örüntü iki daire–bir kare diye tekrar ediyor, sırada kare var." },
+
+  { id:"z11", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+    sahne:[
+      sk("kare",   R.mavi,    0.10, 0.5, 0.45),
+      sk("ucgen",  R.turuncu, 0.26, 0.5, 0.45),
+      sk("daire", R.pembe,   0.42, 0.5, 0.45),
+      sk("kare",   R.mavi,    0.58, 0.5, 0.45),
+      sk("ucgen",  R.turuncu, 0.74, 0.5, 0.45),
+      sk("soru",   R.gri,     0.90, 0.5, 0.45)
+    ],
+    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:2,
+    vurgu:"daire", aciklama:"Örüntü kare–üçgen–daire diye tekrar ediyor, sırada daire var." },
+
+  { id:"z12", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+    sahne:[
+      sk("dikdortgen", R.yesil,   0.10, 0.5, 0.38),
+      sk("ucgen",      R.turuncu, 0.26, 0.5, 0.45),
+      sk("dikdortgen", R.yesil,   0.42, 0.5, 0.38),
+      sk("ucgen",      R.turuncu, 0.58, 0.5, 0.45),
+      sk("dikdortgen", R.yesil,   0.74, 0.5, 0.38),
+      sk("soru",       R.gri,     0.90, 0.5, 0.45)
+    ],
+    secenekTipi:"sekil", secenekler:["dikdortgen","ucgen","kare"], dogru:1,
+    vurgu:"ucgen", aciklama:"Örüntü dikdörtgen–üçgen diye gidiyor, sırada üçgen var." },
+
+  { id:"z13", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+    sahne:[
+      sk("ucgen",  R.mor,   0.10, 0.5, 0.45),
+      sk("ucgen",  R.mor,   0.26, 0.5, 0.45),
+      sk("daire", R.sari,  0.42, 0.5, 0.45),
+      sk("ucgen",  R.mor,   0.58, 0.5, 0.45),
+      sk("ucgen",  R.mor,   0.74, 0.5, 0.45),
+      sk("soru",   R.gri,   0.90, 0.5, 0.45)
+    ],
+    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:2,
+    vurgu:"daire", aciklama:"Örüntü iki üçgen–bir daire diye tekrar ediyor, sırada daire var." },
+
+  { id:"z14", zorluk:"zor", tip:"karsilastirma", karsilastir:["ucgen","kare"],
+    metin:"Bu resimde hangisinden daha çok var?",
+    sahne:[
+      sk("ucgen", R.turuncu, 0.15, 0.30, 0.55),
+      sk("ucgen", R.kirmizi, 0.38, 0.30, 0.55),
+      sk("kare",  R.mavi,    0.62, 0.30, 0.55),
+      sk("ucgen", R.yesil,   0.85, 0.30, 0.55),
+      sk("kare",  R.gok,     0.35, 0.74, 0.55),
+      sk("ucgen", R.mor,     0.65, 0.74, 0.55)
+    ],
+    secenekTipi:"metin", secenekler:["Üçgen","Kare","Eşit"], dogru:0,
+    vurgu:"ucgen", aciklama:"4 üçgen, 2 kare var; üçgenler daha çok." },
+
+  { id:"z15", zorluk:"zor", tip:"karsilastirma", karsilastir:["ucgen","kare"],
+    metin:"Bu resimde hangisinden daha çok var?",
+    sahne:[
+      sk("kare",  R.mavi,    0.15, 0.30, 0.55),
+      sk("kare",  R.gok,     0.38, 0.30, 0.55),
+      sk("ucgen", R.turuncu, 0.62, 0.30, 0.55),
+      sk("kare",  R.yesil,   0.85, 0.30, 0.55),
+      sk("kare",  R.mor,     0.25, 0.74, 0.55),
+      sk("ucgen", R.kirmizi, 0.50, 0.74, 0.55),
+      sk("kare",  R.pembe,   0.75, 0.74, 0.55)
+    ],
+    secenekTipi:"metin", secenekler:["Üçgen","Kare","Eşit"], dogru:1,
+    vurgu:"kare", aciklama:"5 kare, 2 üçgen var; kareler daha çok." },
+
+  { id:"z16", zorluk:"zor", tip:"karsilastirma", karsilastir:["daire","ucgen"],
+    metin:"Bu resimde hangisinden daha çok var?",
+    sahne:[
+      sk("daire", R.pembe,   0.18, 0.30, 0.55),
+      sk("ucgen",  R.turuncu, 0.50, 0.30, 0.55),
+      sk("daire", R.gok,     0.82, 0.30, 0.55),
+      sk("ucgen",  R.yesil,   0.18, 0.74, 0.55),
+      sk("daire", R.sari,    0.50, 0.74, 0.55),
+      sk("ucgen",  R.mor,     0.82, 0.74, 0.55)
+    ],
+    secenekTipi:"metin", secenekler:["Daire","Üçgen","Eşit"], dogru:2,
+    vurgu:"daire", aciklama:"3 daire ve 3 üçgen var; sayıları eşit." },
+
+  { id:"z17", zorluk:"zor", tip:"karsilastirma", karsilastir:["daire","dikdortgen"],
+    metin:"Bu resimde hangisinden daha çok var?",
+    sahne:[
+      sk("daire",     R.pembe, 0.15, 0.30, 0.55),
+      sk("daire",     R.gok,   0.38, 0.30, 0.55),
+      sk("dikdortgen", R.yesil, 0.65, 0.30, 0.45),
+      sk("daire",     R.sari,  0.88, 0.30, 0.55),
+      sk("daire",     R.mor,   0.25, 0.74, 0.55),
+      sk("dikdortgen", R.kahve, 0.55, 0.74, 0.45),
+      sk("daire",     R.mavi,  0.85, 0.74, 0.55)
+    ],
+    secenekTipi:"metin", secenekler:["Daire","Dikdörtgen","Eşit"], dogru:0,
+    vurgu:"daire", aciklama:"5 daire, 2 dikdörtgen var; daireler daha çok." },
+
+  { id:"z18", zorluk:"zor", tip:"toplam", toplam:{sekil:"kare", ozellik:"kenar"},
+    metin:"Bu 2 karenin toplam kaç kenarı vardır?",
+    sahne:[
+      sk("kare", R.mavi,  0.33, 0.5, 0.85),
+      sk("kare", R.yesil, 0.67, 0.5, 0.85)
+    ],
+    secenekTipi:"sayi", secenekler:["6","8","10"], dogru:1,
+    vurgu:"kare", aciklama:"Her karenin 4 kenarı var: 4 + 4 = 8 kenar." },
+
+  { id:"z19", zorluk:"zor", tip:"toplam", toplam:{sekil:"ucgen", ozellik:"kose"},
+    metin:"Bu 3 üçgenin toplam kaç köşesi vardır?",
+    sahne:[
+      sk("ucgen", R.turuncu, 0.22, 0.5, 0.7),
+      sk("ucgen", R.kirmizi, 0.50, 0.5, 0.7),
+      sk("ucgen", R.mor,     0.78, 0.5, 0.7)
+    ],
+    secenekTipi:"sayi", secenekler:["6","9","12"], dogru:1,
+    vurgu:"ucgen", aciklama:"Her üçgenin 3 köşesi var: 3 + 3 + 3 = 9 köşe." },
+
+  { id:"z20", zorluk:"zor", tip:"toplam",
+    metin:"Bir kare ile bir dairenin toplam kaç köşesi vardır?",
+    sahne:[
+      sk("kare",   R.mavi,  0.33, 0.5, 0.85),
+      sk("daire", R.pembe, 0.67, 0.5, 0.85)
+    ],
+    secenekTipi:"sayi", secenekler:["4","5","8"], dogru:0,
+    vurgu:"daire", aciklama:"Karenin 4 köşesi, dairenin hiç köşesi yoktur: 4 + 0 = 4 köşe." }
+];
+
+/* --- U) TUR AKIŞI VE SORU SEÇİMİ ---------------------------------------- */
+const TUR_SORU_SAYISI = 5;
+let tur = null;
+
+function karistir(dizi){
+  const d = dizi.slice();
+  for(let i = d.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+/* Aynı soru bir tur içinde iki kez çıkmaz; art arda iki turda da çıkmaz.
+   Havuz yetmezse eleme gevşetilir.                                        */
+function turSorulariSec(zorluk){
+  const havuz = SORULAR.filter(s => s.zorluk === zorluk);
+  const onceki = durum.sonTur[zorluk] || [];
+  let aday = havuz.filter(s => onceki.indexOf(s.id) === -1);
+  if(aday.length < Math.min(TUR_SORU_SAYISI, havuz.length)) aday = havuz.slice();
+  return karistir(aday).slice(0, Math.min(TUR_SORU_SAYISI, aday.length));
+}
+
+function panelGoster(ad){
+  document.getElementById("alistirma-giris").hidden = (ad !== "giris");
+  document.getElementById("alistirma-soru").hidden  = (ad !== "soru");
+  document.getElementById("alistirma-ozet").hidden  = (ad !== "ozet");
+}
+
+function turBaslat(zorluk){
+  const sorular = turSorulariSec(zorluk);
+  if(!sorular.length){ seritGoster("Bu zorlukta henüz soru yok."); return; }
+  tur = { zorluk:zorluk, sorular:sorular, indeks:0, dogruSayisi:0, kazanilanVida:0, sonuclar:[] };
+  panelGoster("soru");
+  soruyuCiz();
+}
+
+function ilerlemeyiCiz(){
+  document.getElementById("tur-ilerleme").textContent =
+    "Soru " + (tur.indeks + 1) + " / " + tur.sorular.length;
+  document.getElementById("tur-noktalar").innerHTML = tur.sorular.map((s, i) => {
+    let sinif = "tur-nokta";
+    if(tur.sonuclar[i] === true)  sinif += " dogru";
+    if(tur.sonuclar[i] === false) sinif += " yanlis";
+    if(i === tur.indeks) sinif += " simdi";
+    return `<span class="${sinif}"></span>`;
+  }).join("");
+}
+
+function soruyuCiz(){
+  const s = tur.sorular[tur.indeks];
+  ilerlemeyiCiz();
+
+  document.getElementById("soru-metni").textContent = s.metin;
+  const sahneKutusu = document.getElementById("soru-sahnesi");
+  sahneKutusu.hidden = !(s.sahne && s.sahne.length);
+  sahneKutusu.innerHTML = (s.sahne && s.sahne.length) ? sahneSvg(s.sahne) : "";
+  if(sahneKutusu.firstElementChild){                 /* ekran okuyucu için */
+    sahneKutusu.firstElementChild.setAttribute("aria-label", s.metin);
+  }
+
+  document.getElementById("secenek-listesi").innerHTML = s.secenekler.map((sec, i) => {
+    const govde = (s.secenekTipi === "sekil")
+      ? `<svg viewBox="-62 -62 124 124" aria-hidden="true">${sekilCiz(sec, "#3b82f6")}</svg>
+         <span>${SEKIL_BILGI[sec].ad}</span>`
+      : `<span>${sec}</span>`;
+    return `<button class="secenek" type="button" data-secenek="${i}">${govde}</button>`;
+  }).join("");
+
+  document.querySelectorAll(".secenek").forEach(d => {
+    d.addEventListener("click", () => cevapVer(Number(d.dataset.secenek)));
+  });
+
+  const gb = document.getElementById("geri-bildirim");
+  gb.hidden = true;
+  gb.className = "";
+}
+
+/* --- V) CEVAP, GERİ BİLDİRİM VE TUR SONU -------------------------------- */
+/* Doğru cevabın okunabilir adı: şekil seçeneklerinde şeklin adı,
+   metin/sayı seçeneklerinde seçeneğin kendisi. */
+function dogruCevapAdi(s){
+  const cevap = s.secenekler[s.dogru];
+  if(s.secenekTipi === "sekil" && SEKIL_BILGI[cevap]) return SEKIL_BILGI[cevap].ad;
+  return cevap;
+}
+
+function cevapVer(secilen){
+  const s = tur.sorular[tur.indeks];
+  const dogruMu = (secilen === s.dogru);
+  tur.sonuclar[tur.indeks] = dogruMu;
+
+  /* Seçenekleri kilitle ve işaretle — renk tek başına bilgi taşımaz */
+  document.querySelectorAll(".secenek").forEach((d, i) => {
+    d.disabled = true;
+    if(i === s.dogru){
+      d.classList.add("dogru");
+      d.insertAdjacentHTML("beforeend", `<span class="isaret">✓ Doğru</span>`);
+    }else if(i === secilen){
+      d.classList.add("yanlis");
+      d.insertAdjacentHTML("beforeend", `<span class="isaret">✗</span>`);
+    }else{
+      d.classList.add("soluk");
+    }
+  });
+
+  /* Ödül yalnızca doğru cevapta; yanlışta bakiye değişmez.
+     Vidanın rengi zorluğa göre: kolay yeşil, orta mavi, zor kırmızı. */
+  if(dogruMu){
+    tur.dogruSayisi++;
+    tur.kazanilanVida += ODUL_ADEDI;
+    vidaEkle(ZORLUK_VIDASI[tur.zorluk], ODUL_ADEDI);
+    Ses.cal("dogru");
+    setTimeout(() => Ses.cal("vida"), 220);       /* önce doğru, sonra vida sesi */
+  }else{
+    Ses.cal("yanlis");
+  }
+
+  geriBildirimGoster(s, dogruMu);
+  ilerlemeyiCiz();
+}
+
+function geriBildirimGoster(s, dogruMu){
+  const gb = document.getElementById("geri-bildirim");
+  gb.className = dogruMu ? "iyi" : "kotu";
+  gb.hidden = false;
+
+  const vidaTuru = ZORLUK_VIDASI[tur.zorluk];
+  document.getElementById("gb-baslik").innerHTML = dogruMu
+    ? `<span>✓</span>${vidaSimgesi(vidaTuru, 28)}<span>Doğru! +${vidaEtiketi(vidaTuru, ODUL_ADEDI)}</span>`
+    : `<span>✗</span><span>Doğru cevap: ${dogruCevapAdi(s)}</span>`;
+
+  /* Yanlışta kenar–köşe animasyonu ve tek cümlelik açıklama gösterilir */
+  document.getElementById("gb-gorsel").innerHTML = dogruMu ? "" : vurguSvg(s.vurgu);
+  document.getElementById("gb-aciklama").textContent = s.aciklama;
+
+  const devam = document.getElementById("devam-dugmesi");
+  devam.textContent = (tur.indeks + 1 < tur.sorular.length) ? "Sonraki soru" : "Turu bitir";
+  /* Odak kaydırmayı tetiklemesin; sayfayı biz yumuşakça kaydırırız */
+  devam.focus({ preventScroll:true });
+  gb.scrollIntoView({ block:"nearest", behavior:"smooth" });
+}
+
+function sonrakiSoru(){
+  if(tur.indeks + 1 < tur.sorular.length){
+    tur.indeks++;
+    soruyuCiz();
+    document.getElementById("sahne-alistirma").scrollTop = 0;   /* yeni soru baştan görünsün */
+  }else{
+    turuBitir();
+  }
+}
+
+function turuBitir(){
+  /* Bu turun soruları kaydedilir; sonraki tur önce bunları eler */
+  durum.sonTur[tur.zorluk] = tur.sorular.map(s => s.id);
+  durumuKaydet();
+
+  document.getElementById("ozet-metin").innerHTML =
+    tur.sorular.length + " sorudan " + tur.dogruSayisi + " tanesini doğru bildin. "
+    + vidaSimgesi(ZORLUK_VIDASI[tur.zorluk], 26) + " "
+    + vidaEtiketi(ZORLUK_VIDASI[tur.zorluk], tur.kazanilanVida) + " kazandın.";
+  document.getElementById("ozet-baslik").textContent =
+    (tur.dogruSayisi === tur.sorular.length) ? "Hepsi doğru!" : "Tur bitti!";
+  panelGoster("ozet");
+}
+
+/* Alıştırma sahnesi her açıldığında zorluk seçimiyle başlar */
+function alistirmayiAc(){
+  tur = null;
+  panelGoster("giris");
+}
+Sahne.girisKancalari.alistirma = alistirmayiAc;
+
+/* ==========================================================================
+   ARKADAŞLARIMIN ROBOTLARI — sergi salonu
+     Y) Veri kaynağı (şimdi örnek veri, sonra Firebase)
+     Z) Stant çizimi
+   Firebase'e geçerken YALNIZCA Galeri.listele() ve Galeri.paylas()
+   gövdeleri değişecek; ekranın geri kalanı aynı kalır.
+   ========================================================================== */
+
+/* --- Y) VERİ KAYNAĞI ---------------------------------------------------- */
+/* Kayıt biçimi (Firestore belgesi de aynı olacak):
+     { robotAdi:"Şimşek", ogrenciAdi:"Elif",
+       robot:{ slot:{parca,renk,aci,olcek}, ... }, guncelleme:<zaman> }
+   robot alanı, durum.robot ile birebir aynı şemadır.                        */
+const ORNEK_ROBOTLAR = [
+  { robotAdi:"Şimşek", ogrenciAdi:"Elif", robot:{
+      kafa:{parca:"kafa-cember", renk:"#db2777", aci:0, olcek:1},
+      goz:{parca:"goz-tekli", renk:"#1d4ed8", aci:0, olcek:1},
+      agiz:{parca:"agiz-ucgen", renk:"#d97706", aci:0, olcek:1},
+      anten:{parca:"anten-ikili", renk:"#15803d", aci:0, olcek:1},
+      govde:{parca:"govde-cember", renk:"#f59e0b", aci:0, olcek:1},
+      kolSag:{parca:"kol-cember", renk:"#7c3aed", aci:0, olcek:1},
+      kolSol:{parca:"kol-cember", renk:"#7c3aed", aci:0, olcek:1},
+      bacakSag:{parca:"bacak-tekerlek", renk:"#334155", aci:0, olcek:1},
+      bacakSol:{parca:"bacak-tekerlek", renk:"#334155", aci:0, olcek:1} } },
+
+  { robotAdi:"Kuleci", ogrenciAdi:"Yusuf", robot:{
+      kafa:{parca:"kafa-kuleli", renk:"#0ea5e9", aci:0, olcek:1},
+      goz:{parca:"goz-kare-ikili", renk:"#163fae", aci:0, olcek:1},
+      agiz:{parca:"agiz-disli", renk:"#15803d", aci:0, olcek:1},
+      anten:{parca:"anten-tac", renk:"#f59e0b", aci:0, olcek:1},
+      govde:{parca:"govde-roket", renk:"#dc2626", aci:0, olcek:1},
+      kolSag:{parca:"kol-pense", renk:"#334155", aci:15, olcek:1.1},
+      kolSol:{parca:"kol-pense", renk:"#334155", aci:15, olcek:1.1},
+      bacakSag:{parca:"bacak-yayli", renk:"#db2777", aci:0, olcek:1},
+      bacakSol:{parca:"bacak-yayli", renk:"#db2777", aci:0, olcek:1} } },
+
+  { robotAdi:"Üçgen Kız", ogrenciAdi:"Zeynep", robot:{
+      kafa:{parca:"kafa-ucgen", renk:"#7c3aed", aci:0, olcek:1.1},
+      goz:{parca:"goz-uclu", renk:"#dc2626", aci:0, olcek:0.9},
+      agiz:{parca:"agiz-cember-halka", renk:"#334155", aci:0, olcek:1},
+      anten:{parca:"anten-cember-halka", renk:"#0ea5e9", aci:0, olcek:1},
+      govde:{parca:"govde-katli", renk:"#65a30d", aci:0, olcek:1},
+      kolSag:{parca:"kol-halka", renk:"#db2777", aci:0, olcek:1},
+      kolSol:{parca:"kol-dikdortgen", renk:"#d97706", aci:0, olcek:1},
+      bacakSag:{parca:"bacak-kare-dizi", renk:"#1d4ed8", aci:0, olcek:1},
+      bacakSol:{parca:"bacak-kare-dizi", renk:"#1d4ed8", aci:0, olcek:1} } },
+
+  { robotAdi:"Kulaklı", ogrenciAdi:"Kerem", robot:{
+      kafa:{parca:"kafa-kulakli", renk:"#334155", aci:0, olcek:1},
+      goz:{parca:"goz-vizor", renk:"#0ea5e9", aci:0, olcek:1},
+      agiz:{parca:"agiz-cift-cizgi", renk:"#dc2626", aci:0, olcek:1},
+      anten:{parca:"anten-kare", renk:"#f59e0b", aci:0, olcek:1},
+      govde:{parca:"govde-kare", renk:"#1d4ed8", aci:0, olcek:1},
+      kolSag:{parca:"kol-kare-dizi", renk:"#15803d", aci:0, olcek:1},
+      kolSol:{parca:"kol-kare-dizi", renk:"#15803d", aci:0, olcek:1},
+      bacakSag:{parca:"bacak-dikdortgen", renk:"#163fae", aci:0, olcek:1.1},
+      bacakSol:{parca:"bacak-dikdortgen", renk:"#163fae", aci:0, olcek:1.1} } },
+
+  { robotAdi:"Bayrakçı", ogrenciAdi:"Ada", robot:{
+      kafa:{parca:"kafa-vizorlu", renk:"#f59e0b", aci:0, olcek:1},
+      goz:{parca:"goz-cember-halka", renk:"#dc2626", aci:0, olcek:1},
+      agiz:{parca:"agiz-kare-dizi", renk:"#7c3aed", aci:0, olcek:1},
+      anten:{parca:"anten-ucgen-cift", renk:"#db2777", aci:0, olcek:1},
+      govde:{parca:"govde-omuzlu", renk:"#0ea5e9", aci:0, olcek:1},
+      kolSag:{parca:"kol-bayrakli", renk:"#15803d", aci:0, olcek:1},
+      kolSol:{parca:"kol-ucgen", renk:"#15803d", aci:0, olcek:1},
+      bacakSag:{parca:"bacak-cember-dizi", renk:"#d97706", aci:0, olcek:1},
+      bacakSol:{parca:"bacak-cember-dizi", renk:"#d97706", aci:0, olcek:1} } },
+
+  { robotAdi:"Yeşil Dev", ogrenciAdi:"Mert", robot:{
+      kafa:{parca:"kafa-genis", renk:"#15803d", aci:0, olcek:1},
+      goz:{parca:"goz-ucgen-ikili", renk:"#dc2626", aci:0, olcek:1},
+      agiz:{parca:"agiz-cember", renk:"#334155", aci:0, olcek:1},
+      anten:{parca:"anten-ucgen", renk:"#dc2626", aci:0, olcek:1.1},
+      govde:{parca:"govde-ucgen", renk:"#3b82f6", aci:0, olcek:1},
+      kolSag:{parca:"kol-ucgen", renk:"#f59e0b", aci:0, olcek:1},
+      kolSol:{parca:"kol-ucgen", renk:"#f59e0b", aci:0, olcek:1},
+      bacakSag:{parca:"bacak-paletli", renk:"#7c3aed", aci:0, olcek:1},
+      bacakSol:{parca:"bacak-paletli", renk:"#7c3aed", aci:0, olcek:1} } }
+];
+
+/* ==========================================================================
+   AD SÜZGECİ — kaba ifadeler sergiye çıkmaz
+   Yasaklı kökler kaynakta okunmasın diye base64 saklanır; oyun açılırken
+   çözülür. İki liste: bir kısmı kelimenin içinde geçse de yakalanır,
+   kısa olanlar ise yalnızca tek başına yazılınca yakalanır ("Işık"ın
+   içindeki harf dizisi yüzünden masum ad engellenmesin).
+   ========================================================================== */
+const YASAK_ICEREN = atob("YWhtYWssYW1jaWssYW1jayxhbWluYSxhbWluYWtvLGFtaW5rb3lpbSxhbWssYW1xLGFuYW5pLGFuYW5pbixhbmFuaXNpa2V5aW0sYXB0YWwsZGFsbGFtYSxnYXZhdCxnZXJpemVrYWxpLGdlcnplayxnb2Rvcyxnb3RlbGVrLGdvdGxlayxnb3R1bmUsZ290dmVyZW4saGFzaWt0aXIsaWJuZSxrYWhiZSxrYWhwZSxrYWx0YWssb3Jvc3B1LG9ydXNwdSxwZXpldmVuayxwaWNsaWsscHVzdCxzYWxhayxzZXJlZnNpeixzaWtlcmltLHNpa2V5aW0sc2lraWssc2lraW0sc2lraXMsc2lra28sc2lrdGlyLHNpa3RyLHN1cnR1ayx5YXJhayx5YXJyYWsseWF2c2Fr").split(",");
+const YASAK_TAM    = atob("YW0sYW1rLGFxLGJvayxkYW5nYWxhayxlc2VrLGVzc2VrLGdvdCxoYXl2YW4saXBuZSxtYWwsbWssb2Msb2t1eixwaWMsc2csc2lrLHlhcnJhaw==").split(",");
+
+/* Rastgele verilecek adlar */
+const YEDEK_ROBOT_ADLARI = ["Şimşek","Pırıl","Cesur","Yıldız","Turbo","Çelik",
+  "Zıpzıp","Bulut","Kaşif","Minik Usta","Işık","Fırtına"];
+const YEDEK_OGRENCI_ADLARI = ["Gizli Kaşif","Küçük Mucit","Meraklı Usta",
+  "Robot Ustası","Yıldız Mühendis","Gizemli Tasarımcı"];
+
+/* Karşılaştırma için sadeleştirir: küçük harf, Türkçe harfler sadeleşir,
+   harf dışı her şey atılır, tekrar eden harfler teke iner (sııık → sik).  */
+function adSadelestir(metin){
+  const harita = { "ç":"c","ğ":"g","ı":"i","ö":"o","ş":"s","ü":"u","â":"a","î":"i","û":"u" };
+  return String(metin).toLowerCase()
+    .replace(/[çğıöşüâîû]/g, h => harita[h] || h)
+    .replace(/[^a-z]+/g, " ")
+    .replace(/(.)\1+/g, "$1")
+    .trim();
+}
+
+function kabaMi(metin){
+  const sade = adSadelestir(metin);
+  if(!sade) return false;
+  const bitisik = sade.replace(/ /g, "");
+  if(YASAK_ICEREN.some(k => bitisik.indexOf(k) !== -1)) return true;
+  /* "s.i.k" gibi harflere ayrılmış yazımlar için birleşik hâli de bakılır */
+  if(YASAK_TAM.indexOf(bitisik) !== -1) return true;
+  return sade.split(" ").some(kelime => YASAK_TAM.indexOf(kelime) !== -1);
+}
+
+function rastgeleAd(tur){
+  const havuz = (tur === "robot") ? YEDEK_ROBOT_ADLARI : YEDEK_OGRENCI_ADLARI;
+  return havuz[Math.floor(Math.random() * havuz.length)];
+}
+
+/* Kaba ise rastgele bir adla değiştirir */
+function adiSuz(metin, tur){
+  return kabaMi(metin) ? rastgeleAd(tur) : metin;
+}
+
+/* ---- Firestore (REST) ---------------------------------------------------
+   SDK yüklenmez; sadece fetch kullanılır, böylece oyun tek dosya kalır.
+   Web API anahtarı herkese açıktır — güvenlik Firestore kurallarındadır.   */
+const FB = {
+  proje:   "hikayesehri-3162b",
+  anahtar: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw",
+  koleksiyon: "sekilRobotu"
+};
+FB.taban = "https://firestore.googleapis.com/v1/projects/" + FB.proje
+         + "/databases/(default)/documents/" + FB.koleksiyon;
+
+/* Zaman aşımlı fetch — ağ takılırsa oyun beklemede kalmasın */
+function agGetir(url, secenekler, sure){
+  const iptal = new AbortController();
+  const zaman = setTimeout(() => iptal.abort(), sure || 8000);
+  return fetch(url, Object.assign({ signal:iptal.signal }, secenekler || {}))
+    .then(cevap => {
+      clearTimeout(zaman);
+      if(!cevap.ok) throw new Error("Sunucu " + cevap.status);
+      return cevap.json();
+    }, hata => { clearTimeout(zaman); throw hata; });
+}
+
+/* Türkçe adı belge kimliğine çevirir: "Elif Naz" → "elif-naz" */
+function kimlikSlug(metin){
+  const harita = { "ç":"c","ğ":"g","ı":"i","İ":"i","ö":"o","ş":"s","ü":"u" };
+  return String(metin).toLowerCase()
+    .replace(/[çğıİöşü]/g, h => harita[h] || h)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 20) || "robot";
+}
+
+/* Her cihaza bir kez üretilen kısa kod: aynı adı taşıyan iki öğrenci
+   birbirinin kaydını ezmez, herkes hep kendi belgesini günceller.          */
+function cihazKodu(){
+  if(!durum.cihazKodu){
+    durum.cihazKodu = Math.random().toString(36).slice(2, 6);
+    try { localStorage.setItem(DEPO_ANAHTARI, JSON.stringify(durum)); } catch(e){}
+  }
+  return durum.cihazKodu;
+}
+function belgeKimligi(){
+  return kimlikSlug(durum.ogrenciAdi || "") + "-" + cihazKodu();
+}
+
+/* Firestore alan biçimi ⇄ düz nesne */
+function fbAlanlar(kayit){
+  return { fields: {
+    robotAdi:   { stringValue: kayit.robotAdi },
+    ogrenciAdi: { stringValue: kayit.ogrenciAdi },
+    robotJson:  { stringValue: JSON.stringify(kayit.robot) },
+    guncelleme: { integerValue: String(kayit.guncelleme) },
+    adKilit:    { booleanValue: !!kayit.adKilit }
+  }};
+}
+function fbCoz(belge){
+  const a = (belge && belge.fields) || {};
+  let robot = {};
+  try { robot = JSON.parse((a.robotJson && a.robotJson.stringValue) || "{}"); } catch(e){}
+  return {
+    kimlik:     String(belge.name || "").split("/").pop(),
+    robotAdi:   (a.robotAdi   && a.robotAdi.stringValue)   || "",
+    ogrenciAdi: (a.ogrenciAdi && a.ogrenciAdi.stringValue) || "",
+    guncelleme: Number((a.guncelleme && a.guncelleme.integerValue) || 0),
+    adKilit:    !!(a.adKilit && a.adKilit.booleanValue),
+    robot:      robot
+  };
+}
+
+const Galeri = {
+  kaynak: "firebase",       /* "ornek" yapılırsa çevrimdışı örnek veriye döner */
+
+  /* Sergilenecek robotlar — en son güncellenen başta */
+  listele(){
+    if(this.kaynak === "ornek"){
+      return Promise.resolve(ORNEK_ROBOTLAR.slice());
+    }
+    return agGetir(FB.taban + "?key=" + FB.anahtar + "&pageSize=200")
+      .then(veri => (veri.documents || [])
+        .map(fbCoz)
+        .filter(k => k.robotAdi && k.ogrenciAdi && k.robot && k.robot.govde)
+        .sort((a, b) => b.guncelleme - a.guncelleme));
+  },
+
+  /* Çocuğun robotunu sergiye yazar/günceller. Firebase aşamasında burası
+     tek bir Firestore "set" çağrısına dönüşecek; kayıt belgesinin kimliği
+     öğrencinin adı olacağı için her çocuğun sergide TEK kaydı olur.         */
+  kaydet(kayit){
+    if(this.kaynak !== "firebase") return Promise.resolve();
+    return agGetir(
+      FB.taban + "/" + belgeKimligi() + "?key=" + FB.anahtar,
+      { method:"PATCH",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(fbAlanlar(kayit)) }
+    );
+  },
+
+  /* Çocuğun kendi kaydı — öğretmen adı değiştirdiyse buradan öğrenilir */
+  kendiKaydim(){
+    if(this.kaynak !== "firebase") return Promise.resolve(null);
+    return agGetir(FB.taban + "/" + belgeKimligi() + "?key=" + FB.anahtar)
+      .then(fbCoz, () => null);
+  },
+
+  /* --- yalnızca yönetici modunda kullanılır --- */
+  adiDegistir(kayit, yeniAd){
+    return agGetir(FB.taban + "/" + kayit.kimlik + "?key=" + FB.anahtar,
+      { method:"PATCH", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(fbAlanlar({
+          robotAdi: yeniAd, ogrenciAdi: kayit.ogrenciAdi, robot: kayit.robot,
+          guncelleme: kayit.guncelleme, adKilit: true    /* kilitlenir */
+        })) });
+  },
+  sil(kimlik){
+    return agGetir(FB.taban + "/" + kimlik + "?key=" + FB.anahtar, { method:"DELETE" })
+      .catch(hata => { if(String(hata.message).indexOf("Unexpected end") === -1) throw hata; });
+  }
+};
+
+/* Kaydedilecek belge — hem localStorage hem sergi aynı veriyi kullanır */
+function galeriKaydi(){
+  /* İkinci savunma hattı: sergiye giden ad her hâlükârda süzgeçten geçer */
+  return {
+    robotAdi:   adiSuz((durum.robotAdi   || "").trim(), "robot"),
+    ogrenciAdi: adiSuz((durum.ogrenciAdi || "").trim(), "ogrenci"),
+    robot:      durum.robot,
+    guncelleme: Date.now(),
+    adKilit:    !!durum.adKilitli        /* öğretmen kilidi korunur */
+  };
+}
+
+/* Otomatik eşitleme: her yerel kayıttan sonra sergiye de yazılır.
+   Ard arda değişikliklerde tek yazma olsun diye gecikmeli çalışır.          */
+const Senk = {
+  zamanlayici: null,
+  sonGonderilen: null,
+  planla(){
+    const kayit = galeriKaydi();
+    /* Adı olmayan robot sergiye gönderilmez */
+    if(!kayit.robotAdi || !kayit.ogrenciAdi) return;
+
+    /* Yalnızca sergiyi ilgilendiren bir şey değiştiyse gönder
+       (vida kazanmak gibi değişiklikler boşuna yazma yapmasın)             */
+    const parmakIzi = kayit.robotAdi + "|" + kayit.ogrenciAdi + "|" + JSON.stringify(kayit.robot);
+    if(parmakIzi === this.sonGonderilen) return;
+
+    clearTimeout(this.zamanlayici);
+    this.zamanlayici = setTimeout(() => {
+      Galeri.kaydet(kayit)
+        .then(() => { this.sonGonderilen = parmakIzi; })
+        .catch(() => { /* bağlantı yoksa sessiz geç, sonraki değişiklikte yine dener */ });
+    }, 1200);
+  }
+};
+
+/* --- Z) STANT ÇİZİMİ ---------------------------------------------------- */
+/* Sergiden gelen metin güvenli basılır (< > & kaçırılır) */
+function metinKacir(metin){
+  return String(metin).replace(/[&<>"']/g, k =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[k]));
+}
+
+function stantHtml(kayit, sira){
+  /* Sergiye gelen adlar da süzgeçten geçirilir (eski kayıtlar için) */
+  const robotAdi = metinKacir(adiSuz(String(kayit.robotAdi || "İsimsiz Robot").slice(0, 24), "robot"));
+  const ogrenci  = metinKacir(adiSuz(String(kayit.ogrenciAdi || "").slice(0, 24), "ogrenci"));
+  const benimMi  = (kayit.kimlik && kayit.kimlik === belgeKimligi());
+  const robotSvg = robotSvgUret(null, kayit.robot);
+  return `<div class="stant${benimMi ? " benim" : ""}">
+    <div class="stant-robot">${robotSvg}
+      <div class="stant-yansima">${robotSvg}</div>
+    </div>
+    <div class="stant-govde">
+      <span class="stant-ad">${robotAdi}</span>
+      ${ogrenci ? `<span class="stant-sahip">Oluşturan: ${ogrenci}</span>` : ""}
+      ${benimMi ? `<span class="stant-benim">Senin robotun</span>` : ""}
+      ${(Yonetici.acik && kayit.adKilit) ? `<span class="stant-kilitli">Adı kilitli</span>` : ""}
+      ${Yonetici.acik ? `<div class="stant-yonetim">
+           <button type="button" data-ad-degistir="${sira}">Adı değiştir</button>
+           <button type="button" class="sil" data-sil="${sira}">Sil</button>
+         </div>` : ""}
+    </div>
+  </div>`;
+}
+
+let galeriKayitlari = [];
+
+function galeriyiCiz(){
+  const liste = document.getElementById("galeri-listesi");
+  const not   = document.getElementById("galeri-not");
+
+  if(!galeriKayitlari.length){
+    not.textContent = "Burada henüz robot yok. İlk robotu sen sergileyebilirsin!";
+    liste.innerHTML = "";
+    return;
+  }
+  const benimVarMi = galeriKayitlari.some(k => k.kimlik === belgeKimligi());
+  not.textContent = galeriKayitlari.length + " robot sergileniyor."
+    + (benimVarMi ? "" : " Robotunu sergilemek için Robotum'da ona ve kendine bir ad yaz.");
+  liste.innerHTML = galeriKayitlari.map(stantHtml).join("");
+
+  /* Yönetici düğmeleri */
+  liste.querySelectorAll("[data-ad-degistir]").forEach(d => {
+    d.addEventListener("click", () => Yonetici.adPenceresi(Number(d.dataset.adDegistir)));
+  });
+  liste.querySelectorAll("[data-sil]").forEach(d => {
+    d.addEventListener("click", () => Yonetici.silPenceresi(Number(d.dataset.sil)));
+  });
+}
+
+function galeriyiAc(){
+  document.getElementById("galeri-not").textContent = "Robotlar yükleniyor…";
+  document.getElementById("galeri-listesi").innerHTML = "";
+
+  Galeri.listele().then(kayitlar => {
+    galeriKayitlari = kayitlar;
+    /* Öğretmen adımı değiştirdiyse yerelde de güncellenir */
+    const benim = kayitlar.find(k => k.kimlik === belgeKimligi());
+    if(benim && benim.adKilit) kilidiUygula(benim.robotAdi);
+    galeriyiCiz();
+  }).catch(() => {
+    document.getElementById("galeri-not").textContent =
+      "Robotlar şu an getirilemedi. İnternet bağlantını kontrol edip tekrar dene.";
+  });
+}
+Sahne.girisKancalari.galeri = galeriyiAc;
+
+/* Öğretmen bir adı kilitlediyse çocuk artık değiştiremez */
+function kilidiUygula(yeniAd){
+  if(durum.adKilitli && durum.robotAdi === yeniAd) return;
+  durum.adKilitli = true;
+  durum.robotAdi = yeniAd;
+  Senk.sonGonderilen = null;
+  try { localStorage.setItem(DEPO_ANAHTARI, JSON.stringify(durum)); } catch(e){}
+  const kutu = document.getElementById("robot-adi");
+  if(kutu){ kutu.value = yeniAd; }
+}
+
+/* ==========================================================================
+   YÖNETİCİ MODU (öğretmen)
+   Sergi ekranında altbilgideki "İnce" sözcüğüne 6 kez dokun → şifre penceresi.
+   Bir kez yanlış girilirse pencere kapanır. Şifre kaynak kodda görünür;
+   bu bir sınıf içi kilittir, gerçek bir güvenlik katmanı değildir.
+   ========================================================================== */
+const Yonetici = {
+  SIFRE: "859530",
+  acik: false,
+  sayac: 0,
+  sonDokunus: 0,
+  seciliSira: -1,
+
+  ortuGoster(hangi){
+    document.getElementById("ortu").hidden = false;
+    ["sifre-penceresi","ad-penceresi","sil-penceresi"].forEach(p => {
+      document.getElementById(p).hidden = (p !== hangi);
+    });
+  },
+  ortuKapat(){
+    document.getElementById("ortu").hidden = true;
+    document.getElementById("sifre-kutusu").value = "";
+  },
+
+  /* Altbilgideki gizli dokunuş sayacı */
+  dokunuldu(){
+    if(Sahne.aktif !== "galeri" || this.acik) return;
+    const simdi = Date.now();
+    if(simdi - this.sonDokunus > 2500) this.sayac = 0;   /* ara verilirse sıfırlanır */
+    this.sonDokunus = simdi;
+    this.sayac++;
+    if(this.sayac >= 6){
+      this.sayac = 0;
+      this.ortuGoster("sifre-penceresi");
+      document.getElementById("sifre-kutusu").focus();
+    }
+  },
+
+  sifreDene(){
+    const girilen = document.getElementById("sifre-kutusu").value;
+    this.ortuKapat();
+    if(girilen === this.SIFRE){          /* yanlışsa tek denemede kapanır */
+      this.acik = true;
+      document.getElementById("yonetici-serit").classList.add("acik");
+      galeriyiCiz();
+      seritGoster("Yönetici modu açıldı.");
+    }
+  },
+
+  kapat(){
+    this.acik = false;
+    document.getElementById("yonetici-serit").classList.remove("acik");
+    galeriyiCiz();
+  },
+
+  adPenceresi(sira){
+    this.seciliSira = sira;
+    document.getElementById("yeni-ad-kutusu").value = galeriKayitlari[sira].robotAdi || "";
+    this.ortuGoster("ad-penceresi");
+    document.getElementById("yeni-ad-kutusu").focus();
+  },
+  adiKaydet(){
+    const kayit = galeriKayitlari[this.seciliSira];
+    const yeniAd = adiSuz(document.getElementById("yeni-ad-kutusu").value.trim().slice(0, 20), "robot");
+    this.ortuKapat();
+    if(!kayit || !yeniAd) return;
+    Galeri.adiDegistir(kayit, yeniAd).then(() => {
+      kayit.robotAdi = yeniAd;
+      kayit.adKilit = true;
+      if(kayit.kimlik === belgeKimligi()) kilidiUygula(yeniAd);
+      galeriyiCiz();
+      seritGoster("Ad değiştirildi ve kilitlendi.");
+    }).catch(() => seritGoster("Ad değiştirilemedi."));
+  },
+
+  silPenceresi(sira){
+    this.seciliSira = sira;
+    const k = galeriKayitlari[sira];
+    document.getElementById("sil-metni").textContent =
+      (k.robotAdi || "") + " — Oluşturan: " + (k.ogrenciAdi || "");
+    this.ortuGoster("sil-penceresi");
+  },
+  sil(){
+    const kayit = galeriKayitlari[this.seciliSira];
+    this.ortuKapat();
+    if(!kayit) return;
+    Galeri.sil(kayit.kimlik).then(() => {
+      galeriKayitlari = galeriKayitlari.filter(k => k !== kayit);
+      /* Silinen kendi kaydımızsa bir sonraki değişiklikte yeniden yazılır */
+      if(kayit.kimlik === belgeKimligi()) Senk.sonGonderilen = null;
+      galeriyiCiz();
+      seritGoster("Robot silindi.");
+    }).catch(() => seritGoster("Silinemedi."));
+  },
+
+  baglantilariKur(){
+    document.getElementById("gizli-anahtar")
+            .addEventListener("click", () => this.dokunuldu());
+    document.getElementById("sifre-tamam").addEventListener("click", () => this.sifreDene());
+    document.getElementById("sifre-iptal").addEventListener("click", () => this.ortuKapat());
+    document.getElementById("sifre-kutusu").addEventListener("keydown", olay => {
+      if(olay.key === "Enter") this.sifreDene();
+    });
+    document.getElementById("ad-tamam").addEventListener("click", () => this.adiKaydet());
+    document.getElementById("ad-iptal").addEventListener("click", () => this.ortuKapat());
+    document.getElementById("sil-tamam").addEventListener("click", () => this.sil());
+    document.getElementById("sil-iptal").addEventListener("click", () => this.ortuKapat());
+    document.getElementById("yonetici-kapat").addEventListener("click", () => this.kapat());
+    document.getElementById("ortu").addEventListener("click", olay => {
+      if(olay.target.id === "ortu") this.ortuKapat();
+    });
+  }
+};
+
+/* ==========================================================================
+   AŞAMA 7 — SES (Web Audio API)
+   Ses dosyası yok; her ses anlık üretilir.
+   Tarif biçimi: [frekans, gecikme(sn), süre(sn), dalga, hacim]
+   ========================================================================== */
+const SES_TARIFLERI = {
+  dogru:  [[660, 0,    0.12, "triangle", 0.18], [880, 0.10, 0.18, "triangle", 0.18]],
+  vida:   [[1320,0,    0.09, "sine",     0.11], [1760,0.07, 0.14, "sine",     0.09]],
+  /* Yanlış sesi cezalandırıcı değil: alçak, yumuşak ve kısa iki nota */
+  yanlis: [[300, 0,    0.16, "sine",     0.13], [240, 0.13, 0.26, "sine",     0.11]],
+  satin:  [[523, 0,    0.11, "triangle", 0.15], [659, 0.10, 0.11, "triangle", 0.15],
+           [784, 0.20, 0.22, "triangle", 0.15]],
+  tak:    [[190, 0,    0.07, "square",   0.09], [430, 0.04, 0.06, "square",   0.05]]
+};
+
+const Ses = {
+  ctx: null,
+
+  /* Tarayıcılar sesi ilk dokunuştan önce açmaz; bu yüzden geç başlatılır */
+  hazirla(){
+    const Yapici = window.AudioContext || window.webkitAudioContext;
+    if(!Yapici) return null;
+    if(!this.ctx){
+      try { this.ctx = new Yapici(); } catch(e){ return null; }
+    }
+    if(this.ctx.state === "suspended") this.ctx.resume();
+    return this.ctx;
+  },
+
+  cal(ad){
+    if(!durum || !durum.ses) return;              /* Ayarlar'dan kapatılmışsa sus */
+    const tarif = SES_TARIFLERI[ad];
+    if(!tarif) return;
+    const ctx = this.hazirla();
+    if(!ctx) return;                              /* Web Audio yoksa sessiz devam */
+
+    const simdi = ctx.currentTime;
+    tarif.forEach(([frekans, gecikme, sure, dalga, hacim]) => {
+      const osc = ctx.createOscillator();
+      const kazanc = ctx.createGain();
+      osc.type = dalga;
+      osc.frequency.setValueAtTime(frekans, simdi + gecikme);
+
+      /* Yumuşak giriş, üstel sönüm — çıt sesi olmasın */
+      kazanc.gain.setValueAtTime(0.0001, simdi + gecikme);
+      kazanc.gain.exponentialRampToValueAtTime(hacim, simdi + gecikme + 0.012);
+      kazanc.gain.exponentialRampToValueAtTime(0.0001, simdi + gecikme + sure);
+
+      osc.connect(kazanc);
+      kazanc.connect(ctx.destination);
+      osc.start(simdi + gecikme);
+      osc.stop(simdi + gecikme + sure + 0.02);
+    });
+  }
+};
+
+/* --- F) BAŞLANGIÇ ------------------------------------------------------- */
+function baslat(){
+  durumuYukle();
+  baglantilariKur();
+  Yonetici.baglantilariKur();
+  vidayiCiz();
+
+  /* Öğretmen adı kilitlemişse açılışta öğrenilir */
+  Galeri.kendiKaydim().then(kayit => {
+    if(kayit && kayit.adKilit && kayit.robotAdi) kilidiUygula(kayit.robotAdi);
+  }).catch(() => {});
+  sesArayuzunuCiz();
+  Sahne.git("menu");
+
+  /* Tarayıcı kuralı: ses ancak ilk dokunuştan sonra açılabilir */
+  const sesiAc = () => {
+    Ses.hazirla();
+    document.removeEventListener("pointerdown", sesiAc);
+    document.removeEventListener("keydown", sesiAc);
+  };
+  document.addEventListener("pointerdown", sesiAc, { once:false });
+  document.addEventListener("keydown", sesiAc, { once:false });
+}
+
+document.addEventListener("DOMContentLoaded", baslat);
+</script>
+</body>
+</html>
