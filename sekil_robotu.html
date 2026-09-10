@@ -47,6 +47,8 @@
 
 /* --- 2) TEMEL SIFIRLAMA VE GÖVDE ---------------------------------------- */
 *,*::before,*::after{ box-sizing:border-box; }
+/* display tanımlı ögelerde de hidden gerçekten gizlesin */
+[hidden]{ display:none !important; }
 html,body{ height:100%; }
 body{
   margin:0;
@@ -401,7 +403,7 @@ button{ font:inherit; color:inherit; }
 #gb-aciklama{ margin:0 0 12px; font-size:21px; }
 #devam-dugmesi{ width:100%; }
 
-/* Kenar ve köşe vurgusu — yanlışta kısa animasyon */
+/* 2B şekilde kenarlar sırayla çizilir, köşeler tek tek belirir */
 .vurgu-kenar{
   stroke-dasharray:var(--uzunluk);
   stroke-dashoffset:var(--uzunluk);
@@ -410,7 +412,22 @@ button{ font:inherit; color:inherit; }
 @keyframes kenar-ciz{ to{ stroke-dashoffset:0; } }
 .vurgu-kose{ transform-box:fill-box; transform-origin:center; animation:kose-bit .3s ease backwards; }
 @keyframes kose-bit{ from{ transform:scale(0); } to{ transform:scale(1); } }
+
+/* 3B cismin vurgusu — yanlışta büyüyerek belirir ve hafifçe salınır */
+.vurgu-cisim{
+  transform-origin:50% 60%;
+  animation:cisim-belir .40s ease-out, cisim-salin 3s ease-in-out .40s infinite;
+}
+@keyframes cisim-belir{
+  from{ transform:scale(.6); opacity:0; }
+  to  { transform:scale(1);  opacity:1; }
+}
+@keyframes cisim-salin{
+  0%, 100% { transform:rotate(-4deg); }
+  50%      { transform:rotate(4deg); }
+}
 @media (prefers-reduced-motion: reduce){
+  .vurgu-cisim{ animation:none; }
   .vurgu-kenar{ animation:none; stroke-dashoffset:0; }
   .vurgu-kose{ animation:none; }
 }
@@ -559,6 +576,19 @@ button{ font:inherit; color:inherit; }
 .kimlik-satiri input::placeholder{ color:#93a3b8; font-weight:normal; }
 .kimlik-satiri input[readonly]{ background:#eef2f7; color:var(--metin-soluk); }
 .kilit-notu{ margin:-4px 0 0; font-size:16px; color:#5d3c08; font-weight:bold; }
+
+#paylas-dugmesi{ width:100%; font-size:19px; margin-top:4px; }
+#paylas-dugmesi[disabled]{ background:var(--cizgi); color:var(--metin-soluk); box-shadow:none; cursor:default; }
+#paylasim-durumu{
+  margin:4px 0 0;
+  padding:10px 14px;
+  border-radius:14px;
+  background:#e4f6ea;
+  border:2px solid #9ad3ae;
+  color:var(--dogru);
+  font-size:17px;
+  font-weight:bold;
+}
 .kimlik-satiri input:focus{ border-color:var(--ana); outline:none; box-shadow:0 0 0 3px var(--ana-acik); }
 
 /* 6d-2) Atölye — slot ve parça paneli (Aşama 2) */
@@ -1097,17 +1127,17 @@ button{ font:inherit; color:inherit; }
           <button class="zorluk-kart" type="button" data-zorluk="kolay">
             <span class="ad">Kolay</span>
             <span class="odul" data-vida="yesil">Doğru: 5 yeşil vida</span>
-            <span class="aciklama">Şeklin adını bul</span>
+            <span class="aciklama">Şekil ve cisimlerin adını bul</span>
           </button>
           <button class="zorluk-kart" type="button" data-zorluk="orta">
             <span class="ad">Orta</span>
             <span class="odul" data-vida="mavi">Doğru: 5 mavi vida</span>
-            <span class="aciklama">Kenar ve köşeleri düşün</span>
+            <span class="aciklama">Kenar, köşe ve yüzleri düşün</span>
           </button>
           <button class="zorluk-kart" type="button" data-zorluk="zor">
             <span class="ad">Zor</span>
             <span class="odul" data-vida="kirmizi">Doğru: 5 kırmızı vida</span>
-            <span class="aciklama">Say ve akıl yürüt</span>
+            <span class="aciklama">Resimdekileri say ve karşılaştır</span>
           </button>
         </div>
       </div>
@@ -1224,6 +1254,14 @@ button{ font:inherit; color:inherit; }
               <input type="text" id="ogrenci-adi" maxlength="20" autocomplete="off"
                      placeholder="Adını yaz">
             </label>
+
+            <!-- Sergiye gönderme: paylaşana kadar hiçbir şey yayınlanmaz -->
+            <button class="dugme" type="button" id="paylas-dugmesi">
+              Robotumu arkadaşlarımla paylaş
+            </button>
+            <p id="paylasim-durumu" hidden>
+              ✓ Robotun sergide. Bundan sonra her değişiklik kendiliğinden güncellenir.
+            </p>
           </div>
         </div>
 
@@ -1412,6 +1450,7 @@ function bosDurum(){
     ses: true,
     robotAdi: "",                  /* robotun adı  — Robotum ekranında girilir */
     ogrenciAdi: "",                /* çocuğun adı  — sergide "Oluşturan" satırı */
+    paylasildi: false,             /* sergiye gönderildi mi (düğmeye basılınca) */
     sahip: sahip,
     robot: varsayilanRobot(),      /* Aşama 2: 7 ücretsiz parçayla dolu robot */
     sonTur: { kolay:[], orta:[], zor:[] }
@@ -2365,6 +2404,8 @@ function atolyeyiAc(){
     });
     document.getElementById("parca-sifirla")
             .addEventListener("click", seciliParcayiSifirla);
+    document.getElementById("paylas-dugmesi")
+            .addEventListener("click", robotuPaylas);
 
     /* Ad alanları: yazdıkça kaydedilir; alandan çıkınca süzgeçten geçer */
     [["robot-adi","robotAdi","robot"], ["ogrenci-adi","ogrenciAdi","ogrenci"]]
@@ -2373,6 +2414,7 @@ function atolyeyiAc(){
         kutu.addEventListener("input", olay => {
           durum[alan] = olay.target.value.slice(0, 20);
           durumuKaydet();
+          paylasimArayuzunuCiz();        /* iki ad dolunca düğme açılır */
         });
         kutu.addEventListener("change", () => {
           const suzulmus = adiSuz(durum[alan], tur);
@@ -2395,6 +2437,7 @@ function atolyeyiAc(){
   adKutusu.title = durum.adKilitli ? "Bu adı öğretmenin belirledi." : "";
   const kilitNotu = document.getElementById("ad-kilit-notu");
   kilitNotu.hidden = !durum.adKilitli;
+  paylasimArayuzunuCiz();
 
   robotuCiz();
   slotListesiniCiz();
@@ -2538,32 +2581,64 @@ Sahne.girisKancalari.market = marketiCiz;
      V) Cevap, geri bildirim ve tur sonu
    ========================================================================== */
 
-/* --- S) ORTAK SVG ŞEKİL BİLEŞENLERİ ------------------------------------- */
-/* Her şekil (0,0) merkezli, ~100 birimlik kutuda tanımlıdır. Soru görselleri
-   tekil SVG dosyası değildir; hepsi bu bileşenlerden parametreyle üretilir.  */
-const SEKIL_BILGI = {
+/* --- S) ORTAK SVG GEOMETRİ BİLEŞENLERİ (2B şekil + 3B cisim) ------------ */
+/* Tek kayıt: her öge "tur" alanıyla 2B mi 3B mi olduğunu söyler.
+   2B şekiller: üçgen, kare, dikdörtgen, daire, çember
+   3B cisimler: küp, dikdörtgenler prizması, silindir, koni, küre
+   Cisimler tek renkten türeyen üç tonla çizilir (ön yüz, açık üst yüz,
+   koyu yan yüz). Soru görselleri ayrı dosya değildir; hepsi buradan üretilir. */
+const GEO = {
+  /* ---------- 2B ŞEKİLLER ---------- */
   ucgen: {
-    ad:"Üçgen", kenar:3, kose:3,
-    noktalar:[[0,-46],[46,38],[-46,38]]
+    tur:"2b", ad:"Üçgen", kenar:3, kose:3,
+    noktalar:[[0,-46],[46,38],[-46,38]], kutu:[-54,-54,108,104]
   },
   kare: {
-    ad:"Kare", kenar:4, kose:4,
-    noktalar:[[-42,-42],[42,-42],[42,42],[-42,42]]
+    tur:"2b", ad:"Kare", kenar:4, kose:4,
+    noktalar:[[-42,-42],[42,-42],[42,42],[-42,42]], kutu:[-50,-50,100,100]
   },
   dikdortgen: {
-    ad:"Dikdörtgen", kenar:4, kose:4,
-    noktalar:[[-56,-30],[56,-30],[56,30],[-56,30]]
+    tur:"2b", ad:"Dikdörtgen", kenar:4, kose:4,
+    noktalar:[[-56,-30],[56,-30],[56,30],[-56,30]], kutu:[-64,-38,128,76]
   },
   daire: {
-    ad:"Daire", kenar:0, kose:0, yuvarlak:true, r:44
+    tur:"2b", ad:"Daire", kenar:0, kose:0, yuvarlak:true, r:44, kutu:[-50,-50,100,100]
   },
   cember: {
-    ad:"Çember", kenar:0, kose:0, yuvarlak:true, bos:true, r:44
+    tur:"2b", ad:"Çember", kenar:0, kose:0, yuvarlak:true, bos:true, r:44, kutu:[-50,-50,100,100]
+  },
+
+  /* ---------- 3B CİSİMLER ---------- */
+  kup: {
+    tur:"3b", ad:"Küp", duzYuz:6, kose:8, tepe:0, yuvarlanir:false, kutu:[-48,-74,120,120]
+  },
+  prizma: {
+    tur:"3b", ad:"Dikdörtgenler Prizması", duzYuz:6, kose:8, tepe:0, yuvarlanir:false,
+    kutu:[-60,-61,140,100]
+  },
+  silindir: {
+    tur:"3b", ad:"Silindir", duzYuz:2, kose:0, tepe:0, yuvarlanir:true, kutu:[-42,-56,84,112]
+  },
+  koni: {
+    tur:"3b", ad:"Koni", duzYuz:1, kose:0, tepe:1, yuvarlanir:true, kutu:[-44,-64,88,116]
+  },
+  kure: {
+    tur:"3b", ad:"Küre", duzYuz:0, kose:0, tepe:0, yuvarlanir:true, kutu:[-48,-48,96,96]
   }
 };
 
-function sekilCiz(tip, renk){
-  /* "soru" gerçek bir geometrik şekil değil; örüntülerde boş yeri gösterir */
+/* Rengi beyaza doğru açar (cisimlerin üst yüzü için) */
+function renkAcikla(hex, oran){
+  const s = hex.replace("#","");
+  const t = s.length === 3 ? s.split("").map(k => k+k).join("") : s;
+  const say = parseInt(t, 16);
+  const kanal = (v) => Math.round(v + (255 - v) * oran);
+  const r = kanal((say >> 16) & 255), g = kanal((say >> 8) & 255), b = kanal(say & 255);
+  return "#" + [r,g,b].map(n => n.toString(16).padStart(2,"0")).join("");
+}
+
+function geoCiz(tip, renk){
+  /* Örüntülerde boş yeri gösteren kutu — şekil ya da cisim değildir */
   if(tip === "soru"){
     const g = renk || "#334155";
     return `<rect x="-44" y="-44" width="88" height="88" rx="12" fill="#ffffff"
@@ -2571,20 +2646,60 @@ function sekilCiz(tip, renk){
             <text x="0" y="16" text-anchor="middle" font-size="52"
               font-family="Trebuchet MS, sans-serif" font-weight="bold" fill="${g}">?</text>`;
   }
+  /* Nesne çizimlerindeki küçük süsler (sayıma katılmaz) */
+  if(tip === "nokta") return `<circle cx="0" cy="0" r="9" fill="${renk || "#16233a"}"/>`;
+  if(tip === "serit") return `<rect x="-34" y="-8" width="68" height="16" rx="4" fill="${renk || "#dc2626"}"/>`;
 
-  const s = SEKIL_BILGI[tip];
-  if(!s) return "";
-  const r = renk || "#1d4ed8";
-  const k = renkKoyult(r, .35);
+  const g = GEO[tip];
+  if(!g) return "";
+  const on    = renk || "#1d4ed8";
+  const koyu  = renkKoyult(on, .35);
 
-  /* Daire içi doludur; çember yalnızca eğridir, içi boştur */
-  if(s.yuvarlak){
-    return s.bos
-      ? `<circle cx="0" cy="0" r="${s.r - 5}" fill="none" stroke="${r}" stroke-width="10"/>`
-      : `<circle cx="0" cy="0" r="${s.r}" fill="${r}" stroke="${k}" stroke-width="4"/>`;
+  /* ---- 2B ---- */
+  if(g.tur === "2b"){
+    if(g.yuvarlak){
+      return g.bos
+        ? `<circle cx="0" cy="0" r="${g.r - 5}" fill="none" stroke="${on}" stroke-width="10"/>`
+        : `<circle cx="0" cy="0" r="${g.r}" fill="${on}" stroke="${koyu}" stroke-width="4"/>`;
+    }
+    return `<polygon points="${g.noktalar.map(n => n.join(",")).join(" ")}"
+             fill="${on}" stroke="${koyu}" stroke-width="4" stroke-linejoin="round"/>`;
   }
-  return `<polygon points="${s.noktalar.map(n => n.join(",")).join(" ")}"
-           fill="${r}" stroke="${k}" stroke-width="4" stroke-linejoin="round"/>`;
+
+  /* ---- 3B ---- */
+  const ust   = renkAcikla(on, .30);
+  const yan   = renkKoyult(on, .26);
+  const cizgi = renkKoyult(on, .52);
+
+  if(tip === "kup"){
+    return `
+      <polygon points="-40,-40 -14,-66 66,-66 40,-40" fill="${ust}" stroke="${cizgi}" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="40,-40 66,-66 66,14 40,40"     fill="${yan}" stroke="${cizgi}" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="-40" y="-40" width="80" height="80"    fill="${on}"  stroke="${cizgi}" stroke-width="3"/>`;
+  }
+  if(tip === "prizma"){
+    return `
+      <polygon points="-52,-31 -30,-53 74,-53 52,-31" fill="${ust}" stroke="${cizgi}" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="52,-31 74,-53 74,9 52,31"      fill="${yan}" stroke="${cizgi}" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="-52" y="-31" width="104" height="62"   fill="${on}"  stroke="${cizgi}" stroke-width="3"/>`;
+  }
+  if(tip === "silindir"){
+    return `
+      <path d="M-34 -38 L-34 38 A34 12 0 0 0 34 38 L34 -38 Z" fill="${on}" stroke="${cizgi}" stroke-width="3"/>
+      <path d="M-34 -6 L-34 38 A34 12 0 0 0 34 38 L34 -6 A34 12 0 0 1 -34 -6 Z" fill="${yan}" opacity=".28"/>
+      <ellipse cx="0" cy="-38" rx="34" ry="12" fill="${ust}" stroke="${cizgi}" stroke-width="3"/>`;
+  }
+  if(tip === "koni"){
+    return `
+      <ellipse cx="0" cy="34" rx="38" ry="12" fill="${yan}" stroke="${cizgi}" stroke-width="3"/>
+      <path d="M0 -56 L38 34 A38 12 0 0 1 -38 34 Z" fill="${on}" stroke="${cizgi}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M0 -56 L-16 34 A38 12 0 0 0 -38 34 Z" fill="${ust}" opacity=".35"/>`;
+  }
+  /* küre */
+  return `
+    <circle cx="0" cy="0" r="42" fill="${on}" stroke="${cizgi}" stroke-width="3"/>
+    <path d="M-42 0 A42 42 0 0 0 42 0 A42 22 0 0 1 -42 0 Z" fill="${yan}" opacity=".35"/>
+    <ellipse cx="-14" cy="-16" rx="17" ry="12" fill="#ffffff" opacity=".38"/>`;
 }
 
 /* Soru sahnesi: konumlar 0–1 arası oransal (viewBox 400×240) */
@@ -2592,27 +2707,33 @@ function sahneSvg(sahne){
   const icerik = (sahne || []).map(o =>
     `<g transform="translate(${(o.x*400).toFixed(1)},${(o.y*240).toFixed(1)})`
     + ` rotate(${o.aci || 0}) scale(${o.olcek == null ? 1 : o.olcek})">`
-    + sekilCiz(o.sekil, o.renk) + `</g>`
+    + geoCiz(o.sekil, o.renk) + `</g>`
   ).join("");
   return `<svg viewBox="0 0 400 240" role="img" aria-label="Soru görseli">${icerik}</svg>`;
 }
 
-/* Kenar ve köşeleri sırayla vurgulayan öğretici görsel */
+/* Yanlış cevapta gösterilen öğretici görsel.
+   2B köşeli şekilde kenarlar sırayla çizilir, köşeler tek tek belirir;
+   daire/çemberde çevre çizilir; 3B cisim büyüyerek belirir ve salınır. */
 function vurguSvg(tip){
-  const s = SEKIL_BILGI[tip];
-  if(!s) return "";
+  const g = GEO[tip];
+  if(!g) return "";
   const r = "#1d4ed8", k = renkKoyult(r,.35);
 
-  if(s.yuvarlak){
-    const cevre = (2 * Math.PI * s.r).toFixed(1);
+  if(g.tur === "3b"){
+    const kt = g.kutu;
+    return `<svg class="vurgu-cisim" viewBox="${kt[0]-8} ${kt[1]-8} ${kt[2]+16} ${kt[3]+16}"
+              aria-hidden="true">${geoCiz(tip, r)}</svg>`;
+  }
+  if(g.yuvarlak){
+    const cevre = (2 * Math.PI * g.r).toFixed(1);
     return `<svg viewBox="-70 -70 140 140" aria-hidden="true">
-      ${s.bos ? "" : `<circle cx="0" cy="0" r="${s.r}" fill="#dbe7ff"/>`}
-      <circle cx="0" cy="0" r="${s.r}" fill="none" stroke="${k}" stroke-width="6"
+      ${g.bos ? "" : `<circle cx="0" cy="0" r="${g.r}" fill="#dbe7ff"/>`}
+      <circle cx="0" cy="0" r="${g.r}" fill="none" stroke="${k}" stroke-width="6"
               stroke-linecap="round" class="vurgu-kenar" style="--uzunluk:${cevre}"/>
     </svg>`;
   }
-
-  const n = s.noktalar;
+  const n = g.noktalar;
   let kenarlar = "", koseler = "";
   n.forEach((p, i) => {
     const q = n[(i+1) % n.length];
@@ -2623,7 +2744,6 @@ function vurguSvg(tip){
     koseler  += `<circle cx="${p[0]}" cy="${p[1]}" r="9" fill="#d97706" stroke="#fff" stroke-width="3"
                    class="vurgu-kose" style="animation-delay:${(n.length*0.18 + i*0.12).toFixed(2)}s"/>`;
   });
-
   return `<svg viewBox="-70 -70 140 140" aria-hidden="true">
     <polygon points="${n.map(p => p.join(",")).join(" ")}" fill="#dbe7ff"/>
     ${kenarlar}${koseler}
@@ -2631,16 +2751,18 @@ function vurguSvg(tip){
 }
 
 /* --- T) SORU VERİSİ ----------------------------------------------------- */
-/* Şema: {id, zorluk, tip, metin, sahne[], secenekTipi, secenekler[], dogru,
-          vurgu, aciklama}
-   Sahne öğeleri: sk(şekil, renk, x, y, ölçek, açı) — x/y 0–1 arası oransal.
-   Hiçbir soru için ayrı SVG dosyası yok; hepsi S bölümündeki ortak
-   bileşenlerden üretilir.                                                   */
+/* 60 soru: her zorlukta 10 tanesi 2B şekil, 10 tanesi 3B cisim.
+   Şema: {id, zorluk, tip, metin, sahne[], secenekTipi, secenekler[], dogru,
+          vurgu, aciklama}. sk(öge, renk, x, y, ölçek, açı) — x/y oransal.
+   Kazanım eşlemesi:
+     kolay → adlandırma (MAT.2.3.1 ç)
+     orta  → biçimsel özellik ve günlük nesne (MAT.2.3.1 a-b)
+     zor   → yapıdaki ögeleri belirleme, ilişki kurma (MAT.2.3.2 a-b)        */
 
 const R = {
   mavi:"#1d4ed8", gok:"#0ea5e9", yesil:"#15803d", turuncu:"#d97706",
   kirmizi:"#dc2626", mor:"#7c3aed", pembe:"#db2777", sari:"#f59e0b",
-  kahve:"#78350f", gri:"#334155", beyaz:"#ffffff"
+  kahve:"#78350f", gri:"#334155", beyaz:"#eef2f8"
 };
 
 function sk(sekil, renk, x, y, olcek, aci){
@@ -2648,16 +2770,13 @@ function sk(sekil, renk, x, y, olcek, aci){
            olcek:(olcek == null ? 1 : olcek), aci:(aci || 0) };
 }
 
-/* Günlük yaşam nesneleri — hepsi aynı dört şekilden kurulur */
+/* Günlük yaşam nesneleri — soldakiler 2B şekillerden, sağdakiler cisimlerden */
 const NESNELER = {
+  /* 2B */
   saat: (x,y,s) => [
     sk("daire", R.gok, x, y, 1.15*s),
     sk("dikdortgen", R.beyaz, x, y-0.075*s, 0.24*s, 90),
     sk("dikdortgen", R.beyaz, x+0.06*s, y, 0.19*s, 0)
-  ],
-  kitap: (x,y,s) => [
-    sk("dikdortgen", R.mavi, x, y, 1.0*s),
-    sk("dikdortgen", R.beyaz, x-0.11*s, y, 0.2*s, 90)
   ],
   pizza: (x,y,s) => [
     sk("ucgen", R.sari, x, y, 1.1*s, 180),
@@ -2672,38 +2791,44 @@ const NESNELER = {
     sk("kare", R.gok, x-0.058*s, y+0.098*s, 0.5*s),
     sk("kare", R.gok, x+0.058*s, y+0.098*s, 0.5*s)
   ],
-  top: (x,y,s) => [
-    sk("daire", R.pembe, x, y, 1.15*s),
-    sk("daire", R.beyaz, x-0.04*s, y-0.07*s, 0.28*s)
-  ],
-  yelkenli: (x,y,s) => [
-    sk("ucgen", R.beyaz, x, y-0.10*s, 0.95*s),
-    sk("dikdortgen", R.kirmizi, x, y+0.14*s, 0.7*s)
-  ],
   kapi: (x,y,s) => [
     sk("dikdortgen", R.kahve, x, y, 1.0*s, 90),
     sk("daire", R.sari, x+0.05*s, y, 0.12*s)
-  ],
-  ev: (x,y,s) => [
-    sk("kare", R.sari, x, y+0.13*s, 0.8*s),
-    sk("ucgen", R.kirmizi, x, y-0.15*s, 0.9*s)
   ],
   tekerlek: (x,y,s) => [
     sk("daire", R.gri, x, y, 1.2*s),
     sk("daire", R.sari, x, y, 0.5*s),
     sk("daire", R.gri, x, y, 0.18*s)
   ],
-  tablet: (x,y,s) => [
-    sk("dikdortgen", R.gri, x, y, 1.05*s),
-    sk("dikdortgen", R.gok, x, y, 0.8*s)
+
+  /* 3B */
+  zar: (x,y,s) => [
+    sk("kup", R.beyaz, x, y, 1.0*s),
+    sk("nokta", R.gri, x-0.05*s, y-0.02*s, 0.65*s),
+    sk("nokta", R.gri, x, y+0.05*s, 0.65*s),
+    sk("nokta", R.gri, x+0.05*s, y+0.12*s, 0.65*s)
+  ],
+  koli: (x,y,s) => [
+    sk("prizma", R.kahve, x, y, 1.0*s),
+    sk("serit", "#e8c88a", x, y+0.02*s, 0.55*s)
+  ],
+  konserve: (x,y,s) => [
+    sk("silindir", R.gri, x, y, 1.0*s),
+    sk("serit", R.kirmizi, x, y+0.02*s, 0.85*s)
+  ],
+  kulah: (x,y,s) => [
+    sk("koni", "#e0a35c", x, y+0.10*s, 1.0*s, 180),
+    sk("kure", R.pembe, x, y-0.16*s, 0.7*s)
+  ],
+  top: (x,y,s) => [
+    sk("kure", R.kirmizi, x, y, 1.1*s)
   ]
 };
 function nesne(ad, x, y, s){ return NESNELER[ad](x, y, s == null ? 1 : s); }
 
 const SORULAR = [
 
-  /* ======================= KOLAY (20) =======================
-     Şeklin adını seçme · doğru şekle dokunma · aynısını bulma  */
+  /* ===================== KOLAY — 2B ŞEKİLLER (10) ===================== */
 
   { id:"k1", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
     sahne:[sk("kare", R.mavi, 0.5, 0.5, 1.3)],
@@ -2721,235 +2846,224 @@ const SORULAR = [
     vurgu:"daire", aciklama:"Dairenin köşesi yoktur, çevresi yuvarlaktır." },
 
   { id:"k4", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
-    sahne:[sk("dikdortgen", R.yesil, 0.5, 0.5, 1.3)],
+    sahne:[sk("dikdortgen", R.yesil, 0.5, 0.5, 1.2)],
     secenekTipi:"metin", secenekler:["Daire","Dikdörtgen","Üçgen"], dogru:1,
-    vurgu:"dikdortgen", aciklama:"Dikdörtgenin 4 kenarı vardır; kenarlarının ikisi uzun, ikisi kısadır." },
+    vurgu:"dikdortgen", aciklama:"Dikdörtgenin kenarlarının ikisi uzun, ikisi kısadır." },
 
   { id:"k5", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
     sahne:[sk("kare", R.mor, 0.5, 0.5, 1.25, 45)],
     secenekTipi:"metin", secenekler:["Kare","Üçgen","Daire"], dogru:0,
-    vurgu:"kare", aciklama:"Şekli döndürsek de kare karedir: 4 kenarı ve 4 köşesi vardır." },
+    vurgu:"kare", aciklama:"Döndürsek de kare karedir: 4 kenarı ve 4 köşesi vardır." },
 
   { id:"k6", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
     sahne:[sk("ucgen", R.gok, 0.5, 0.5, 1.3, 180)],
     secenekTipi:"metin", secenekler:["Dikdörtgen","Daire","Üçgen"], dogru:2,
     vurgu:"ucgen", aciklama:"Ters dursa da üçgendir: 3 kenarı ve 3 köşesi vardır." },
 
-  { id:"k7", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
-    sahne:[sk("dikdortgen", R.kirmizi, 0.5, 0.5, 1.2, 90)],
-    secenekTipi:"metin", secenekler:["Dikdörtgen","Kare","Daire"], dogru:0,
-    vurgu:"dikdortgen", aciklama:"Ayakta dursa da dikdörtgendir: uzun ve kısa kenarları vardır." },
-
-  { id:"k8", zorluk:"kolay", tip:"ad", metin:"Bu şeklin adı nedir?",
-    sahne:[sk("daire", R.sari, 0.5, 0.5, 0.85)],
-    secenekTipi:"metin", secenekler:["Üçgen","Daire","Kare"], dogru:1,
-    vurgu:"daire", aciklama:"Küçük de olsa dairedir; dairenin hiç köşesi yoktur." },
-
-  { id:"k9", zorluk:"kolay", tip:"dokun", metin:"Üçgene dokun.",
+  { id:"k7", zorluk:"kolay", tip:"dokun", metin:"Üçgene dokun.",
     sahne:[],
-    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:1,
+    secenekTipi:"gorsel", secenekler:["kare","ucgen","daire"], dogru:1,
     vurgu:"ucgen", aciklama:"Üçgenin 3 kenarı ve 3 köşesi vardır." },
 
-  { id:"k10", zorluk:"kolay", tip:"dokun", metin:"Kareye dokun.",
+  { id:"k8", zorluk:"kolay", tip:"dokun", metin:"Daireye dokun.",
     sahne:[],
-    secenekTipi:"sekil", secenekler:["daire","dikdortgen","kare"], dogru:2,
-    vurgu:"kare", aciklama:"Karenin 4 kenarı eşit uzunluktadır." },
+    secenekTipi:"gorsel", secenekler:["daire","dikdortgen","ucgen"], dogru:0,
+    vurgu:"daire", aciklama:"Dairenin hiç köşesi yoktur." },
 
-  { id:"k11", zorluk:"kolay", tip:"dokun", metin:"Daireye dokun.",
-    sahne:[],
-    secenekTipi:"sekil", secenekler:["daire","ucgen","kare"], dogru:0,
-    vurgu:"daire", aciklama:"Dairenin köşesi yoktur." },
-
-  { id:"k12", zorluk:"kolay", tip:"dokun", metin:"Dikdörtgene dokun.",
-    sahne:[],
-    secenekTipi:"sekil", secenekler:["ucgen","dikdortgen","daire"], dogru:1,
-    vurgu:"dikdortgen", aciklama:"Dikdörtgenin uzun ve kısa kenarları vardır." },
-
-  { id:"k13", zorluk:"kolay", tip:"dokun", metin:"İçi dolu olan yuvarlak şekle dokun.",
-    sahne:[],
-    secenekTipi:"sekil", secenekler:["cember","daire","kare"], dogru:1,
-    vurgu:"daire", aciklama:"Dairenin içi doludur; çemberin içi boştur." },
-
-  { id:"k14", zorluk:"kolay", tip:"dokun", metin:"Üç köşesi olan şekle dokun.",
-    sahne:[],
-    secenekTipi:"sekil", secenekler:["dikdortgen","daire","ucgen"], dogru:2,
-    vurgu:"ucgen", aciklama:"Üçgenin 3 köşesi vardır." },
-
-  { id:"k15", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
-    sahne:[sk("kare", R.turuncu, 0.5, 0.5, 1.0)],
-    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:1,
-    vurgu:"kare", aciklama:"İkisi de karedir; rengi farklı olsa da şekli aynıdır." },
-
-  { id:"k16", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
-    sahne:[sk("daire", R.yesil, 0.5, 0.5, 1.0)],
-    secenekTipi:"sekil", secenekler:["daire","dikdortgen","ucgen"], dogru:0,
-    vurgu:"daire", aciklama:"İkisi de dairedir." },
-
-  { id:"k17", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+  { id:"k9", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
     sahne:[sk("dikdortgen", R.mor, 0.5, 0.5, 1.0)],
-    secenekTipi:"sekil", secenekler:["kare","ucgen","dikdortgen"], dogru:2,
+    secenekTipi:"gorsel", secenekler:["kare","ucgen","dikdortgen"], dogru:2,
     vurgu:"dikdortgen", aciklama:"İkisi de dikdörtgendir." },
 
-  { id:"k18", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
-    sahne:[sk("ucgen", R.pembe, 0.5, 0.5, 1.0)],
-    secenekTipi:"sekil", secenekler:["ucgen","daire","kare"], dogru:0,
-    vurgu:"ucgen", aciklama:"İkisi de üçgendir." },
-
-  { id:"k19", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
+  { id:"k10", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
     sahne:[sk("kare", R.gok, 0.5, 0.5, 1.0, 45)],
-    secenekTipi:"sekil", secenekler:["ucgen","daire","kare"], dogru:2,
+    secenekTipi:"gorsel", secenekler:["ucgen","daire","kare"], dogru:2,
     vurgu:"kare", aciklama:"Yukarıdaki şekil döndürülmüş bir karedir." },
 
-  { id:"k20", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki şeklin aynısı hangisidir?",
-    sahne:[sk("daire", R.kirmizi, 0.5, 0.5, 0.9)],
-    secenekTipi:"sekil", secenekler:["kare","daire","dikdortgen"], dogru:1,
-    vurgu:"daire", aciklama:"Büyüklük değişse de şekil aynıdır: ikisi de daire." },
+  /* ===================== KOLAY — 3B CİSİMLER (10) ===================== */
 
-  /* ======================= ORTA (20) =========================
-     Kenar–köşe özelliğinden şekli bulma · günlük nesne eşleştirme */
+  { id:"k11", zorluk:"kolay", tip:"ad", metin:"Bu cismin adı nedir?",
+    sahne:[sk("kup", R.mavi, 0.5, 0.5, 1.1)],
+    secenekTipi:"metin", secenekler:["Küre","Küp","Koni"], dogru:1,
+    vurgu:"kup", aciklama:"Küpün 6 düz yüzü vardır ve hepsi karedir." },
+
+  { id:"k12", zorluk:"kolay", tip:"ad", metin:"Bu cismin adı nedir?",
+    sahne:[sk("silindir", R.turuncu, 0.5, 0.5, 1.1)],
+    secenekTipi:"metin", secenekler:["Silindir","Küp","Küre"], dogru:0,
+    vurgu:"silindir", aciklama:"Silindirin 2 dairesel yüzü vardır ve yuvarlanabilir." },
+
+  { id:"k13", zorluk:"kolay", tip:"ad", metin:"Bu cismin adı nedir?",
+    sahne:[sk("kure", R.pembe, 0.5, 0.5, 1.15)],
+    secenekTipi:"metin", secenekler:["Koni","Silindir","Küre"], dogru:2,
+    vurgu:"kure", aciklama:"Kürenin hiç düz yüzü yoktur; her yöne yuvarlanır." },
+
+  { id:"k14", zorluk:"kolay", tip:"ad", metin:"Bu cismin adı nedir?",
+    sahne:[sk("koni", R.yesil, 0.5, 0.5, 1.1)],
+    secenekTipi:"metin", secenekler:["Küp","Koni","Küre"], dogru:1,
+    vurgu:"koni", aciklama:"Koninin 1 dairesel yüzü ve 1 tepe noktası vardır." },
+
+  { id:"k15", zorluk:"kolay", tip:"ad", metin:"Bu cismin adı nedir?",
+    sahne:[sk("prizma", R.mor, 0.5, 0.5, 1.0)],
+    secenekTipi:"metin", secenekler:["Dikdörtgenler Prizması","Küp","Silindir"], dogru:0,
+    vurgu:"prizma", aciklama:"Dikdörtgenler prizmasının 6 düz yüzü vardır." },
+
+  { id:"k16", zorluk:"kolay", tip:"ad", metin:"Bu cismin adı nedir?",
+    sahne:[sk("silindir", R.gok, 0.5, 0.5, 1.0, 90)],
+    secenekTipi:"metin", secenekler:["Küre","Silindir","Küp"], dogru:1,
+    vurgu:"silindir", aciklama:"Yan yatsa da silindirdir; yan yatınca yuvarlanır." },
+
+  { id:"k17", zorluk:"kolay", tip:"dokun", metin:"Küpe dokun.",
+    sahne:[],
+    secenekTipi:"gorsel", secenekler:["silindir","kup","kure"], dogru:1,
+    vurgu:"kup", aciklama:"Küpün bütün yüzleri kare biçimindedir." },
+
+  { id:"k18", zorluk:"kolay", tip:"dokun", metin:"Koniye dokun.",
+    sahne:[],
+    secenekTipi:"gorsel", secenekler:["koni","kure","prizma"], dogru:0,
+    vurgu:"koni", aciklama:"Koninin sivri bir tepe noktası vardır." },
+
+  { id:"k19", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki cismin aynısı hangisidir?",
+    sahne:[sk("kure", R.yesil, 0.5, 0.5, 0.95)],
+    secenekTipi:"gorsel", secenekler:["kure","prizma","koni"], dogru:0,
+    vurgu:"kure", aciklama:"İkisi de küredir." },
+
+  { id:"k20", zorluk:"kolay", tip:"ayni", metin:"Yukarıdaki cismin aynısı hangisidir?",
+    sahne:[sk("silindir", R.mor, 0.5, 0.5, 0.95)],
+    secenekTipi:"gorsel", secenekler:["prizma","silindir","kure"], dogru:1,
+    vurgu:"silindir", aciklama:"İkisi de silindirdir." },
+
+  /* ====================== ORTA — 2B ŞEKİLLER (10) ===================== */
 
   { id:"o1", zorluk:"orta", tip:"ozellik", metin:"3 kenarı ve 3 köşesi olan şekil hangisidir?",
     sahne:[],
-    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:1,
+    secenekTipi:"gorsel", secenekler:["kare","ucgen","daire"], dogru:1,
     vurgu:"ucgen", aciklama:"Üçgenin 3 kenarı ve 3 köşesi vardır." },
 
-  { id:"o2", zorluk:"orta", tip:"ozellik", metin:"Hiç köşesi olmayan şekil hangisidir?",
+  { id:"o2", zorluk:"orta", tip:"ozellik", metin:"4 kenarı da eşit olan şekil hangisidir?",
     sahne:[],
-    secenekTipi:"sekil", secenekler:["daire","dikdortgen","ucgen"], dogru:0,
-    vurgu:"daire", aciklama:"Dairenin hiç köşesi yoktur." },
-
-  { id:"o3", zorluk:"orta", tip:"ozellik", metin:"4 kenarı da eşit olan şekil hangisidir?",
-    sahne:[],
-    secenekTipi:"sekil", secenekler:["dikdortgen","daire","kare"], dogru:2,
+    secenekTipi:"gorsel", secenekler:["dikdortgen","daire","kare"], dogru:2,
     vurgu:"kare", aciklama:"Karenin 4 kenarı da birbirine eşittir." },
 
-  { id:"o4", zorluk:"orta", tip:"ozellik", metin:"Uzun ve kısa kenarları olan şekil hangisidir?",
+  { id:"o3", zorluk:"orta", tip:"ozellik", metin:"Uzun ve kısa kenarları olan şekil hangisidir?",
     sahne:[],
-    secenekTipi:"sekil", secenekler:["ucgen","dikdortgen","daire"], dogru:1,
+    secenekTipi:"gorsel", secenekler:["ucgen","dikdortgen","daire"], dogru:1,
     vurgu:"dikdortgen", aciklama:"Dikdörtgenin karşılıklı kenarları eşittir; ikisi uzun, ikisi kısadır." },
 
-  { id:"o5", zorluk:"orta", tip:"sayi", metin:"Üçgenin kaç köşesi vardır?",
-    sahne:[sk("ucgen", R.turuncu, 0.5, 0.5, 1.2)],
-    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
-    vurgu:"ucgen", aciklama:"Üçgenin 3 köşesi vardır." },
+  { id:"o4", zorluk:"orta", tip:"ad", metin:"İçi boş olan bu şeklin adı nedir?",
+    sahne:[sk("cember", R.mavi, 0.5, 0.5, 1.25)],
+    secenekTipi:"metin", secenekler:["Daire","Çember","Kare"], dogru:1,
+    vurgu:"cember", aciklama:"Çember yuvarlak bir çizgidir; içi boştur. İçi dolu olsaydı daire olurdu." },
 
-  { id:"o6", zorluk:"orta", tip:"sayi", metin:"Karenin kaç kenarı vardır?",
+  { id:"o5", zorluk:"orta", tip:"sayi", metin:"Karenin kaç kenarı vardır?",
     sahne:[sk("kare", R.mavi, 0.5, 0.5, 1.2)],
     secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
     vurgu:"kare", aciklama:"Karenin 4 kenarı vardır." },
 
-  { id:"o7", zorluk:"orta", tip:"sayi", metin:"Dairenin kaç köşesi vardır?",
+  { id:"o6", zorluk:"orta", tip:"sayi", metin:"Dairenin kaç köşesi vardır?",
     sahne:[sk("daire", R.pembe, 0.5, 0.5, 1.2)],
     secenekTipi:"metin", secenekler:["Hiç yok","2","4"], dogru:0,
     vurgu:"daire", aciklama:"Dairenin hiç köşesi yoktur." },
 
-  { id:"o8", zorluk:"orta", tip:"sayi", metin:"Dikdörtgenin kaç kenarı vardır?",
-    sahne:[sk("dikdortgen", R.yesil, 0.5, 0.5, 1.2)],
-    secenekTipi:"sayi", secenekler:["3","4","6"], dogru:1,
-    vurgu:"dikdortgen", aciklama:"Dikdörtgenin 4 kenarı vardır." },
-
-  { id:"o9", zorluk:"orta", tip:"ad", metin:"İçi boş olan bu şeklin adı nedir?",
-    sahne:[sk("cember", R.mavi, 0.5, 0.5, 1.25)],
-    secenekTipi:"metin", secenekler:["Daire","Çember","Kare"], dogru:1,
-    vurgu:"cember", aciklama:"Çember yalnızca yuvarlak bir çizgidir; içi boştur. İçi dolu olsaydı daire olurdu." },
-
-  { id:"o10", zorluk:"orta", tip:"sayi", metin:"Karenin kaç köşesi vardır?",
-    sahne:[sk("kare", R.mor, 0.5, 0.5, 1.2)],
-    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
-    vurgu:"kare", aciklama:"Karenin 4 köşesi vardır." },
-
-  { id:"o11", zorluk:"orta", tip:"esleme", metin:"Bu saat hangi şekle benzer?",
+  { id:"o7", zorluk:"orta", tip:"esleme", metin:"Bu saat hangi şekle benzer?",
     sahne:nesne("saat", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["kare","daire","ucgen"], dogru:1,
+    secenekTipi:"gorsel", secenekler:["kare","daire","ucgen"], dogru:1,
     vurgu:"daire", aciklama:"Saatin çerçevesi daire şeklindedir." },
 
-  { id:"o12", zorluk:"orta", tip:"esleme", metin:"Bu kitap hangi şekle benzer?",
-    sahne:nesne("kitap", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["dikdortgen","daire","ucgen"], dogru:0,
-    vurgu:"dikdortgen", aciklama:"Kitabın kapağı dikdörtgen şeklindedir." },
-
-  { id:"o13", zorluk:"orta", tip:"esleme", metin:"Bu pizza dilimi hangi şekle benzer?",
+  { id:"o8", zorluk:"orta", tip:"esleme", metin:"Bu pizza dilimi hangi şekle benzer?",
     sahne:nesne("pizza", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["kare","dikdortgen","ucgen"], dogru:2,
+    secenekTipi:"gorsel", secenekler:["kare","dikdortgen","ucgen"], dogru:2,
     vurgu:"ucgen", aciklama:"Pizza dilimi üçgene benzer: 3 kenarı ve 3 köşesi vardır." },
 
-  { id:"o14", zorluk:"orta", tip:"esleme", metin:"Bu pencerenin çerçevesi hangi şekle benzer?",
+  { id:"o9", zorluk:"orta", tip:"esleme", metin:"Bu pencerenin çerçevesi hangi şekle benzer?",
     sahne:nesne("pencere", 0.5, 0.5, 1.05),
-    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:1,
+    secenekTipi:"gorsel", secenekler:["ucgen","kare","daire"], dogru:1,
     vurgu:"kare", aciklama:"Pencerenin çerçevesi kare şeklindedir." },
 
-  { id:"o15", zorluk:"orta", tip:"esleme", metin:"Bu top hangi şekle benzer?",
-    sahne:nesne("top", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["daire","kare","ucgen"], dogru:0,
-    vurgu:"daire", aciklama:"Topun kenarı yuvarlaktır; daireye benzer." },
-
-  { id:"o16", zorluk:"orta", tip:"esleme", metin:"Bu teknenin yelkeni hangi şekle benzer?",
-    sahne:nesne("yelkenli", 0.5, 0.48, 1.1),
-    secenekTipi:"sekil", secenekler:["daire","ucgen","kare"], dogru:1,
-    vurgu:"ucgen", aciklama:"Yelken üçgen şeklindedir." },
-
-  { id:"o17", zorluk:"orta", tip:"esleme", metin:"Bu kapı hangi şekle benzer?",
+  { id:"o10", zorluk:"orta", tip:"esleme", metin:"Bu kapı hangi şekle benzer?",
     sahne:nesne("kapi", 0.5, 0.5, 1.05),
-    secenekTipi:"sekil", secenekler:["ucgen","kare","dikdortgen"], dogru:2,
+    secenekTipi:"gorsel", secenekler:["ucgen","kare","dikdortgen"], dogru:2,
     vurgu:"dikdortgen", aciklama:"Kapı dikdörtgen şeklindedir: iki kenarı uzun, iki kenarı kısadır." },
 
-  { id:"o18", zorluk:"orta", tip:"esleme", metin:"Bu evin çatısı hangi şekle benzer?",
-    sahne:nesne("ev", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["ucgen","dikdortgen","daire"], dogru:0,
-    vurgu:"ucgen", aciklama:"Çatı üçgen şeklindedir." },
+  /* ====================== ORTA — 3B CİSİMLER (10) ===================== */
 
-  { id:"o19", zorluk:"orta", tip:"esleme", metin:"Bu tekerlek hangi şekle benzer?",
-    sahne:nesne("tekerlek", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:2,
-    vurgu:"daire", aciklama:"Tekerlek daire şeklindedir, bu yüzden yuvarlanır." },
+  { id:"o11", zorluk:"orta", tip:"ozellik", metin:"Bütün yüzleri kare olan cisim hangisidir?",
+    sahne:[],
+    secenekTipi:"gorsel", secenekler:["silindir","kup","koni"], dogru:1,
+    vurgu:"kup", aciklama:"Küpün 6 yüzü de karedir." },
 
-  { id:"o20", zorluk:"orta", tip:"esleme", metin:"Bu tabletin ekranı hangi şekle benzer?",
-    sahne:nesne("tablet", 0.5, 0.5, 1.1),
-    secenekTipi:"sekil", secenekler:["dikdortgen","daire","ucgen"], dogru:0,
-    vurgu:"dikdortgen", aciklama:"Tabletin ekranı dikdörtgen şeklindedir." },
+  { id:"o12", zorluk:"orta", tip:"ozellik", metin:"Her yöne yuvarlanabilen cisim hangisidir?",
+    sahne:[],
+    secenekTipi:"gorsel", secenekler:["kure","kup","prizma"], dogru:0,
+    vurgu:"kure", aciklama:"Kürenin düz yüzü olmadığı için her yöne yuvarlanır." },
 
-  /* ======================= ZOR (20) ==========================
-     Şekil sayma · eksik şekli bulma · karşılaştırma ve toplam   */
+  { id:"o13", zorluk:"orta", tip:"ozellik", metin:"Sivri tepe noktası olan cisim hangisidir?",
+    sahne:[],
+    secenekTipi:"gorsel", secenekler:["silindir","prizma","koni"], dogru:2,
+    vurgu:"koni", aciklama:"Koninin tepesi sivridir; 1 tepe noktası vardır." },
+
+  { id:"o14", zorluk:"orta", tip:"ozellik", metin:"Hangi cisim hiç yuvarlanmaz?",
+    sahne:[],
+    secenekTipi:"gorsel", secenekler:["kure","kup","silindir"], dogru:1,
+    vurgu:"kup", aciklama:"Küpün bütün yüzleri düz olduğu için yuvarlanmaz, kayar." },
+
+  { id:"o15", zorluk:"orta", tip:"sayi", metin:"Küpün kaç düz yüzü vardır?",
+    sahne:[sk("kup", R.mavi, 0.5, 0.5, 1.0)],
+    secenekTipi:"sayi", secenekler:["4","6","8"], dogru:1,
+    vurgu:"kup", aciklama:"Küpün 6 düz yüzü vardır." },
+
+  { id:"o16", zorluk:"orta", tip:"sayi", metin:"Silindirin kaç dairesel yüzü vardır?",
+    sahne:[sk("silindir", R.turuncu, 0.5, 0.5, 1.0)],
+    secenekTipi:"sayi", secenekler:["1","2","3"], dogru:1,
+    vurgu:"silindir", aciklama:"Silindirin biri altta biri üstte, 2 dairesel yüzü vardır." },
+
+  { id:"o17", zorluk:"orta", tip:"esleme", metin:"Bu zar hangi cisme benzer?",
+    sahne:nesne("zar", 0.5, 0.5, 1.0),
+    secenekTipi:"gorsel", secenekler:["silindir","kup","kure"], dogru:1,
+    vurgu:"kup", aciklama:"Zar küp biçimindedir." },
+
+  { id:"o18", zorluk:"orta", tip:"esleme", metin:"Bu konserve kutusu hangi cisme benzer?",
+    sahne:nesne("konserve", 0.5, 0.5, 1.0),
+    secenekTipi:"gorsel", secenekler:["kup","kure","silindir"], dogru:2,
+    vurgu:"silindir", aciklama:"Konserve kutusu silindir biçimindedir." },
+
+  { id:"o19", zorluk:"orta", tip:"esleme", metin:"Bu dondurma külahı hangi cisme benzer?",
+    sahne:nesne("kulah", 0.5, 0.52, 1.0),
+    secenekTipi:"gorsel", secenekler:["koni","prizma","kup"], dogru:0,
+    vurgu:"koni", aciklama:"Külah koni biçimindedir; sivri bir tepesi vardır." },
+
+  { id:"o20", zorluk:"orta", tip:"esleme", metin:"Bu kutu hangi cisme benzer?",
+    sahne:nesne("koli", 0.5, 0.5, 1.0),
+    secenekTipi:"gorsel", secenekler:["prizma","koni","kure"], dogru:0,
+    vurgu:"prizma", aciklama:"Kutu dikdörtgenler prizmasına benzer." },
+
+  /* ======================= ZOR — 2B ŞEKİLLER (10) ===================== */
 
   { id:"z1", zorluk:"zor", tip:"sayma", sayilan:"ucgen", metin:"Bu resimde kaç üçgen var?",
     sahne:[
-      sk("ucgen",  R.turuncu, 0.18, 0.30, 0.62),
-      sk("kare",   R.mavi,    0.50, 0.30, 0.62),
-      sk("ucgen",  R.yesil,   0.82, 0.30, 0.62, 180),
+      sk("ucgen", R.turuncu, 0.18, 0.30, 0.62),
+      sk("kare",  R.mavi,    0.50, 0.30, 0.62),
+      sk("ucgen", R.yesil,   0.82, 0.30, 0.62, 180),
       sk("daire", R.pembe,   0.18, 0.72, 0.62),
-      sk("ucgen",  R.mor,     0.50, 0.72, 0.62),
-      sk("kare",   R.gok,     0.82, 0.72, 0.62, 45)
+      sk("ucgen", R.mor,     0.50, 0.72, 0.62),
+      sk("kare",  R.gok,     0.82, 0.72, 0.62, 45)
     ],
     secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
-    vurgu:"ucgen", aciklama:"Resimde 3 üçgen var. Üçgenin 3 kenarı ve 3 köşesi vardır." },
+    vurgu:"ucgen", aciklama:"Resimde 3 üçgen var." },
 
   { id:"z2", zorluk:"zor", tip:"sayma", sayilan:"kare", metin:"Bu resimde kaç kare var?",
     sahne:[
-      sk("kare",   R.mavi,    0.15, 0.30, 0.55),
-      sk("ucgen",  R.turuncu, 0.38, 0.30, 0.55),
-      sk("kare",   R.yesil,   0.62, 0.30, 0.55),
+      sk("kare",  R.mavi,    0.15, 0.30, 0.55),
+      sk("ucgen", R.turuncu, 0.38, 0.30, 0.55),
+      sk("kare",  R.yesil,   0.62, 0.30, 0.55),
       sk("daire", R.pembe,   0.85, 0.30, 0.55),
-      sk("kare",   R.mor,     0.28, 0.72, 0.55),
-      sk("ucgen",  R.gok,     0.50, 0.72, 0.55),
-      sk("kare",   R.kirmizi, 0.72, 0.72, 0.55)
+      sk("kare",  R.mor,     0.28, 0.72, 0.55, 30),
+      sk("ucgen", R.gok,     0.50, 0.72, 0.55),
+      sk("kare",  R.kirmizi, 0.72, 0.72, 0.55)
     ],
     secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
-    vurgu:"kare", aciklama:"Resimde 4 kare var. Karenin 4 kenarı eşittir." },
+    vurgu:"kare", aciklama:"Resimde 4 kare var; döndürülmüş kareler de karedir." },
 
-  { id:"z3", zorluk:"zor", tip:"sayma", sayilan:"daire", metin:"Bu resimde kaç daire var?",
-    sahne:[
-      sk("daire", R.pembe,   0.15, 0.30, 0.55),
-      sk("daire", R.gok,     0.38, 0.30, 0.55),
-      sk("kare",   R.mavi,    0.62, 0.30, 0.55),
-      sk("daire", R.sari,    0.85, 0.30, 0.55),
-      sk("daire", R.yesil,   0.28, 0.72, 0.55),
-      sk("kare",   R.turuncu, 0.50, 0.72, 0.55),
-      sk("daire", R.mor,     0.72, 0.72, 0.55)
-    ],
-    secenekTipi:"sayi", secenekler:["4","5","6"], dogru:1,
-    vurgu:"daire", aciklama:"Resimde 5 daire var. Dairenin köşesi yoktur." },
-
-  { id:"z4", zorluk:"zor", tip:"sayma", sayilan:"cember", metin:"Bu resimde kaç çember var?",
+  { id:"z3", zorluk:"zor", tip:"sayma", sayilan:"cember", metin:"Bu resimde kaç çember var?",
     sahne:[
       sk("cember", R.mavi,    0.15, 0.30, 0.6),
       sk("daire",  R.pembe,   0.38, 0.30, 0.6),
@@ -2961,55 +3075,19 @@ const SORULAR = [
     secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
     vurgu:"cember", aciklama:"Resimde 3 çember var; içi dolu olanlar daire, içi boş olanlar çemberdir." },
 
-  { id:"z5", zorluk:"zor", tip:"sayma", sayilan:"tumu", metin:"Bu resimde toplam kaç şekil var?",
+  { id:"z4", zorluk:"zor", tip:"sayma", sayilan:"tumu", metin:"Bu resimde toplam kaç şekil var?",
     sahne:[
-      sk("ucgen",  R.turuncu, 0.18, 0.30, 0.6),
-      sk("kare",   R.mavi,    0.50, 0.30, 0.6),
+      sk("ucgen", R.turuncu, 0.18, 0.30, 0.6),
+      sk("kare",  R.mavi,    0.50, 0.30, 0.6),
       sk("daire", R.pembe,   0.82, 0.30, 0.6),
-      sk("kare",   R.yesil,   0.18, 0.72, 0.6),
+      sk("kare",  R.yesil,   0.18, 0.72, 0.6),
       sk("daire", R.sari,    0.50, 0.72, 0.6),
-      sk("ucgen",  R.mor,     0.82, 0.72, 0.6)
+      sk("ucgen", R.mor,     0.82, 0.72, 0.6)
     ],
     secenekTipi:"sayi", secenekler:["5","6","7"], dogru:1,
     vurgu:"kare", aciklama:"Resimde toplam 6 şekil var: 2 üçgen, 2 kare ve 2 daire." },
 
-  { id:"z6", zorluk:"zor", tip:"sayma", sayilan:"dikdortgen", metin:"Bu resimde kaç dikdörtgen var?",
-    sahne:[
-      sk("dikdortgen", R.yesil,   0.22, 0.30, 0.5),
-      sk("ucgen",      R.mavi,    0.60, 0.30, 0.55),
-      sk("dikdortgen", R.kirmizi, 0.85, 0.30, 0.5, 90),
-      sk("daire",     R.pembe,   0.22, 0.74, 0.55),
-      sk("dikdortgen", R.mor,     0.55, 0.74, 0.5),
-      sk("daire",     R.gok,     0.85, 0.74, 0.55)
-    ],
-    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
-    vurgu:"dikdortgen", aciklama:"Resimde 3 dikdörtgen var; biri ayakta dursa da dikdörtgendir." },
-
-  { id:"z7", zorluk:"zor", tip:"sayma", sayilan:"kare", metin:"Bu resimde kaç kare var?",
-    sahne:[
-      sk("kare",   R.mavi,    0.18, 0.30, 0.6, 45),
-      sk("ucgen",  R.turuncu, 0.50, 0.30, 0.6),
-      sk("kare",   R.yesil,   0.82, 0.30, 0.6),
-      sk("daire", R.pembe,   0.18, 0.74, 0.6),
-      sk("kare",   R.mor,     0.50, 0.74, 0.6, 30),
-      sk("ucgen",  R.gok,     0.82, 0.74, 0.6, 180)
-    ],
-    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
-    vurgu:"kare", aciklama:"Resimde 3 kare var; döndürülmüş kareler de karedir." },
-
-  { id:"z8", zorluk:"zor", tip:"sayma", sayilan:"ucgen", metin:"Bu resimde kaç üçgen var?",
-    sahne:[
-      sk("ucgen",  R.turuncu, 0.15, 0.30, 0.55),
-      sk("ucgen",  R.kirmizi, 0.38, 0.30, 0.55, 180),
-      sk("kare",   R.mavi,    0.62, 0.30, 0.55),
-      sk("ucgen",  R.yesil,   0.85, 0.30, 0.55),
-      sk("daire", R.pembe,   0.30, 0.74, 0.55),
-      sk("ucgen",  R.mor,     0.70, 0.74, 0.55, 180)
-    ],
-    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
-    vurgu:"ucgen", aciklama:"Resimde 4 üçgen var; ters duranlar da üçgendir." },
-
-  { id:"z9", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+  { id:"z5", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
     sahne:[
       sk("ucgen", R.turuncu, 0.10, 0.5, 0.45),
       sk("kare",  R.mavi,    0.26, 0.5, 0.45),
@@ -3018,58 +3096,34 @@ const SORULAR = [
       sk("ucgen", R.turuncu, 0.74, 0.5, 0.45),
       sk("soru",  R.gri,     0.90, 0.5, 0.45)
     ],
-    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:1,
-    vurgu:"kare", aciklama:"Örüntü üçgen–kare diye gidiyor, bu yüzden sırada kare var." },
+    secenekTipi:"gorsel", secenekler:["ucgen","kare","daire"], dogru:1,
+    vurgu:"kare", aciklama:"Örüntü üçgen–kare diye gidiyor, sırada kare var." },
 
-  { id:"z10", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+  { id:"z6", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
+    sahne:[
+      sk("kare",  R.mavi,    0.10, 0.5, 0.45),
+      sk("ucgen", R.turuncu, 0.26, 0.5, 0.45),
+      sk("daire", R.pembe,   0.42, 0.5, 0.45),
+      sk("kare",  R.mavi,    0.58, 0.5, 0.45),
+      sk("ucgen", R.turuncu, 0.74, 0.5, 0.45),
+      sk("soru",  R.gri,     0.90, 0.5, 0.45)
+    ],
+    secenekTipi:"gorsel", secenekler:["kare","ucgen","daire"], dogru:2,
+    vurgu:"daire", aciklama:"Örüntü kare–üçgen–daire diye tekrar ediyor, sırada daire var." },
+
+  { id:"z7", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
     sahne:[
       sk("daire", R.pembe, 0.10, 0.5, 0.45),
       sk("daire", R.pembe, 0.26, 0.5, 0.45),
-      sk("kare",   R.mavi,  0.42, 0.5, 0.45),
+      sk("kare",  R.mavi,  0.42, 0.5, 0.45),
       sk("daire", R.pembe, 0.58, 0.5, 0.45),
       sk("daire", R.pembe, 0.74, 0.5, 0.45),
-      sk("soru",   R.gri,   0.90, 0.5, 0.45)
+      sk("soru",  R.gri,   0.90, 0.5, 0.45)
     ],
-    secenekTipi:"sekil", secenekler:["daire","kare","ucgen"], dogru:1,
+    secenekTipi:"gorsel", secenekler:["daire","kare","ucgen"], dogru:1,
     vurgu:"kare", aciklama:"Örüntü iki daire–bir kare diye tekrar ediyor, sırada kare var." },
 
-  { id:"z11", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
-    sahne:[
-      sk("kare",   R.mavi,    0.10, 0.5, 0.45),
-      sk("ucgen",  R.turuncu, 0.26, 0.5, 0.45),
-      sk("daire", R.pembe,   0.42, 0.5, 0.45),
-      sk("kare",   R.mavi,    0.58, 0.5, 0.45),
-      sk("ucgen",  R.turuncu, 0.74, 0.5, 0.45),
-      sk("soru",   R.gri,     0.90, 0.5, 0.45)
-    ],
-    secenekTipi:"sekil", secenekler:["kare","ucgen","daire"], dogru:2,
-    vurgu:"daire", aciklama:"Örüntü kare–üçgen–daire diye tekrar ediyor, sırada daire var." },
-
-  { id:"z12", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
-    sahne:[
-      sk("dikdortgen", R.yesil,   0.10, 0.5, 0.38),
-      sk("ucgen",      R.turuncu, 0.26, 0.5, 0.45),
-      sk("dikdortgen", R.yesil,   0.42, 0.5, 0.38),
-      sk("ucgen",      R.turuncu, 0.58, 0.5, 0.45),
-      sk("dikdortgen", R.yesil,   0.74, 0.5, 0.38),
-      sk("soru",       R.gri,     0.90, 0.5, 0.45)
-    ],
-    secenekTipi:"sekil", secenekler:["dikdortgen","ucgen","kare"], dogru:1,
-    vurgu:"ucgen", aciklama:"Örüntü dikdörtgen–üçgen diye gidiyor, sırada üçgen var." },
-
-  { id:"z13", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan şekil hangisidir?",
-    sahne:[
-      sk("ucgen",  R.mor,   0.10, 0.5, 0.45),
-      sk("ucgen",  R.mor,   0.26, 0.5, 0.45),
-      sk("daire", R.sari,  0.42, 0.5, 0.45),
-      sk("ucgen",  R.mor,   0.58, 0.5, 0.45),
-      sk("ucgen",  R.mor,   0.74, 0.5, 0.45),
-      sk("soru",   R.gri,   0.90, 0.5, 0.45)
-    ],
-    secenekTipi:"sekil", secenekler:["ucgen","kare","daire"], dogru:2,
-    vurgu:"daire", aciklama:"Örüntü iki üçgen–bir daire diye tekrar ediyor, sırada daire var." },
-
-  { id:"z14", zorluk:"zor", tip:"karsilastirma", karsilastir:["ucgen","kare"],
+  { id:"z8", zorluk:"zor", tip:"karsilastirma", karsilastir:["ucgen","kare"],
     metin:"Bu resimde hangisinden daha çok var?",
     sahne:[
       sk("ucgen", R.turuncu, 0.15, 0.30, 0.55),
@@ -3082,48 +3136,20 @@ const SORULAR = [
     secenekTipi:"metin", secenekler:["Üçgen","Kare","Eşit"], dogru:0,
     vurgu:"ucgen", aciklama:"4 üçgen, 2 kare var; üçgenler daha çok." },
 
-  { id:"z15", zorluk:"zor", tip:"karsilastirma", karsilastir:["ucgen","kare"],
-    metin:"Bu resimde hangisinden daha çok var?",
-    sahne:[
-      sk("kare",  R.mavi,    0.15, 0.30, 0.55),
-      sk("kare",  R.gok,     0.38, 0.30, 0.55),
-      sk("ucgen", R.turuncu, 0.62, 0.30, 0.55),
-      sk("kare",  R.yesil,   0.85, 0.30, 0.55),
-      sk("kare",  R.mor,     0.25, 0.74, 0.55),
-      sk("ucgen", R.kirmizi, 0.50, 0.74, 0.55),
-      sk("kare",  R.pembe,   0.75, 0.74, 0.55)
-    ],
-    secenekTipi:"metin", secenekler:["Üçgen","Kare","Eşit"], dogru:1,
-    vurgu:"kare", aciklama:"5 kare, 2 üçgen var; kareler daha çok." },
-
-  { id:"z16", zorluk:"zor", tip:"karsilastirma", karsilastir:["daire","ucgen"],
+  { id:"z9", zorluk:"zor", tip:"karsilastirma", karsilastir:["daire","ucgen"],
     metin:"Bu resimde hangisinden daha çok var?",
     sahne:[
       sk("daire", R.pembe,   0.18, 0.30, 0.55),
-      sk("ucgen",  R.turuncu, 0.50, 0.30, 0.55),
+      sk("ucgen", R.turuncu, 0.50, 0.30, 0.55),
       sk("daire", R.gok,     0.82, 0.30, 0.55),
-      sk("ucgen",  R.yesil,   0.18, 0.74, 0.55),
+      sk("ucgen", R.yesil,   0.18, 0.74, 0.55),
       sk("daire", R.sari,    0.50, 0.74, 0.55),
-      sk("ucgen",  R.mor,     0.82, 0.74, 0.55)
+      sk("ucgen", R.mor,     0.82, 0.74, 0.55)
     ],
     secenekTipi:"metin", secenekler:["Daire","Üçgen","Eşit"], dogru:2,
     vurgu:"daire", aciklama:"3 daire ve 3 üçgen var; sayıları eşit." },
 
-  { id:"z17", zorluk:"zor", tip:"karsilastirma", karsilastir:["daire","dikdortgen"],
-    metin:"Bu resimde hangisinden daha çok var?",
-    sahne:[
-      sk("daire",     R.pembe, 0.15, 0.30, 0.55),
-      sk("daire",     R.gok,   0.38, 0.30, 0.55),
-      sk("dikdortgen", R.yesil, 0.65, 0.30, 0.45),
-      sk("daire",     R.sari,  0.88, 0.30, 0.55),
-      sk("daire",     R.mor,   0.25, 0.74, 0.55),
-      sk("dikdortgen", R.kahve, 0.55, 0.74, 0.45),
-      sk("daire",     R.mavi,  0.85, 0.74, 0.55)
-    ],
-    secenekTipi:"metin", secenekler:["Daire","Dikdörtgen","Eşit"], dogru:0,
-    vurgu:"daire", aciklama:"5 daire, 2 dikdörtgen var; daireler daha çok." },
-
-  { id:"z18", zorluk:"zor", tip:"toplam", toplam:{sekil:"kare", ozellik:"kenar"},
+  { id:"z10", zorluk:"zor", tip:"toplam", toplam:{ozellik:"kenar"},
     metin:"Bu 2 karenin toplam kaç kenarı vardır?",
     sahne:[
       sk("kare", R.mavi,  0.33, 0.5, 0.85),
@@ -3132,24 +3158,124 @@ const SORULAR = [
     secenekTipi:"sayi", secenekler:["6","8","10"], dogru:1,
     vurgu:"kare", aciklama:"Her karenin 4 kenarı var: 4 + 4 = 8 kenar." },
 
-  { id:"z19", zorluk:"zor", tip:"toplam", toplam:{sekil:"ucgen", ozellik:"kose"},
-    metin:"Bu 3 üçgenin toplam kaç köşesi vardır?",
-    sahne:[
-      sk("ucgen", R.turuncu, 0.22, 0.5, 0.7),
-      sk("ucgen", R.kirmizi, 0.50, 0.5, 0.7),
-      sk("ucgen", R.mor,     0.78, 0.5, 0.7)
-    ],
-    secenekTipi:"sayi", secenekler:["6","9","12"], dogru:1,
-    vurgu:"ucgen", aciklama:"Her üçgenin 3 köşesi var: 3 + 3 + 3 = 9 köşe." },
+  /* ======================= ZOR — 3B CİSİMLER (10) ===================== */
 
-  { id:"z20", zorluk:"zor", tip:"toplam",
-    metin:"Bir kare ile bir dairenin toplam kaç köşesi vardır?",
+  { id:"z11", zorluk:"zor", tip:"sayma", sayilan:"silindir", metin:"Bu yapıda kaç silindir var?",
     sahne:[
-      sk("kare",   R.mavi,  0.33, 0.5, 0.85),
-      sk("daire", R.pembe, 0.67, 0.5, 0.85)
+      sk("silindir", R.turuncu, 0.18, 0.30, 0.55),
+      sk("kup",      R.mavi,    0.50, 0.30, 0.55),
+      sk("silindir", R.yesil,   0.82, 0.30, 0.55),
+      sk("kure",     R.pembe,   0.18, 0.74, 0.55),
+      sk("silindir", R.mor,     0.50, 0.74, 0.55),
+      sk("koni",     R.gok,     0.82, 0.74, 0.55)
     ],
-    secenekTipi:"sayi", secenekler:["4","5","8"], dogru:0,
-    vurgu:"daire", aciklama:"Karenin 4 köşesi, dairenin hiç köşesi yoktur: 4 + 0 = 4 köşe." }
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"silindir", aciklama:"Resimde 3 silindir var." },
+
+  { id:"z12", zorluk:"zor", tip:"sayma", sayilan:"kup", metin:"Bu yapıda kaç küp var?",
+    sahne:[
+      sk("kup",      R.mavi,    0.15, 0.30, 0.5),
+      sk("koni",     R.turuncu, 0.38, 0.30, 0.5),
+      sk("kup",      R.yesil,   0.62, 0.30, 0.5),
+      sk("kure",     R.pembe,   0.85, 0.30, 0.5),
+      sk("kup",      R.mor,     0.28, 0.74, 0.5),
+      sk("silindir", R.gok,     0.50, 0.74, 0.5),
+      sk("kup",      R.kirmizi, 0.72, 0.74, 0.5)
+    ],
+    secenekTipi:"sayi", secenekler:["3","4","5"], dogru:1,
+    vurgu:"kup", aciklama:"Resimde 4 küp var." },
+
+  { id:"z13", zorluk:"zor", tip:"sayma", sayilan:"kure", metin:"Bu yapıda kaç küre var?",
+    sahne:[
+      sk("kure",   R.pembe,   0.15, 0.30, 0.5),
+      sk("kure",   R.gok,     0.38, 0.30, 0.5),
+      sk("prizma", R.mavi,    0.65, 0.30, 0.45),
+      sk("kure",   R.sari,    0.88, 0.30, 0.5),
+      sk("kure",   R.yesil,   0.28, 0.74, 0.5),
+      sk("koni",   R.turuncu, 0.52, 0.74, 0.5),
+      sk("kure",   R.mor,     0.75, 0.74, 0.5)
+    ],
+    secenekTipi:"sayi", secenekler:["4","5","6"], dogru:1,
+    vurgu:"kure", aciklama:"Resimde 5 küre var." },
+
+  { id:"z14", zorluk:"zor", tip:"sayma", sayilan:"kup", metin:"Bu kulede kaç küp var?",
+    sahne:[
+      sk("kup",  R.mavi,    0.34, 0.72, 0.52),
+      sk("kup",  R.gok,     0.34, 0.44, 0.52),
+      sk("kup",  R.yesil,   0.34, 0.16, 0.52),
+      sk("kure", R.pembe,   0.68, 0.70, 0.5),
+      sk("koni", R.turuncu, 0.68, 0.30, 0.5)
+    ],
+    secenekTipi:"sayi", secenekler:["2","3","4"], dogru:1,
+    vurgu:"kup", aciklama:"Kulede 3 küp üst üste duruyor." },
+
+  { id:"z15", zorluk:"zor", tip:"sayma", sayilan:"tumu", metin:"Bu yapıda toplam kaç cisim var?",
+    sahne:[
+      sk("kup",      R.mavi,    0.18, 0.30, 0.5),
+      sk("silindir", R.turuncu, 0.50, 0.30, 0.5),
+      sk("kure",     R.pembe,   0.82, 0.30, 0.5),
+      sk("koni",     R.yesil,   0.18, 0.74, 0.5),
+      sk("prizma",   R.mor,     0.50, 0.74, 0.45),
+      sk("kup",      R.gok,     0.82, 0.74, 0.5)
+    ],
+    secenekTipi:"sayi", secenekler:["5","6","7"], dogru:1,
+    vurgu:"kup", aciklama:"Resimde toplam 6 cisim var." },
+
+  { id:"z16", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan cisim hangisidir?",
+    sahne:[
+      sk("kup",      R.mavi,    0.10, 0.5, 0.42),
+      sk("silindir", R.turuncu, 0.26, 0.5, 0.42),
+      sk("kup",      R.mavi,    0.42, 0.5, 0.42),
+      sk("silindir", R.turuncu, 0.58, 0.5, 0.42),
+      sk("kup",      R.mavi,    0.74, 0.5, 0.42),
+      sk("soru",     R.gri,     0.90, 0.5, 0.42)
+    ],
+    secenekTipi:"gorsel", secenekler:["kup","silindir","kure"], dogru:1,
+    vurgu:"silindir", aciklama:"Örüntü küp–silindir diye gidiyor, sırada silindir var." },
+
+  { id:"z17", zorluk:"zor", tip:"eksik", metin:"Örüntüde eksik olan cisim hangisidir?",
+    sahne:[
+      sk("kure", R.pembe, 0.10, 0.5, 0.42),
+      sk("kure", R.pembe, 0.26, 0.5, 0.42),
+      sk("koni", R.sari,  0.42, 0.5, 0.42),
+      sk("kure", R.pembe, 0.58, 0.5, 0.42),
+      sk("kure", R.pembe, 0.74, 0.5, 0.42),
+      sk("soru", R.gri,   0.90, 0.5, 0.42)
+    ],
+    secenekTipi:"gorsel", secenekler:["kure","koni","kup"], dogru:1,
+    vurgu:"koni", aciklama:"Örüntü iki küre–bir koni diye tekrar ediyor, sırada koni var." },
+
+  { id:"z18", zorluk:"zor", tip:"karsilastirma", karsilastir:["kup","kure"],
+    metin:"Bu yapıda hangisinden daha çok var?",
+    sahne:[
+      sk("kup",  R.mavi,  0.15, 0.30, 0.5),
+      sk("kup",  R.gok,   0.38, 0.30, 0.5),
+      sk("kure", R.pembe, 0.62, 0.30, 0.5),
+      sk("kup",  R.yesil, 0.85, 0.30, 0.5),
+      sk("kure", R.sari,  0.35, 0.74, 0.5),
+      sk("kup",  R.mor,   0.65, 0.74, 0.5)
+    ],
+    secenekTipi:"metin", secenekler:["Küp","Küre","Eşit"], dogru:0,
+    vurgu:"kup", aciklama:"4 küp, 2 küre var; küpler daha çok." },
+
+  { id:"z19", zorluk:"zor", tip:"toplam", toplam:{ozellik:"duzYuz"},
+    metin:"Bu 2 küpün toplam kaç düz yüzü vardır?",
+    sahne:[
+      sk("kup", R.mavi,  0.32, 0.5, 0.75),
+      sk("kup", R.yesil, 0.70, 0.5, 0.75)
+    ],
+    secenekTipi:"sayi", secenekler:["8","12","16"], dogru:1,
+    vurgu:"kup", aciklama:"Her küpün 6 düz yüzü var: 6 + 6 = 12 yüz." },
+
+  { id:"z20", zorluk:"zor", tip:"toplam", toplam:{ozellik:"tepe"},
+    metin:"Bu 3 koninin toplam kaç tepe noktası vardır?",
+    sahne:[
+      sk("koni", R.turuncu, 0.22, 0.5, 0.6),
+      sk("koni", R.kirmizi, 0.52, 0.5, 0.6),
+      sk("koni", R.mor,     0.82, 0.5, 0.6)
+    ],
+    secenekTipi:"sayi", secenekler:["1","3","6"], dogru:1,
+    vurgu:"koni", aciklama:"Her koninin 1 tepe noktası var: 1 + 1 + 1 = 3." }
 ];
 
 /* --- U) TUR AKIŞI VE SORU SEÇİMİ ---------------------------------------- */
@@ -3214,9 +3340,9 @@ function soruyuCiz(){
   }
 
   document.getElementById("secenek-listesi").innerHTML = s.secenekler.map((sec, i) => {
-    const govde = (s.secenekTipi === "sekil")
-      ? `<svg viewBox="-62 -62 124 124" aria-hidden="true">${sekilCiz(sec, "#3b82f6")}</svg>
-         <span>${SEKIL_BILGI[sec].ad}</span>`
+    const govde = (s.secenekTipi === "gorsel")
+      ? `<svg viewBox="${GEO[sec].kutu.join(" ")}" aria-hidden="true">${geoCiz(sec, "#3b82f6")}</svg>
+         <span>${GEO[sec].ad}</span>`
       : `<span>${sec}</span>`;
     return `<button class="secenek" type="button" data-secenek="${i}">${govde}</button>`;
   }).join("");
@@ -3235,7 +3361,7 @@ function soruyuCiz(){
    metin/sayı seçeneklerinde seçeneğin kendisi. */
 function dogruCevapAdi(s){
   const cevap = s.secenekler[s.dogru];
-  if(s.secenekTipi === "sekil" && SEKIL_BILGI[cevap]) return SEKIL_BILGI[cevap].ad;
+  if(s.secenekTipi === "gorsel" && GEO[cevap]) return GEO[cevap].ad;
   return cevap;
 }
 
@@ -3592,6 +3718,8 @@ const Senk = {
   zamanlayici: null,
   sonGonderilen: null,
   planla(){
+    /* Çocuk "paylaş" demeden sergiye hiçbir şey gitmez */
+    if(!durum.paylasildi) return;
     const kayit = galeriKaydi();
     /* Adı olmayan robot sergiye gönderilmez */
     if(!kayit.robotAdi || !kayit.ogrenciAdi) return;
@@ -3653,7 +3781,8 @@ function galeriyiCiz(){
   }
   const benimVarMi = galeriKayitlari.some(k => k.kimlik === belgeKimligi());
   not.textContent = galeriKayitlari.length + " robot sergileniyor."
-    + (benimVarMi ? "" : " Robotunu sergilemek için Robotum'da ona ve kendine bir ad yaz.");
+    + (benimVarMi ? "" : " Robotunu sergilemek için Robotum'da adları yazıp"
+                       + " \"Robotumu arkadaşlarımla paylaş\" düğmesine bas.");
   liste.innerHTML = galeriKayitlari.map(stantHtml).join("");
 
   /* Yönetici düğmeleri */
@@ -3681,6 +3810,41 @@ function galeriyiAc(){
   });
 }
 Sahne.girisKancalari.galeri = galeriyiAc;
+
+/* ---- Sergiye gönderme (Robotum ekranındaki paylaş düğmesi) ------------- */
+function paylasimArayuzunuCiz(){
+  const dugme = document.getElementById("paylas-dugmesi");
+  const durumSatiri = document.getElementById("paylasim-durumu");
+  const adlarTamam = !!(durum.robotAdi || "").trim() && !!(durum.ogrenciAdi || "").trim();
+
+  dugme.hidden = !!durum.paylasildi;
+  durumSatiri.hidden = !durum.paylasildi;
+  dugme.disabled = !adlarTamam;
+  dugme.textContent = adlarTamam
+    ? "Robotumu arkadaşlarımla paylaş"
+    : "Önce iki adı da yaz";
+}
+
+function robotuPaylas(){
+  const kayit = galeriKaydi();
+  if(!kayit.robotAdi || !kayit.ogrenciAdi) return;
+
+  const dugme = document.getElementById("paylas-dugmesi");
+  dugme.disabled = true;
+  dugme.textContent = "Gönderiliyor…";
+
+  Galeri.kaydet(kayit).then(() => {
+    durum.paylasildi = true;
+    Senk.sonGonderilen = kayit.robotAdi + "|" + kayit.ogrenciAdi + "|" + JSON.stringify(kayit.robot);
+    try { localStorage.setItem(DEPO_ANAHTARI, JSON.stringify(durum)); } catch(e){}
+    paylasimArayuzunuCiz();
+    Ses.cal("satin");
+    seritGoster("Robotun sergiye eklendi!");
+  }).catch(() => {
+    paylasimArayuzunuCiz();
+    seritGoster("Şu an gönderilemedi. İnternetini kontrol edip tekrar dene.");
+  });
+}
 
 /* Öğretmen bir adı kilitlediyse çocuk artık değiştiremez */
 function kilidiUygula(yeniAd){
