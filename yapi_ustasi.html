@@ -76,22 +76,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
   background:rgba(255,255,255,.75);border-radius:999px;padding:12px 38px;
   box-shadow:0 5px 0 rgba(58,50,38,.10)}
 
-#kapilar{position:absolute;top:400px;left:0;right:0;display:flex;justify-content:center;gap:46px;z-index:2}
-.kapi{width:420px;height:440px;background:#fff;border-radius:38px;border:none;
+#kapilar{position:absolute;top:400px;left:0;right:0;display:flex;justify-content:center;gap:30px;z-index:2}
+.kapi{width:414px;height:440px;background:#fff;border-radius:38px;border:none;
   box-shadow:0 14px 0 rgba(58,50,38,.13), 0 26px 40px rgba(58,50,38,.14);
   cursor:pointer;display:flex;flex-direction:column;align-items:center;
   padding:26px 20px 22px;transition:transform .14s,box-shadow .14s;position:relative;overflow:hidden}
 .kapi::after{content:"";position:absolute;top:0;left:0;right:0;height:12px}
 .kapi:active{transform:translateY(10px);box-shadow:0 4px 0 rgba(58,50,38,.13),0 10px 18px rgba(58,50,38,.14)}
-.ikonKutu{width:250px;height:196px;border-radius:34px;display:grid;place-items:center;flex:none}
-.kapi .ikon{width:200px;height:170px;animation:ikonYuz 4.5s ease-in-out infinite}
+.ikonKutu{width:230px;height:186px;border-radius:32px;display:grid;place-items:center;flex:none}
+.kapi .ikon{width:186px;height:160px;animation:ikonYuz 4.5s ease-in-out infinite}
 @keyframes ikonYuz{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-.kapi h2{font-size:42px;font-weight:900;color:var(--koyu);margin-top:16px;white-space:nowrap}
-.kapi p{font-size:23px;color:#8C8173;font-weight:700;text-align:center;padding:8px 14px 0;
-  line-height:1.32;min-height:64px}
+.kapi h2{font-size:38px;font-weight:900;color:var(--koyu);margin-top:14px;white-space:nowrap}
+.kapi p{font-size:21px;color:#8C8173;font-weight:700;text-align:center;padding:8px 10px 0;
+  line-height:1.32;min-height:60px}
 .kapi.k1::after{background:var(--yesil)}   .kapi.k1 .ikonKutu{background:#E3FAF4}
-.kapi.k2::after{background:var(--turuncu)} .kapi.k2 .ikonKutu{background:#FFEFE7}
-.kapi.k3::after{background:var(--mor)}     .kapi.k3 .ikonKutu{background:#F5EBFF}
+.kapi.k2::after{background:var(--mavi)}    .kapi.k2 .ikonKutu{background:#E7F1FF}
+.kapi.k3::after{background:var(--turuncu)} .kapi.k3 .ikonKutu{background:#FFEFE7}
+.kapi.k4::after{background:var(--mor)}     .kapi.k4 .ikonKutu{background:#F5EBFF}
 
 /* --- Keşfet --- */
 #kesfetSol{position:absolute;left:24px;top:110px;width:276px;display:flex;flex-direction:column;gap:10px}
@@ -141,6 +142,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
 #sureCubuk{height:100%;width:100%;background:var(--yesil);transition:width .25s linear}
 #sureCubuk.az{background:var(--turuncu)} #sureCubuk.kritik{background:#E43D3D}
 #yBolum{position:absolute;top:118px;left:20px;right:20px;bottom:16px;display:flex;gap:16px}
+#yBolum.tek #taraf1{display:none}
+/* Tek kişilikte panel tam genişlik: yazılar ve kartlar büyür */
+#yBolum.tek .tBaslik{height:44px;line-height:44px;font-size:26px}
+#yBolum.tek .tSoru{height:54px;line-height:54px;font-size:30px}
+#yBolum.tek .tIpucu{height:36px;line-height:36px;font-size:23px}
+#yBolum.tek .tCevap{height:262px;gap:14px}
+#yBolum.tek .parcaKart{width:132px;height:132px}
+#yBolum.tek .parcaKart svg{width:90px;height:74px}
+#yBolum.tek .parcaKart b{font-size:15px}
+#yBolum.tek .secKart{min-width:158px;height:132px;font-size:30px}
+#yBolum.tek .secKart svg{width:86px;height:70px}
+#yBolum.tek .secKart small{font-size:17px}
+#yBolum.tek .sayiKart{width:126px;min-width:126px;height:126px;font-size:58px}
+#yBolum.tek .btnTamam{height:132px;font-size:30px}
+#yBolum.tek .tBitti .b{font-size:72px}
+#yBolum.tek .tBitti .p{font-size:54px}
+#tk2.rekorKutu{background:#8C8173 !important}
+#tk2.rekorKutu .ad{font-size:24px}
 .yTaraf{flex:1;min-width:0;background:#fff;border-radius:26px;border:6px solid;
   display:flex;flex-direction:column;padding:10px;position:relative;overflow:hidden}
 .tBaslik{height:38px;line-height:38px;font-size:22px;font-weight:900;text-align:center;
@@ -181,6 +200,53 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
 #hayaletKat{position:fixed;inset:0;pointer-events:none;z-index:9999}
 #hayaletKat svg{position:fixed;width:150px;height:132px;pointer-events:none;
   filter:drop-shadow(0 10px 14px rgba(0,0,0,.3))}
+
+/* --- Pratik Yap --- */
+#pratikGiris{position:absolute;top:150px;left:50%;transform:translateX(-50%);width:1100px;
+  display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
+#pratikSelam{font-size:30px;font-weight:900;color:var(--mavi);background:#E7F1FF;
+  border-radius:999px;padding:12px 34px;min-height:10px}
+#pratikIkon{width:300px;height:250px}
+#pratikGiris p{font-size:30px;color:#6B6153;font-weight:800;line-height:1.45}
+#pratikGiris .btn{font-size:44px;padding:26px 74px}
+
+#psKutu{position:absolute;top:110px;left:50%;transform:translateX(-50%);width:1080px;
+  background:#fff;border-radius:40px;padding:34px 48px;text-align:center;
+  box-shadow:0 14px 0 rgba(58,50,38,.10)}
+#psIkon{font-size:104px;line-height:1.05}
+#psKutu h2{font-size:62px;font-weight:900;color:var(--koyu)}
+#psOzet{font-size:32px;color:#6B6153;font-weight:800;margin-top:8px;line-height:1.35}
+#psForm{margin-top:22px;display:none}
+#psForm.acik{display:block}
+#psForm label{display:block;font-size:30px;font-weight:900;color:var(--koyu);margin:14px 0 8px}
+#psForm input{font-family:inherit;font-size:36px;font-weight:900;text-align:center;width:100%;
+  border:4px solid #E6DCCE;border-radius:20px;padding:14px;color:var(--koyu);background:#FFF8F0}
+#psForm input:focus{outline:none;border-color:var(--mavi)}
+#psSinifChips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:12px}
+.sinifCip{font-size:26px;font-weight:900;padding:12px 24px;border-radius:16px;background:#F0E7DA;
+  color:#7A7064;cursor:pointer;min-height:60px;display:flex;align-items:center}
+.sinifCip.aktif{background:var(--mavi);color:#fff}
+#psDurum{font-size:24px;font-weight:800;color:#8C8173;min-height:32px;margin-top:14px}
+.psDugmeler{display:flex;gap:18px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+
+#pcIcerik{position:absolute;top:120px;left:34px;right:34px;bottom:56px;overflow:auto;padding:4px}
+#pcIzgara{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+.sinifKart{background:#fff;border-radius:30px;padding:26px;text-align:center;cursor:pointer;
+  box-shadow:0 8px 0 rgba(58,50,38,.10);border:6px solid transparent}
+.sinifKart:active{transform:translateY(5px)}
+.sinifKart .sAd{font-size:56px;font-weight:900;color:var(--koyu)}
+.sinifKart .sBilgi{font-size:24px;font-weight:800;color:#8C8173;margin-top:6px}
+.ogrSatir{background:#fff;border-radius:22px;padding:16px 26px;display:flex;align-items:center;
+  gap:18px;margin-bottom:12px;box-shadow:0 5px 0 rgba(58,50,38,.07)}
+.ogrSatir .sira{font-size:30px;font-weight:900;color:#B6AA9A;min-width:56px}
+.ogrSatir .ad{flex:1;font-size:34px;font-weight:900;color:var(--koyu);text-align:left;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ogrSatir .adet{font-size:28px;font-weight:900;color:#fff;background:var(--mavi);
+  border-radius:16px;padding:8px 22px;white-space:nowrap}
+.ogrSatir .yon{display:flex;gap:8px}
+#pcBos{display:grid;place-items:center;height:100%;font-size:32px;color:#A99E90;
+  font-weight:800;text-align:center;line-height:1.5}
+#pcGizli{cursor:default}
 
 /* --- Modal / kartlar --- */
 .ortu{position:absolute;inset:0;background:rgba(58,50,38,.55);display:none;
@@ -291,10 +357,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
       <div class="kapi k1" data-git="kesfet">
         <div class="ikonKutu"><div class="ikon" id="ikKesfet"></div></div>
         <h2>Keşfet</h2><p>Cisimleri tanı, yapıları parçalarına ayır</p></div>
-      <div class="kapi k2" data-git="kurulum">
+      <div class="kapi k2" data-git="pratik">
+        <div class="ikonKutu"><div class="ikon" id="ikPratik"></div></div>
+        <h2>Pratik Yap</h2><p>1 dakika tek başına çalış, adını listeye yaz</p></div>
+      <div class="kapi k3" data-git="kurulum">
         <div class="ikonKutu"><div class="ikon" id="ikYaris"></div></div>
         <h2>Yarışma</h2><p>İki takım, aynı sorular, süreye karşı</p></div>
-      <div class="kapi k3" data-git="atolye">
+      <div class="kapi k4" data-git="atolye">
         <div class="ikonKutu"><div class="ikon" id="ikAtolye"></div></div>
         <h2>Serbest Atölye</h2><p>Kendi modelini kur, adını ver, kaydet</p></div>
     </div>
@@ -327,20 +396,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
       <div class="sahneBaslik">Yarışma Kurulumu</div>
     </div>
     <div id="kurulumKutu">
-      <div class="takimAyar">
-        <div class="takimAlan"><div class="renkSerit" style="background:#4D9FFF"></div>
+      <div class="takimAyar" id="satirAdlar">
+        <div class="takimAlan" id="takimAlan1"><div class="renkSerit" style="background:#4D9FFF"></div>
           <input id="ad1" maxlength="16" value="Mavi Takım"></div>
-        <div class="takimAlan"><div class="renkSerit" style="background:#F0453A"></div>
+        <div class="takimAlan" id="takimAlan2"><div class="renkSerit" style="background:#F0453A"></div>
           <input id="ad2" maxlength="16" value="Kırmızı Takım"></div>
       </div>
-      <div class="ayarSatir" style="width:100%">
+      <div class="ayarSatir" style="width:100%" id="satirSure">
         <span class="et">Yarışma süresi</span>
         <div class="segGrup" id="segSure"></div>
       </div>
-      <div style="font-size:24px;color:#8C8173;font-weight:800;text-align:center;line-height:1.4">
-        Süre boyunca iki takım aynı soruları aynı sırayla çözer.<br>
-        Doğru yaptıkça yeni soru gelir. Süre bitince en çok puanı olan kazanır.
-      </div>
+      <div id="kurulumNot" style="font-size:24px;color:#8C8173;font-weight:800;text-align:center;line-height:1.4"></div>
       <button class="btn turuncu" id="btnBasla" style="font-size:42px;padding:24px 70px">🏁 Yarışmayı Başlat</button>
     </div>
     <div class="altbilgi">Sinan İnce 2026</div>
@@ -386,6 +452,59 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
       <div id="rekorYazi" style="font-size:26px;color:#8C8173;font-weight:800;margin-top:26px"></div>
     </div>
     <div class="altbilgi">Sinan İnce 2026</div>
+  </section>
+
+  <!-- ====================== PRATİK YAP ====================== -->
+  <section class="sahne" id="sPratik">
+    <div class="ustCubuk">
+      <button class="btn gri kucuk" data-git="menu">← Menü</button>
+      <div class="sahneBaslik">Pratik Yap</div>
+      <div style="flex:1"></div>
+      <button class="btn mor kucuk" id="btnPratikciler">👥 Pratik Yapanlar</button>
+    </div>
+    <div id="pratikGiris">
+      <div id="pratikSelam"></div>
+      <div id="pratikIkon"></div>
+      <p>1 dakika boyunca sorular gelir.<br>Doğru yaptıkça hemen yenisi gelir.</p>
+      <button class="btn turuncu" id="btnPratikBasla">🏁 Başla</button>
+    </div>
+    <div class="altbilgi">Sinan İnce 2026</div>
+  </section>
+
+  <!-- ====================== PRATİK BİTTİ ====================== -->
+  <section class="sahne" id="sPratikSonu">
+    <div id="psKutu">
+      <div id="psIkon">🎉</div>
+      <h2 id="psBaslik">Tamamladın!</h2>
+      <div id="psOzet"></div>
+      <div id="psForm">
+        <label for="psAd">İsmin ne?</label>
+        <input id="psAd" maxlength="18" placeholder="Adını yaz">
+        <label for="psSinif">Sınıfın ne?</label>
+        <input id="psSinif" maxlength="8" placeholder="Örn: 2A">
+        <div id="psSinifChips"></div>
+      </div>
+      <div id="psDurum"></div>
+      <div class="psDugmeler">
+        <button class="btn yesil" id="psKaydet">✔ Kaydet</button>
+        <button class="btn turuncu" id="psTekrar">🔁 Tekrar Yap</button>
+        <button class="btn mor" id="psListe">👥 Pratik Yapanlar</button>
+        <button class="btn gri" id="psMenu">🏠 Ana Menü</button>
+      </div>
+    </div>
+    <div class="altbilgi">Sinan İnce 2026</div>
+  </section>
+
+  <!-- ====================== PRATİK YAPANLAR ====================== -->
+  <section class="sahne" id="sPratikciler">
+    <div class="ustCubuk">
+      <button class="btn gri kucuk" id="btnPcGeri">← Geri</button>
+      <div class="sahneBaslik" id="pcBaslik">Pratik Yapanlar</div>
+      <div style="flex:1"></div>
+      <button class="btn mavi kucuk" id="btnPcYenile">🔄 Yenile</button>
+    </div>
+    <div id="pcIcerik"></div>
+    <div class="altbilgi">Sinan <span id="pcGizli">İnce</span> 2026</div>
   </section>
 
   <!-- ====================== SERBEST ATÖLYE ====================== -->
@@ -471,6 +590,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
 
 /* --- Cisim tanımları (6 cisim) ---
    h = cismin kaç kat yüksekliğinde olduğu (kare prizma 2 kat) --- */
+/* ============================================================
+   FIREBASE AYARI — "Pratik Yapanlar" listesi buraya kaydedilir.
+   Şekil Robotu ile AYNI proje ve anahtar; yalnız koleksiyon farklı,
+   bu yüzden iki oyunun kayıtları birbirine karışmaz.
+     Şekil Robotu   -> sekilRobotu
+     Yapı Ustaları  -> yapiUstasiPratik
+   ============================================================ */
+const FB = {
+  proje:      "hikayesehri-3162b",
+  anahtar:    "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw",
+  koleksiyon: "yapiUstasiPratik"
+};
+const FB_ACIK = () => FB.anahtar && FB.anahtar.indexOf("BURAYA") < 0;
+
 const CISIMLER = {
   kup:      {ad:"Küp",                kisa:"Küp",              dx:1, dy:1, h:1},
   kprizma:  {ad:"Kare prizma",        kisa:"Kare\nprizma",     dx:1, dy:1, h:2},
@@ -505,9 +638,12 @@ const SURE_SECENEK = [1, 2, 3];
 /* --- Kalıcılık --- */
 const ANAHTAR = "yapiUstalari_v1";
 const VARSAYILAN = {
-  v:2, ses:true, sureDk:2, ipucu:"normal",
+  v:4, ses:true, sureDk:2, ipucu:"normal",
   takimAdlari:["Mavi Takım","Kırmızı Takım"],
-  rekor:{skor:0, takim:""}, galeri:[]
+  rekor:{skor:0, takim:""},
+  /* Bu cihazda bir kez isim sorulur; sonrasında yalnız sayaç artar */
+  pratik:{docId:"", ad:"", sinif:"", sayi:0},
+  galeri:[]
 };
 let D = yukle();
 
@@ -557,7 +693,8 @@ const SES = {
 
 /* --- Sahne yöneticisi --- */
 const SAHNELER = {menu:"sMenu", kesfet:"sKesfet", kurulum:"sKurulum", yarisma:"sYarisma",
-                  sonuc:"sSonuc", atolye:"sAtolye", galeri:"sGaleri", ayarlar:"sAyarlar"};
+                  sonuc:"sSonuc", atolye:"sAtolye", galeri:"sGaleri", ayarlar:"sAyarlar",
+                  pratik:"sPratik", pratikSonu:"sPratikSonu", pratikciler:"sPratikciler"};
 let aktifSahne = "menu";
 function git(id){
   document.querySelectorAll(".sahne").forEach(s=>s.classList.remove("aktif"));
@@ -568,6 +705,8 @@ function git(id){
   if(id==="galeri")  galeriAc();
   if(id==="ayarlar") ayarlarAc();
   if(id==="kurulum") kurulumAc();
+  if(id==="pratik")      pratikGirisAc();
+  if(id==="pratikciler") pratikcilerAc();
 }
 
 /* --- Ölçekleme: 1920x1080 sahneyi ekrana sığdır --- */
@@ -1531,9 +1670,13 @@ let Y = null;
 
 /* ---- Kurulum ekranı ---- */
 function kurulumAc(){
-  $("#ad1").value = D.takimAdlari[0]; $("#ad2").value = D.takimAdlari[1];
+  $("#ad1").value = D.takimAdlari[0];
+  $("#ad2").value = D.takimAdlari[1];
   segSureDoldur("#segSure");
   segKur("#segSure", String(D.sureDk), v=>{ D.sureDk = +v; kaydet(); });
+  $("#kurulumNot").innerHTML =
+    "Süre boyunca iki takım aynı soruları aynı sırayla çözer.<br>" +
+    "Doğru yaptıkça yeni soru gelir. Süre bitince en çok puanı olan kazanır.";
 }
 function segSureDoldur(sel){
   const k=$(sel); bosalt(k);
@@ -1568,9 +1711,15 @@ function modelAl(zor){
 }
 function soruListesiUret(adet){
   for(let i=Y.sira.length; i<adet; i++){
-    // Zorluk kademeli artar; ileride arada bir orta gelerek nefes aldırır
-    const zor = i<3 ? "kolay" : (i<7 ? "orta" : (i%4===3 ? "orta" : "zor"));
-    Y.sira.push({ tur:GOREV_SIRA[i % GOREV_SIRA.length], modelId:modelAl(zor), zor:zor, S:null });
+    // Zorluk: ilk sorular kolay, sonra ağırlıklı rastgele
+    const zor = i<2 ? "kolay"
+              : (i<5 ? rastgele(["kolay","orta","orta"])
+                     : rastgele(["orta","zor","zor"]));
+    // Görev tipi rastgele; aynı tip art arda iki kez gelmesin
+    const onceki = Y.sira.length ? Y.sira[Y.sira.length-1].tur : null;
+    let tur, dene = 0;
+    do { tur = rastgele(GOREV_SIRA); dene++; } while(tur === onceki && dene < 10);
+    Y.sira.push({ tur:tur, modelId:modelAl(zor), zor:zor, S:null });
   }
 }
 function soruAl(n){
@@ -1634,36 +1783,59 @@ function soruHazirla(q){
    Yarışmayı başlat
    ============================================================ */
 function yarismaBaslat(){
-  const ad1 = ($("#ad1").value||"Mavi Takım").trim().substring(0,16);
-  const ad2 = ($("#ad2").value||"Kırmızı Takım").trim().substring(0,16);
+  const ad1 = ($("#ad1").value || "Mavi Takım").trim().substring(0,16);
+  const ad2 = ($("#ad2").value || "Kırmızı Takım").trim().substring(0,16);
   D.takimAdlari = [ad1, ad2]; kaydet();
+  oyunKur({ tek:false, pratik:false, dk:D.sureDk,
+            adlar:[ad1, ad2],
+            baslik:"Hazır mısınız?",
+            altYazi:D.sureDk + " dakika — en çok puanı toplayan kazanır!" });
+}
 
-  const sn = D.sureDk * 60;
-  Y = { takimlar:[{ad:ad1,skor:0,cozulen:0},{ad:ad2,skor:0,cozulen:0}],
+/* Pratik: tek kişi, 1 dakika, puan yerine çözülen soru sayacı */
+function pratikBaslat(){
+  const ad = (D.pratik.ad || "Pratik").substring(0,16);
+  oyunKur({ tek:true, pratik:true, dk:1,
+            adlar:[ad],
+            baslik:"Hazır mısın?",
+            altYazi:"1 dakika — bol bol soru çöz!" });
+}
+
+function oyunKur(o){
+  const sn = o.dk * 60;
+  const takimlar = o.adlar.map(a=>({ad:a, skor:0, cozulen:0}));
+  Y = { tek:o.tek, pratik:o.pratik, takimlar:takimlar,
         sira:[], idx:[0,0], T:[null,null], havuz:{}, sonModel:{},
         sure:sn, sureTop:sn, timer:null, bitti:false, sonTik:99 };
   soruListesiUret(24);
 
+  $("#yBolum").classList.toggle("tek", o.tek);
   $("#tk1").style.background = TAKIM_RENK[0];
-  $("#tk2").style.background = TAKIM_RENK[1];
-  $("#tk1 .ad").textContent = ad1; $("#tk2 .ad").textContent = ad2;
+  $("#tk1 .ad").textContent = takimlar[0].ad;
+  $("#tk2").classList.toggle("rekorKutu", o.tek);
+  if(o.tek){
+    $("#tk2 .ad").textContent = "✓ ÇÖZÜLEN";
+    $("#tk2 .skor").textContent = 0;
+  }else{
+    $("#tk2").style.background = TAKIM_RENK[1];
+    $("#tk2 .ad").textContent = takimlar[1].ad;
+  }
   $("#sureCubuk").style.width = "100%"; $("#sureCubuk").className = "";
   sureYaz();
-  for(let t=0;t<2;t++){
+  for(let t=0; t<takimlar.length; t++){
     const kok = $("#taraf"+t);
     kok.style.borderColor = TAKIM_RENK[t];
     $(".tBaslik", kok).style.background = TAKIM_RENK[t];
     $(".tBitti", kok).classList.remove("acik");
     bosalt($("svg", kok)); bosalt($(".tCevap", kok));
     $(".tSoru", kok).textContent = ""; $(".tIpucu", kok).textContent = "";
-    $(".tBaslik", kok).textContent = Y.takimlar[t].ad;
+    $(".tBaslik", kok).textContent = takimlar[t].ad;
   }
   skorGuncelle();
   git("yarisma");
 
-  // Başlangıç kartı: 3-2-1
-  $("#siraBaslik").textContent = "Hazır mısınız?";
-  $("#siraGorev").textContent = D.sureDk + " dakika — en çok puanı toplayan kazanır!";
+  $("#siraBaslik").textContent = o.baslik;
+  $("#siraGorev").textContent = o.altYazi;
   ortuAc("siraKart");
   let n = 3; $("#geriSayim").textContent = n; SES.geri();
   const it = setInterval(()=>{
@@ -1675,13 +1847,14 @@ function yarismaBaslat(){
 
 function akisBaslat(){
   sureBaslat();
-  tarafSonraki(0); tarafSonraki(1);
+  for(let t=0; t<Y.takimlar.length; t++) tarafSonraki(t);
 }
 
 function skorGuncelle(){
   $("#tk1 .skor").textContent = Y.takimlar[0].skor;
-  $("#tk2 .skor").textContent = Y.takimlar[1].skor;
-  for(let t=0;t<2;t++){
+  if(Y.tek) $("#tk2 .skor").textContent = Y.takimlar[0].cozulen;
+  else      $("#tk2 .skor").textContent = Y.takimlar[1].skor;
+  for(let t=0; t<Y.takimlar.length; t++){
     const c = Y.takimlar[t].cozulen;
     $(".tBaslik", $("#taraf"+t)).textContent = Y.takimlar[t].ad + (c ? " · " + c + " soru" : "");
   }
@@ -1977,6 +2150,7 @@ function yarismaBitir(){
   sureDurdur();
   for(let t=0;t<2;t++) $(".tBitti", $("#taraf"+t)).classList.remove("acik");
 
+  if(Y.pratik){ pratikBitti(); return; }
   const a = Y.takimlar[0], b = Y.takimlar[1];
   const kazanan = a.skor>b.skor ? 0 : (b.skor>a.skor ? 1 : -1);
   $("#kazananYazi").textContent = kazanan<0 ? "Berabere!" : Y.takimlar[kazanan].ad + " kazandı!";
@@ -2004,6 +2178,279 @@ function yarismaBitir(){
 }
 
 /* ============================================================
+   BÖLÜM 7b — PRATİK YAP
+   Tek kişilik 1 dakikalık çalışma. Bitince cihazda kayıt yoksa
+   bir kez "İsmin ne? Sınıfın ne?" sorulur; sonraki pratiklerde
+   yalnızca sayaç artar. Kayıtlar Firestore'da toplanır.
+   ============================================================ */
+const SINIF_CIPLERI = ["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"];
+const YEDEK_ADLAR = ["Küçük Mimar","Usta Yapıcı","Şekil Dostu","Küp Kaşifi",
+                     "Prizma Avcısı","Silindir Ustası","Küre Gezgini","Yapı Kahramanı"];
+/* Kaba ifade süzgeci — yakalanırsa dostça bir ad verilir */
+const KABA = ["amk","aq","oc","mal","aptal","salak","gerizekal","küfür","sik","yarak","piç",
+              "orospu","göt","amcık","ibne","puşt","kahpe","siktir","kanki mal"];
+function adTemizMi(ad){
+  const k = ad.toLocaleLowerCase("tr").replace(/[^a-zçğıöşü ]/g,"");
+  return !KABA.some(x=>k.indexOf(x) >= 0);
+}
+
+/* ---- Firestore REST yardımcıları (SDK yok, oyun tek dosya kalsın) ---- */
+function fbHata(y, mesaj){ const e = new Error(mesaj); e.kod = y.status; return e; }
+function fbHataMetni(e){
+  if(e && (e.kod === 403 || e.kod === 401))
+    return "Firestore kuralları bu koleksiyona izin vermiyor (yapiUstasiPratik).";
+  return "İnternet bağlantısı yok gibi görünüyor.";
+}
+function fbKok(){
+  return "https://firestore.googleapis.com/v1/projects/" + FB.proje +
+         "/databases/(default)/documents/" + FB.koleksiyon;
+}
+function fbAlan(o){
+  return { ad:{stringValue:o.ad}, sinif:{stringValue:o.sinif},
+           sayi:{integerValue:String(o.sayi)}, guncel:{stringValue:o.guncel} };
+}
+async function fbEkle(o){
+  const y = await fetch(fbKok() + "?key=" + FB.anahtar, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({fields: fbAlan(o)})
+  });
+  if(!y.ok) throw fbHata(y, "kayıt yazılamadı");
+  const v = await y.json();
+  return v.name.split("/").pop();          // belge kimliği
+}
+async function fbGuncelle(id, o, alanlar){
+  const m = (alanlar || ["ad","sinif","sayi","guncel"])
+    .map(a=>"updateMask.fieldPaths=" + a).join("&");
+  const y = await fetch(fbKok() + "/" + id + "?key=" + FB.anahtar + "&" + m, {
+    method:"PATCH", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({fields: fbAlan(o)})
+  });
+  if(!y.ok) throw fbHata(y, "güncellenemedi");
+}
+async function fbSil(id){
+  const y = await fetch(fbKok() + "/" + id + "?key=" + FB.anahtar, {method:"DELETE"});
+  if(!y.ok) throw fbHata(y, "silinemedi");
+}
+async function fbListe(){
+  const y = await fetch(fbKok() + "?key=" + FB.anahtar + "&pageSize=300");
+  if(!y.ok) throw fbHata(y, "liste alınamadı");
+  const v = await y.json();
+  return (v.documents || []).map(d=>({
+    id:   d.name.split("/").pop(),
+    ad:   (d.fields && d.fields.ad    && d.fields.ad.stringValue)    || "?",
+    sinif:((d.fields && d.fields.sinif && d.fields.sinif.stringValue) || "?").toLocaleUpperCase("tr"),
+    sayi: parseInt((d.fields && d.fields.sayi && d.fields.sayi.integerValue) || "1", 10)
+  }));
+}
+
+/* ---- Pratik giriş ekranı ---- */
+function pratikGirisAc(){
+  const k = $("#pratikIkon"); bosalt(k);
+  const s0 = onizleme([p("kup","mavi",0,0,0), p("silindir","turuncu",1,0,0),
+                       p("kure","pembe",0,0,1)]);
+  s0.setAttribute("style","width:100%;height:100%");
+  k.appendChild(s0);
+  const sel = $("#pratikSelam");
+  if(D.pratik.ad){
+    sel.style.display = "";
+    sel.textContent = "Merhaba " + D.pratik.ad + " · " + D.pratik.sayi + " pratik";
+  }else{
+    sel.style.display = "none";
+  }
+}
+
+/* ---- Pratik bitti ---- */
+function pratikBitti(){
+  const t = Y.takimlar[0];
+  const ilkKez = !D.pratik.ad;
+  D.pratik.sayi = (D.pratik.sayi || 0) + 1;
+  kaydet();
+
+  $("#psIkon").textContent = ilkKez ? "🎉" : "👏";
+  $("#psBaslik").textContent = "Tamamladın!";
+  $("#psOzet").innerHTML = "<b>" + t.cozulen + " soru</b> çözdün — <b>" +
+    D.pratik.sayi + ". pratiğini</b> tamamladın!";
+  $("#psDurum").textContent = "";
+  const form = $("#psForm");
+  form.classList.toggle("acik", ilkKez);
+  $("#psKaydet").style.display = ilkKez ? "" : "none";
+
+  if(ilkKez){
+    $("#psAd").value = ""; $("#psSinif").value = "";
+    const c = $("#psSinifChips"); bosalt(c);
+    SINIF_CIPLERI.forEach(sn=>{
+      const d = document.createElement("div"); d.className = "sinifCip"; d.textContent = sn;
+      d.onclick = ()=>{ SES.tik(); $("#psSinif").value = sn;
+        $$(".sinifCip", c).forEach(x=>x.classList.remove("aktif")); d.classList.add("aktif"); };
+      c.appendChild(d);
+    });
+  }else{
+    // Adı zaten kayıtlı: sessizce sayacı artır
+    pratikSayacGonder();
+  }
+  SES.zafer();
+  git("pratikSonu");
+}
+
+/* Kayıtlı öğrencinin sayacını sunucuda artır */
+async function pratikSayacGonder(){
+  if(!FB_ACIK() || !D.pratik.docId) return;
+  try{
+    await fbGuncelle(D.pratik.docId, {
+      ad:D.pratik.ad, sinif:D.pratik.sinif, sayi:D.pratik.sayi,
+      guncel:new Date().toLocaleDateString("tr-TR")
+    }, ["sayi","guncel"]);
+  }catch(e){ /* internet yoksa sessiz geç, cihazdaki sayaç doğru kalır */ }
+}
+
+/* İlk kez: adı ve sınıfı kaydet */
+async function pratikKaydet(){
+  let ad = ($("#psAd").value || "").trim().substring(0,18);
+  let sinif = ($("#psSinif").value || "").trim().toLocaleUpperCase("tr").substring(0,8);
+  if(!ad){ $("#psDurum").textContent = "Önce adını yaz."; SES.yanlis(); return; }
+  if(!sinif){ $("#psDurum").textContent = "Sınıfını da yaz (örn: 2A)."; SES.yanlis(); return; }
+  if(!adTemizMi(ad)) ad = rastgele(YEDEK_ADLAR);
+
+  $("#psKaydet").disabled = true;
+  $("#psDurum").textContent = "Kaydediliyor...";
+  D.pratik.ad = ad; D.pratik.sinif = sinif; kaydet();
+
+  if(FB_ACIK()){
+    try{
+      D.pratik.docId = await fbEkle({ad:ad, sinif:sinif, sayi:D.pratik.sayi,
+        guncel:new Date().toLocaleDateString("tr-TR")});
+      kaydet();
+      $("#psDurum").textContent = "✔ " + ad + " (" + sinif + ") listeye eklendi!";
+    }catch(e){
+      $("#psDurum").textContent = "Adın bu cihaza kaydedildi, listeye sonra eklenecek. (" +
+        fbHataMetni(e) + ")";
+    }
+  }else{
+    $("#psDurum").textContent = "✔ " + ad + " (" + sinif + ") kaydedildi.";
+  }
+  SES.kaydet();
+  $("#psForm").classList.remove("acik");
+  $("#psKaydet").style.display = "none";
+  $("#psKaydet").disabled = false;
+}
+
+/* Kayıt sunucuya gidememişse sonraki açılışta tamamla */
+async function pratikBekleyeniGonder(){
+  if(!FB_ACIK() || !D.pratik.ad || D.pratik.docId) return;
+  try{
+    D.pratik.docId = await fbEkle({ad:D.pratik.ad, sinif:D.pratik.sinif,
+      sayi:D.pratik.sayi, guncel:new Date().toLocaleDateString("tr-TR")});
+    kaydet();
+  }catch(e){}
+}
+
+/* ============================================================
+   Pratik Yapanlar — önce sınıflar, sonra o sınıfın öğrencileri
+   ============================================================ */
+let PC = { kayitlar:[], sinif:null, yonetici:false, dokunus:0, hata:"" };
+
+function pratikcilerAc(){
+  PC.sinif = null;
+  pratikcilerCiz(true);
+  pratikcilerYukle();
+}
+async function pratikcilerYukle(){
+  if(!FB_ACIK()){ PC.kayitlar = null; pratikcilerCiz(); return; }
+  try{
+    PC.kayitlar = await fbListe();
+  }catch(e){ PC.kayitlar = null; PC.hata = fbHataMetni(e); }
+  pratikcilerCiz();
+}
+function pratikcilerCiz(yukleniyor){
+  const k = $("#pcIcerik"); bosalt(k);
+  $("#btnPcGeri").textContent = PC.sinif ? "← Sınıflar" : "← Geri";
+  $("#pcBaslik").textContent = PC.sinif ? (PC.sinif + " Sınıfı") : "Pratik Yapanlar";
+
+  if(yukleniyor){
+    const d = document.createElement("div"); d.id = "pcBos"; d.textContent = "Yükleniyor...";
+    k.appendChild(d); return;
+  }
+  if(PC.kayitlar === null){
+    const d = document.createElement("div"); d.id = "pcBos";
+    d.innerHTML = FB_ACIK()
+      ? "Liste şu an yüklenemedi.<br><span style='font-size:24px'>" + (PC.hata||"") +
+        "</span><br>🔄 Yenile'ye basıp tekrar dene."
+      : "Liste henüz kurulmadı.<br>Öğrenci kayıtları şimdilik yalnızca bu cihazda tutuluyor.";
+    k.appendChild(d); return;
+  }
+  if(!PC.kayitlar.length){
+    const d = document.createElement("div"); d.id = "pcBos";
+    d.innerHTML = "Henüz kimse pratik yapmadı.<br>İlk sen ol!";
+    k.appendChild(d); return;
+  }
+
+  if(!PC.sinif){
+    // Sınıf kartları
+    const gruplar = {};
+    PC.kayitlar.forEach(o=>{
+      if(!gruplar[o.sinif]) gruplar[o.sinif] = {ogr:0, pratik:0};
+      gruplar[o.sinif].ogr++; gruplar[o.sinif].pratik += o.sayi;
+    });
+    const izgara = document.createElement("div"); izgara.id = "pcIzgara";
+    const renkler = [RENKLER.mavi, RENKLER.turuncu, RENKLER.yesil, RENKLER.mor,
+                     RENKLER.pembe, RENKLER.sari];
+    Object.keys(gruplar).sort().forEach((sn,i)=>{
+      const d = document.createElement("div"); d.className = "sinifKart";
+      d.style.borderColor = renkler[i % renkler.length];
+      d.innerHTML = "<div class='sAd'>" + sn + "</div><div class='sBilgi'>" +
+        gruplar[sn].ogr + " öğrenci · " + gruplar[sn].pratik + " pratik</div>";
+      d.onclick = ()=>{ SES.tik(); PC.sinif = sn; pratikcilerCiz(); };
+      izgara.appendChild(d);
+    });
+    k.appendChild(izgara);
+  }else{
+    // Seçilen sınıfın öğrencileri
+    const liste = PC.kayitlar.filter(o=>o.sinif === PC.sinif)
+      .sort((a,b)=> b.sayi - a.sayi || a.ad.localeCompare(b.ad,"tr"));
+    liste.forEach((o,i)=>{
+      const d = document.createElement("div"); d.className = "ogrSatir";
+      const madalya = i===0 ? "🥇" : (i===1 ? "🥈" : (i===2 ? "🥉" : (i+1) + "."));
+      d.innerHTML = "<span class='sira'>" + madalya + "</span>" +
+                    "<span class='ad'>" + o.ad + "</span>" +
+                    "<span class='adet'>" + o.sayi + " pratik</span>";
+      if(PC.yonetici){
+        const yon = document.createElement("span"); yon.className = "yon";
+        const bd = document.createElement("button"); bd.className = "btn sari kucuk"; bd.textContent = "✎";
+        bd.onclick = ()=> adSor("Yeni ad", o.ad, async(v)=>{
+          v = (v||"").trim().substring(0,18); if(!v) return;
+          try{ await fbGuncelle(o.id, {ad:v, sinif:o.sinif, sayi:o.sayi,
+            guncel:new Date().toLocaleDateString("tr-TR")}, ["ad"]);
+            o.ad = v; pratikcilerCiz(); }catch(e){}
+        });
+        const bs = document.createElement("button"); bs.className = "btn gri kucuk"; bs.textContent = "🗑";
+        bs.onclick = ()=> onaySor("Silinsin mi?", o.ad + " listeden silinecek.", async()=>{
+          try{ await fbSil(o.id);
+            PC.kayitlar = PC.kayitlar.filter(x=>x.id !== o.id); pratikcilerCiz(); }catch(e){}
+        });
+        yon.appendChild(bd); yon.appendChild(bs); d.appendChild(yon);
+      }
+      k.appendChild(d);
+    });
+  }
+}
+
+/* Gizli yönetici modu: altbilgideki "İnce" sözcüğüne 6 dokunuş */
+function pratikYoneticiKur(){
+  $("#pcGizli").addEventListener("click", ()=>{
+    PC.dokunus++;
+    if(PC.dokunus < 6) return;
+    PC.dokunus = 0;
+    adSor("Yönetici şifresi", "", (v)=>{
+      if((v||"").trim() === "859530"){
+        PC.yonetici = true; SES.bitti();
+        bilgiGoster("Yönetici modu açık", "Artık listeden ad değiştirebilir veya kayıt silebilirsin.");
+        pratikcilerCiz();
+      }else{ SES.yanlis(); }
+    });
+  });
+}
+
+/* ============================================================
    BÖLÜM 8 — Ayarlar, bağlantılar, başlangıç
    ============================================================ */
 function ayarlarAc(){
@@ -2017,6 +2464,7 @@ function ayarlarAc(){
 function menuIkonlari(){
   const ikonlar = [
     ["ikKesfet", [p("kup","yesil",0,0,0), p("silindir","sari",0,0,1)]],
+    ["ikPratik", [p("silindir","mavi",0,0,0), p("kure","pembe",0,0,1), p("kup","sari",1,0,0)]],
     ["ikYaris",  [p("kup","turuncu",0,0,0), p("kup","turuncu",1,0,0), p("uprizma","sari",0,0,1)]],
     ["ikAtolye", [p("kprizma","mor",0,0,0), p("kure","pembe",0,0,2), p("dprizma","mavi",0,1,0)]]
   ];
@@ -2067,6 +2515,25 @@ function baglantilar(){
   $("#btnAyarlar").addEventListener("click", ()=>{ SES.tik(); git("ayarlar"); });
   $("#btnBasla").addEventListener("click", ()=>{ SES.bitti(); yarismaBaslat(); });
   $("#btnTekrar").addEventListener("click", ()=>{ SES.tik(); git("kurulum"); });
+  // --- Pratik Yap ---
+  $("#btnPratikBasla").addEventListener("click", ()=>{ SES.bitti(); pratikBaslat(); });
+  $("#btnPratikciler").addEventListener("click", ()=>{ SES.tik(); PC.geri = "pratik"; git("pratikciler"); });
+  $("#psKaydet").addEventListener("click", ()=>{ SES.tik(); pratikKaydet(); });
+  $("#psTekrar").addEventListener("click", ()=>{ SES.bitti(); pratikBaslat(); });
+  $("#psListe").addEventListener("click", ()=>{ SES.tik(); PC.geri = "pratikSonu"; git("pratikciler"); });
+  $("#psMenu").addEventListener("click", ()=>{ SES.tik(); git("menu"); });
+  $("#psSinif").addEventListener("input", ()=>{
+    const v = $("#psSinif").value.trim().toLocaleUpperCase("tr");
+    $$(".sinifCip").forEach(x=>x.classList.toggle("aktif", x.textContent === v));
+  });
+  $("#btnPcGeri").addEventListener("click", ()=>{
+    SES.tik();
+    if(PC.sinif){ PC.sinif = null; pratikcilerCiz(); }
+    else git(PC.geri || "pratik");
+  });
+  $("#btnPcYenile").addEventListener("click", ()=>{ SES.tik(); pratikcilerCiz(true); pratikcilerYukle(); });
+  pratikYoneticiKur();
+
   $("#btnYarisCik").addEventListener("click", ()=>{
     SES.tik();
     onaySor("Yarışmayı bitir?","Şu anki puanlarla sonuç ekranına geçilecek.", ()=>yarismaBitir());
@@ -2108,6 +2575,7 @@ function basla(){
   menuIkonlari();
   baglantilar();
   atolyeKur();
+  pratikBekleyeniGonder();   // internet yokken kalan kayıt varsa tamamla
   git("menu");
 }
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", basla);
