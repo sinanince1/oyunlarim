@@ -359,7 +359,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
         <h2>Keşfet</h2><p>Cisimleri tanı, yapıları parçalarına ayır</p></div>
       <div class="kapi k2" data-git="pratik">
         <div class="ikonKutu"><div class="ikon" id="ikPratik"></div></div>
-        <h2>Pratik Yap</h2><p>1 dakika tek başına çalış, adını listeye yaz</p></div>
+        <h2>Pratik Yap</h2><p>2 dakika tek başına çalış, adını listeye yaz</p></div>
       <div class="kapi k3" data-git="kurulum">
         <div class="ikonKutu"><div class="ikon" id="ikYaris"></div></div>
         <h2>Yarışma</h2><p>İki takım, aynı sorular, süreye karşı</p></div>
@@ -465,7 +465,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#EADFD2;
     <div id="pratikGiris">
       <div id="pratikSelam"></div>
       <div id="pratikIkon"></div>
-      <p>1 dakika boyunca sorular gelir.<br>Doğru yaptıkça hemen yenisi gelir.</p>
+      <p>2 dakika boyunca sorular gelir.<br>Doğru yaptıkça hemen yenisi gelir.</p>
       <button class="btn turuncu" id="btnPratikBasla">🏁 Başla</button>
     </div>
     <div class="altbilgi">Sinan İnce 2026</div>
@@ -1792,13 +1792,13 @@ function yarismaBaslat(){
             altYazi:D.sureDk + " dakika — en çok puanı toplayan kazanır!" });
 }
 
-/* Pratik: tek kişi, 1 dakika, puan yerine çözülen soru sayacı */
+/* Pratik: tek kişi, 2 dakika, puan yerine çözülen soru sayacı */
 function pratikBaslat(){
   const ad = (D.pratik.ad || "Pratik").substring(0,16);
-  oyunKur({ tek:true, pratik:true, dk:1,
+  oyunKur({ tek:true, pratik:true, dk:2,
             adlar:[ad],
             baslik:"Hazır mısın?",
-            altYazi:"1 dakika — bol bol soru çöz!" });
+            altYazi:"2 dakika — bol bol soru çöz!" });
 }
 
 function oyunKur(o){
@@ -2144,13 +2144,18 @@ function tarafHangi(t, T, S){
 /* =======================================================
    Yarışma sonu — süre bitti, en çok puan kazanır
    ======================================================= */
-function yarismaBitir(){
+function yarismaBitir(erken){
   if(!Y || Y.bitti) return;
   Y.bitti = true;
   sureDurdur();
   for(let t=0;t<2;t++) $(".tBitti", $("#taraf"+t)).classList.remove("acik");
 
-  if(Y.pratik){ pratikBitti(); return; }
+  // Pratik yalnızca süre dolduğunda tamamlanmış sayılır.
+  if(Y.pratik){
+    if(erken) git("pratik");
+    else pratikBitti();
+    return;
+  }
   const a = Y.takimlar[0], b = Y.takimlar[1];
   const kazanan = a.skor>b.skor ? 0 : (b.skor>a.skor ? 1 : -1);
   $("#kazananYazi").textContent = kazanan<0 ? "Berabere!" : Y.takimlar[kazanan].ad + " kazandı!";
@@ -2507,7 +2512,11 @@ function baglantilar(){
     SES.tik();
     const h = b.dataset.git;
     if(h==="menu" && aktifSahne==="yarisma"){
-      onaySor("Yarışmadan çıkılsın mı?","Skorlar kaybolacak.",()=>{ sureDurdur(); git("menu"); });
+      const pr = Y && Y.pratik;
+      onaySor(pr ? "Pratikten çıkılsın mı?" : "Yarışmadan çıkılsın mı?",
+              pr ? "Süre dolmadığı için bu pratik tamamlanmış sayılmayacak."
+                 : "Skorlar kaybolacak.",
+              ()=>{ sureDurdur(); if(Y) Y.bitti = true; git("menu"); });
       return;
     }
     git(h);
@@ -2536,7 +2545,13 @@ function baglantilar(){
 
   $("#btnYarisCik").addEventListener("click", ()=>{
     SES.tik();
-    onaySor("Yarışmayı bitir?","Şu anki puanlarla sonuç ekranına geçilecek.", ()=>yarismaBitir());
+    if(Y && Y.pratik){
+      onaySor("Pratiği bırak?",
+              "Süre dolmadığı için bu pratik tamamlanmış sayılmayacak.",
+              ()=>yarismaBitir(true));
+    }else{
+      onaySor("Yarışmayı bitir?","Şu anki puanlarla sonuç ekranına geçilecek.", ()=>yarismaBitir());
+    }
   });
 
   // Örtü düğmeleri
