@@ -2421,7 +2421,7 @@ const K = {
 };
 const VARSAYILAN = {
   ayar:{ ses:1, sure:'uzun', yazi:1, aciklama:1 },
-  ilerleme:{ takim:0, yenilen:[], acikTakim:[0,1,2,3], madalya:[], kupalar:[], turnuva:null },
+  ilerleme:{ takim:0, yenilen:[], acikTakim:[0,1,2,3,4], madalya:[], kupalar:[], turnuva:null },
   istatistik:{ tip:{}, enUzunSeri:0, oynananMac:0, galibiyet:0 },
   gecmis:[]
 };
@@ -2493,13 +2493,16 @@ const Ses = (()=>{
 /* ============================================================
    TAKIMLAR ve RAKİPLER
    ============================================================ */
+/* kilit = bu takımı seçebilmek için gereken KUPA sayısı */
 const TAKIMLAR = [
   {ad:'Alevler',        renk:'#FF6B35', emoji:'🔥', kilit:0},
   {ad:'Şimşekler',      renk:'#FFD600', emoji:'⚡', kilit:0},
   {ad:'Deniz Yıldızı',  renk:'#4D9FFF', emoji:'🌊', kilit:0},
   {ad:'Yeşil Kartal',   renk:'#00C9A7', emoji:'🦅', kilit:0},
-  {ad:'Mor Kaplanlar',  renk:'#A855F7', emoji:'🐯', kilit:3},
-  {ad:'Pembe Panter',   renk:'#FF4D8D', emoji:'🐾', kilit:6}
+  {ad:'Mor Kaplanlar',  renk:'#A855F7', emoji:'🐯', kilit:0},
+  {ad:'Pembe Panter',   renk:'#FF4D8D', emoji:'🐾', kilit:1},
+  {ad:'Altın Aslanlar', renk:'#F2A11C', emoji:'🦁', kilit:2},
+  {ad:'Süper Yıldızlar',renk:'#5B6BE8', emoji:'⭐', kilit:3}
 ];
 /* Tek maç rakipleri */
 const RAKIPLER = [
@@ -3343,9 +3346,11 @@ function madalyaVer(id){
   const m=MADALYALAR.find(x=>x.id===id);
   if(m && $('#ekranOyun').classList.contains('aktif')) olayGoster(m.emoji+' '+m.ad,'#FFD600');
 }
+function kupaSayisi(){ return (ILERLEME.kupalar||[]).length; }
 function takimKilitCoz(){
-  const n=ILERLEME.madalya.length;
-  TAKIMLAR.forEach((t,i)=>{ if(t.kilit<=n && !ILERLEME.acikTakim.includes(i)) ILERLEME.acikTakim.push(i); });
+  const n=kupaSayisi();
+  ILERLEME.acikTakim = TAKIMLAR.map((t,i)=>i).filter(i=>TAKIMLAR[i].kilit<=n);
+  if(!ILERLEME.acikTakim.includes(ILERLEME.takim)) ILERLEME.takim=0;   // kilitli takım seçili kalmasın
 }
 function kupaRafiCiz(hedef='#kupaRafi'){
   const el=$(hedef); if(!el) return;
@@ -3378,7 +3383,9 @@ function takimKartlariCiz(){
     const d=document.createElement('div');
     d.className='sec-kart temali'+(i===ILERLEME.takim?' secili':'')+(acik?'':' kilitli'); d.style.setProperty('--kart-renk', t.renk); d.dataset.mascot=t.emoji;
     d.innerHTML='<div class="kart-maskot">'+takimSvg(t.renk,t.emoji)+'</div><h3>'+t.ad+'</h3>'+
-      '<p><b>Maskot:</b> '+t.emoji+'<br>'+(acik?'Hazır':'🔒 '+t.kilit+' madalya')+'</p>';
+      '<p><b>Maskot:</b> '+t.emoji+'<br>'+(acik
+         ? (t.kilit>0 ? '🏆 Kupayla açıldı' : 'Hazır')
+         : '🔒 '+t.kilit+' kupa gerekli ('+kupaSayisi()+'/'+t.kilit+')')+'</p>';
     d.onclick=()=>{
       if(!acik) return;
       Ses.tik(); ILERLEME.takim=i; kaydet('ilerleme',ILERLEME); takimKartlariCiz();
@@ -3567,6 +3574,7 @@ function kupaSvg(renk){
 }
 async function kupaAl(){
   Ses.kazanma();
+  const oncekiAcik=[...(ILERLEME.acikTakim||[])];   // kupa eklenmeden ÖNCEki açık takımlar
   const T=ILERLEME.turnuva;
   const benim=TAKIMLAR[ILERLEME.takim];
   const ad=await modalSor('🏆 Şampiyon oldun!','Kupana bir isim ver:','Kupayı al',
@@ -3578,10 +3586,19 @@ async function kupaAl(){
   });
   madalyaVer('kupa');
   ILERLEME.turnuva=null;
+  takimKilitCoz();                               // kupa sayısı arttı, kilitleri yeniden hesapla
   kaydet('ilerleme',ILERLEME);
   kupaSayaciYaz();
   kupaVitriniCiz();
   sahneGoster('ekranKupa');
+  takimKartlariCiz();
+  const yeniAcilan=ILERLEME.acikTakim.filter(i=>!oncekiAcik.includes(i));
+  if(yeniAcilan.length){
+    const t=TAKIMLAR[yeniAcilan[0]];
+    Ses.sayiSesi();
+    await modalSor('🎁 Yeni takım açıldı!',
+      t.emoji+' '+t.ad+' artık senin! Takım seçme ekranından seçebilirsin.','Süper!');
+  }
 }
 function kupaVitriniCiz(){
   const el=$('#rafAlani'); if(!el) return;
@@ -3970,11 +3987,8 @@ document.addEventListener('DOMContentLoaded',baslat);
    Kilitli takımlar madalya sayısına bakıyordu; rozet göstergesi olmadığı için
    tüm takımlar baştan açık hâle getirildi.                                   */
 try{
-  if(typeof TAKIMLAR!=='undefined') TAKIMLAR.forEach(t=>t.kilit=0);
-  if(typeof ILERLEME==='object' && ILERLEME){
-    ILERLEME.acikTakim=[0,1,2,3,4,5];
-    if(typeof kaydet==='function') kaydet('ilerleme',ILERLEME);
-  }
+  /* Takım kilitleri artık kazanılan KUPA sayısına göre hesaplanıyor (takimKilitCoz) */
+  if(typeof takimKilitCoz==='function'){ takimKilitCoz(); if(typeof kaydet==='function') kaydet('ilerleme',ILERLEME); }
   if(typeof AYAR==='object' && AYAR && AYAR.sure!=='uzun' && AYAR.sure!=='yok'){
     AYAR.sure='uzun';
     if(typeof kaydet==='function') kaydet('ayar',AYAR);
