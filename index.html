@@ -629,6 +629,78 @@
       80%  { opacity: 1; }
       100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
     }
+
+    /* ---- Hece Smaçı kart animasyonu ---- */
+    .hece-smaci-thumb {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hs-sahne { width: 100%; height: 100%; }
+    .hs-file  { animation: hsFileTitre 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    @keyframes hsFileTitre {
+      0%, 68%, 100% { transform: none; }
+      72% { transform: translateY(1.5px) scaleY(.985); }
+      78% { transform: translateY(-1px) scaleY(1.01); }
+      84% { transform: none; }
+    }
+    .hs-top { animation: hsUcus 3.4s cubic-bezier(.38,0,.5,1) infinite; }
+    @keyframes hsUcus {
+      0%   { transform: translate(42px,124px); opacity: 0; }
+      7%   { opacity: 1; }
+      22%  { transform: translate(76px,76px); }
+      42%  { transform: translate(116px,52px); }
+      62%  { transform: translate(158px,82px); }
+      73%  { transform: translate(186px,114px); opacity: 1; }
+      80%  { transform: translate(196px,130px); opacity: 0; }
+      100% { transform: translate(42px,124px); opacity: 0; }
+    }
+    .hs-top-don { transform-box: fill-box; transform-origin: center; animation: hsDonme 1.5s linear infinite; }
+    @keyframes hsDonme { to { transform: rotate(360deg); } }
+    .hs-golge { animation: hsGolge 3.4s cubic-bezier(.38,0,.5,1) infinite; }
+    @keyframes hsGolge {
+      0%   { transform: translate(42px,138px) scale(.9); opacity: 0; }
+      7%   { opacity: .45; }
+      22%  { transform: translate(76px,136px) scale(.62); opacity: .26; }
+      42%  { transform: translate(116px,134px) scale(.5); opacity: .2; }
+      62%  { transform: translate(158px,136px) scale(.7); opacity: .3; }
+      73%  { transform: translate(186px,140px) scale(1); opacity: .45; }
+      80%, 100% { transform: translate(196px,142px) scale(1); opacity: 0; }
+    }
+    .hs-patlama { transform-box: fill-box; transform-origin: center; opacity: 0;
+                  animation: hsPatla 3.4s ease-out infinite; }
+    @keyframes hsPatla {
+      0%, 70%  { transform: translate(186px,114px) scale(.2); opacity: 0; }
+      75%      { transform: translate(186px,114px) scale(1.2); opacity: 1; }
+      86%      { transform: translate(186px,114px) scale(1.55); opacity: 0; }
+      100%     { transform: translate(186px,114px) scale(.2); opacity: 0; }
+    }
+    .hs-hece { transform-box: fill-box; transform-origin: center; opacity: 0; }
+    .hs-hece1 { animation: hsHece1 3.4s ease-in-out infinite; }
+    .hs-hece2 { animation: hsHece2 3.4s ease-in-out infinite; }
+    @keyframes hsHece1 {
+      0%   { transform: translate(30px,66px) scale(.4); opacity: 0; }
+      12%  { transform: translate(30px,52px) scale(1.12); opacity: 1; }
+      20%  { transform: translate(30px,54px) scale(1); opacity: 1; }
+      52%  { transform: translate(30px,50px) scale(1); opacity: 1; }
+      60%  { transform: translate(30px,44px) scale(.75); opacity: 0; }
+      100% { transform: translate(30px,66px) scale(.4); opacity: 0; }
+    }
+    @keyframes hsHece2 {
+      0%, 26% { transform: translate(30px,110px) scale(.4); opacity: 0; }
+      38%     { transform: translate(30px,96px) scale(1.12); opacity: 1; }
+      46%     { transform: translate(30px,98px) scale(1); opacity: 1; }
+      78%     { transform: translate(30px,94px) scale(1); opacity: 1; }
+      88%     { transform: translate(30px,88px) scale(.75); opacity: 0; }
+      100%    { transform: translate(30px,110px) scale(.4); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hs-top, .hs-golge, .hs-patlama, .hs-hece, .hs-top-don, .hs-file { animation: none; }
+      .hs-top   { transform: translate(116px,52px); opacity: 1; }
+      .hs-golge { transform: translate(116px,134px) scale(.6); opacity: .22; }
+      .hs-hece1 { transform: translate(30px,52px); opacity: 1; }
+      .hs-hece2 { transform: translate(30px,96px); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -678,6 +750,164 @@
 // her oyun için: name, file (html dosya yolu), desc, emoji
 // ============================================================
 const categories = [
+  {
+    name: "📖 Türkçe",
+    color: "#00C9A7",
+    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
+    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
+    games: [
+      {
+        name: "Hece Smaçı",
+        file: "hece_smaci.html",
+        desc: "Harf ve hece sorularını bil, topu file üstünden aşır, smacı bas!",
+        sinif: "2. Sınıf — Harf ve hece bilgisi",
+        isNew: true,
+        thumbBg: "linear-gradient(165deg, #EAF6FF 0%, #CFE9FF 46%, #FFE3C6 100%)",
+        customThumb: `
+<div class="hece-smaci-thumb">
+<svg class="hs-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hsZemin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC58F"/><stop offset="1" stop-color="#FF9A56"/>
+    </linearGradient>
+  </defs>
+
+  <!-- salon zemini -->
+  <polygon points="26,150 214,150 186,92 54,92" fill="url(#hsZemin)"/>
+  <polygon points="44,150 196,150 176,100 64,100" fill="none" stroke="#fff" stroke-width="2.4" opacity=".85"/>
+  <line x1="36" y1="126" x2="204" y2="126" stroke="#fff" stroke-width="2" opacity=".6"/>
+
+  <!-- file -->
+  <g class="hs-file">
+    <line x1="58" y1="96" x2="58" y2="44" stroke="#1F2740" stroke-width="5" stroke-linecap="round"/>
+    <line x1="182" y1="96" x2="182" y2="44" stroke="#1F2740" stroke-width="5" stroke-linecap="round"/>
+    <rect x="58" y="44" width="124" height="7" fill="#fff" stroke="#1F2740" stroke-width="2.4"/>
+    <g stroke="#fff" stroke-width="1.6" opacity=".75">
+      <line x1="58" y1="62" x2="182" y2="62"/><line x1="58" y1="78" x2="182" y2="78"/>
+      <line x1="58" y1="94" x2="182" y2="94"/>
+      <line x1="78" y1="51" x2="78" y2="95"/><line x1="100" y1="51" x2="100" y2="95"/>
+      <line x1="122" y1="51" x2="122" y2="95"/><line x1="144" y1="51" x2="144" y2="95"/>
+      <line x1="164" y1="51" x2="164" y2="95"/>
+    </g>
+  </g>
+
+  <!-- hece baloncukları -->
+  <g class="hs-hece hs-hece1">
+    <rect x="-17" y="-13" width="34" height="26" rx="9" fill="#FFD600" stroke="#1F2740" stroke-width="2.6"/>
+    <text x="0" y="6" font-size="15" font-weight="900" text-anchor="middle" fill="#1F2740"
+          font-family="Nunito, Segoe UI, sans-serif">he</text>
+  </g>
+  <g class="hs-hece hs-hece2">
+    <rect x="-17" y="-13" width="34" height="26" rx="9" fill="#00C9A7" stroke="#1F2740" stroke-width="2.6"/>
+    <text x="0" y="6" font-size="15" font-weight="900" text-anchor="middle" fill="#fff"
+          font-family="Nunito, Segoe UI, sans-serif">ce</text>
+  </g>
+
+  <!-- smaç patlaması -->
+  <g class="hs-patlama">
+    <path d="M0,-22 L5,-7 20,-11 9,0 20,11 5,7 0,22 -5,7 -20,11 -9,0 -20,-11 -5,-7 Z"
+          fill="#FFD600" stroke="#FF6B35" stroke-width="2.4" stroke-linejoin="round"/>
+  </g>
+
+  <!-- gölge -->
+  <ellipse class="hs-golge" cx="0" cy="0" rx="11" ry="4" fill="rgba(31,39,64,.22)"/>
+
+  <!-- top -->
+  <g class="hs-top">
+    <g class="hs-top-don">
+      <circle r="13" fill="#F5F8FD" stroke="#16203B" stroke-width="2.4"/>
+      <path d="M-12.4 -4 A13 13 0 0 1 3.5 -12.5" stroke="#2F7FF0" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M12.6 3 A13 13 0 0 1 0.5 12.9" stroke="#F8C61E" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-13 -1 C-5 -7 5 -7 13 -1" fill="none" stroke="#16203B" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M-3 -12.7 C-8 -5 -7 5 -2 12.8" fill="none" stroke="#16203B" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M7.5 -10.6 C11 -4 10 5 4 12.2" fill="none" stroke="#16203B" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
+</div>`,
+      },
+      {
+        name: "Hikaye Şehri",
+        file: "hikayesehri.html",
+        desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏙️",
+        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)"
+      },
+      {
+        name: "1. Sınıflar Yarışması",
+        file: "yarisma.html",
+        desc: "Sınıfta bilgimizi yarıştıralım!",
+        sinif: "1. Sınıf",
+        emoji: "🏆",
+        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
+      },
+      {
+        name: "5N1K Dedektifi",
+        file: "5n1k.html",
+        desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🕵️",
+        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
+      },
+      {
+        name: "Hecelerden Kelimelere",
+        file: "hece.html",
+        desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
+        sinif: "1. Sınıf",
+        emoji: "🔤",
+        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
+      },
+      {
+        name: "Noktalama Parşomeni",
+        file: "nokta.html",
+        desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
+        sinif: "1. Sınıf",
+        emoji: "📜",
+        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
+      },
+      {
+        name: "Zoxi'ye Türkçe Öğretiyoruz",
+        file: "zoxi.html",
+        desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
+        sinif: "1. Sınıf",
+        emoji: "👽",
+        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
+      },
+      {
+        name: "Noktalama Treni",
+        file: "tren.html",
+        desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
+        sinif: "1. Sınıf",
+        emoji: "🚂",
+        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
+      },
+      {
+        name: "Düşler Şatosu",
+        file: "duslersatosu.html",
+        desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏰",
+        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
+      },
+      {
+        name: "Lilo & Stitch Sörf Yarışması",
+        file: "sorf.html",
+        desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🏄",
+        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
+      },
+      {
+        name: "Düşler Şatosu 2",
+        file: "duslersatosu2.html",
+        desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
+        sinif: "1. - 2. Sınıf",
+        emoji: "🍬",
+        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
+      }
+    ]
+  },
   {
     name: "➕ Matematik",
     color: "#FF6B35",
@@ -884,94 +1114,6 @@ const categories = [
         sinif: "1. - 2. Sınıf",
         emoji: "🌲",
         thumbBg: "linear-gradient(135deg, #D4F5D4, #A8E6A3)",
-      }
-    ]
-  },
-  {
-    name: "📖 Türkçe",
-    color: "#00C9A7",
-    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
-    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
-    games: [
-      {
-        name: "Hikaye Şehri",
-        file: "hikayesehri.html",
-        desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏙️",
-        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)"
-      },
-      {
-        name: "1. Sınıflar Yarışması",
-        file: "yarisma.html",
-        desc: "Sınıfta bilgimizi yarıştıralım!",
-        sinif: "1. Sınıf",
-        emoji: "🏆",
-        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
-      },
-      {
-        name: "5N1K Dedektifi",
-        file: "5n1k.html",
-        desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🕵️",
-        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
-      },
-      {
-        name: "Hecelerden Kelimelere",
-        file: "hece.html",
-        desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
-        sinif: "1. Sınıf",
-        emoji: "🔤",
-        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
-      },
-      {
-        name: "Noktalama Parşomeni",
-        file: "nokta.html",
-        desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
-        sinif: "1. Sınıf",
-        emoji: "📜",
-        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
-      },
-      {
-        name: "Zoxi'ye Türkçe Öğretiyoruz",
-        file: "zoxi.html",
-        desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
-        sinif: "1. Sınıf",
-        emoji: "👽",
-        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
-      },
-      {
-        name: "Noktalama Treni",
-        file: "tren.html",
-        desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
-        sinif: "1. Sınıf",
-        emoji: "🚂",
-        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
-      },
-      {
-        name: "Düşler Şatosu",
-        file: "duslersatosu.html",
-        desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏰",
-        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
-      },
-      {
-        name: "Lilo & Stitch Sörf Yarışması",
-        file: "sorf.html",
-        desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🏄",
-        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
-      },
-      {
-        name: "Düşler Şatosu 2",
-        file: "duslersatosu2.html",
-        desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
-        sinif: "1. - 2. Sınıf",
-        emoji: "🍬",
-        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
       }
     ]
   },
