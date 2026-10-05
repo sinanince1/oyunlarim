@@ -701,6 +701,43 @@
       .hs-hece1 { transform: translate(30px,52px); opacity: 1; }
       .hs-hece2 { transform: translate(30px,96px); opacity: 1; }
     }
+
+    /* ---- Satır Sonu Makası kart animasyonu ---- */
+    .satir-makasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .sm-sahne { width: 100%; height: 100%; }
+    .sm-bek    { animation: smBek 3.8s cubic-bezier(.4,0,.3,1) infinite; }
+    @keyframes smBek {
+      0%, 34%  { transform: translate(160px,84px); fill: #E5484D; }
+      38%      { transform: translate(166px,84px); fill: #E5484D; }
+      56%      { transform: translate(40px,126px); fill: #2B2340; }
+      92%      { transform: translate(40px,126px); fill: #2B2340; opacity: 1; }
+      100%     { transform: translate(40px,126px); fill: #2B2340; opacity: 0; }
+    }
+    .sm-cizgi  { transform-box: fill-box; transform-origin: center; animation: smCizgi 3.8s ease-out infinite; }
+    @keyframes smCizgi {
+      0%, 40%  { transform: scale(0); opacity: 0; }
+      48%      { transform: scale(1.5); opacity: 1; }
+      54%, 92% { transform: scale(1); opacity: 1; }
+      100%     { transform: scale(1); opacity: 0; }
+    }
+    .sm-makas  { animation: smMakas 3.8s ease-in-out infinite; }
+    @keyframes smMakas {
+      0%, 8%   { transform: translate(160px,4px); opacity: 0; }
+      18%      { transform: translate(160px,40px); opacity: 1; }
+      26%      { transform: translate(160px,52px) rotate(0deg); }
+      30%      { transform: translate(160px,52px) scaleX(.7); }
+      34%      { transform: translate(160px,52px) scaleX(1); opacity: 1; }
+      44%, 100%{ transform: translate(160px,4px); opacity: 0; }
+    }
+    .sm-kalan  { animation: smKalan 3.8s ease-out infinite; }
+    @keyframes smKalan { 0%, 56% { opacity: 0; } 64%, 92% { opacity: 1; } 100% { opacity: 0; } }
+    .sm-kele   { animation: smKele 3.8s linear infinite; }
+    @keyframes smKele { 0%, 92% { opacity: 1; } 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .sm-bek, .sm-cizgi, .sm-makas, .sm-kalan, .sm-kele { animation: none; }
+      .sm-bek { transform: translate(40px,126px); fill: #2B2340; }
+      .sm-makas { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -756,6 +793,41 @@ const categories = [
     iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
     lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
     games: [
+      {
+        name: "Satır Sonu Makası",
+        file: "satir_sonu_makasi.html",
+        desc: "Satıra sığmayan kelimeyi hecesinden kes, kısa çizgiyi doğru yere koy!",
+        sinif: "2. Sınıf — Satır sonunda kelime bölme",
+        isNew: true,
+        thumbBg: "linear-gradient(160deg, #6FB2FF 0%, #4D9FFF 100%)",
+        customThumb: `
+<div class="satir-makasi-thumb">
+<svg class="sm-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- defter sayfası -->
+  <rect x="14" y="50" width="172" height="92" rx="6" fill="#fff"/>
+  <line x1="32" y1="50" x2="32" y2="142" stroke="#FF9C9C" stroke-width="2"/>
+  <line x1="36" y1="90" x2="186" y2="90" stroke="#BFD7FF" stroke-width="2.4"/>
+  <line x1="36" y1="132" x2="186" y2="132" stroke="#BFD7FF" stroke-width="2.4"/>
+  <line x1="186" y1="50" x2="186" y2="142" stroke="#2B2340" stroke-width="3" stroke-dasharray="7 5" opacity=".55"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="19">
+    <text x="40" y="84" fill="#2B2340">Mavi bir</text>
+    <text class="sm-kele" x="122" y="84" fill="#FF6B35">kele</text>
+    <text class="sm-cizgi" x="161" y="84" fill="#FF6B35">-</text>
+    <text class="sm-bek" x="0" y="0">bek</text>
+    <text class="sm-kalan" x="78" y="126" fill="#2B2340">uçtu.</text>
+  </g>
+  <!-- makas -->
+  <g class="sm-makas">
+    <g transform="translate(-11,0) scale(.34)">
+      <circle cx="18" cy="16" r="11" fill="#FF4D8D" stroke="#2B2340" stroke-width="5"/>
+      <circle cx="46" cy="16" r="11" fill="#FF4D8D" stroke="#2B2340" stroke-width="5"/>
+      <path d="M24 25 L36 90 L31 90 Z" fill="#C9D3E6" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M40 25 L28 90 L33 90 Z" fill="#E6ECF6" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>
+</div>`,
+      },
       {
         name: "Hece Smaçı",
         file: "hece_smaci.html",
