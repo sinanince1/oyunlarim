@@ -630,6 +630,7 @@ const MESAJ = {
   tekHarf:'Satırda tek harf yalnız kalmaz.',
   cizgiYok:'Bölünen kelimeye çizgi gerekir.',
   tekHece:'Tek hece bölünmez!',
+  sure:'Süre doldu!',
   bolunebilir:'Bu kelime bölünebilir. Heceleri bul!',
   dogruyduYanlis:'Bu satır doğruydu!'
 };
@@ -1169,6 +1170,7 @@ async function kesimiYerlestir(s, p, oturum){
   // büyük kelimeyi gizle, harfleri uçur
   cal.querySelectorAll('.makas,.kesCizgi,.makasNokta,.ipucu,.catlak').forEach(function(x){ x.remove(); });
   bh.forEach(function(b){ b.style.visibility = 'hidden'; });
+  const bk = cal.querySelector('.buyukKelime'); if (bk){ bk.blur(); bk.style.outline = 'none'; }
   Ses.cal('kay');
   solEls.forEach(function(e, i){ ucur(e, kaynak[i], i * 25, 480); });
   const ofs = p === 'alta' ? 0 : p;
@@ -1302,7 +1304,7 @@ function puanVer(dogru, sure){
     Depo.veri.toplamYildiz++; Depo.kaydet();
     setTimeout(function(){ pop($('yildizRozet')); Ses.cal('yildiz'); }, 250);
     let p = 10;
-    if (sure <= SURE[Oyun.kademe]) p += 5;
+    if (sure <= SURE[Oyun.kademe] / 2) p += 5; // sürenin ilk yarısında cevap: hız bonusu
     if (Oyun.seri >= 3) p += 5;
     if (Oyun.mod === 'tur'){ Oyun.puan += p; ucanPuan('+' + p); }
   } else Oyun.seri = 0;
@@ -1319,7 +1321,33 @@ function hizBaslat(){
   if (Oyun.mod !== 'tur') return;
   const b = $('hizCubugu').querySelector('b');
   b.style.background = 'var(--yesil)';
-  if (b.animate) Oyun.hizAnim = b.animate([{ transform:'scaleX(1)', background:'#00C9A7' }, { transform:'scaleX(.5)', background:'#FFD600', offset:.5 }, { transform:'scaleX(0)', background:'#FF6B35' }], { duration:SURE[Oyun.kademe], fill:'forwards' });
+  if (!b.animate) return;
+  const soru = Oyun.soru;
+  const anim = Oyun.hizAnim = b.animate([{ transform:'scaleX(1)', background:'#00C9A7' }, { transform:'scaleX(.5)', background:'#FFD600', offset:.5 }, { transform:'scaleX(0)', background:'#FF6B35' }], { duration:SURE[Oyun.kademe], fill:'forwards' });
+  // süre dolunca soru yanlış sayılır, doğrusu gösterilir ve sonraki soruya geçilir
+  anim.onfinish = function(){ if (anim === Oyun.hizAnim && Oyun.soru === soru) sureDoldu(); };
+}
+async function sureDoldu(){
+  if (Oyun.kilit || Oyun.mod !== 'tur') return;
+  Oyun.kilit = true; eylemleriKilitle(true);
+  const oturum = Oyun.oturum, s = Oyun.soru;
+  if (s.tip === 'kes') makasGizle();
+  puanVer(false, Infinity);
+  Ses.cal('yanlis'); balon('Süre doldu!', 'uzgun');
+  const dogrusu = ornekCevap(s.kelime);
+  if (s.tip === 'kes'){
+    Oyun.yanlislar.push({ kelime: s.kelime, tur:'sure', p: dogrusu });
+    const yer = kesimiYerlestir(s, dogrusu, oturum);
+    await geriBildirimGoster(s, { iyi:false, mesaj: MESAJ.sure, p: dogrusu });
+    await yer;
+  } else {
+    const y = s.yargi;
+    Oyun.yanlislar.push({ kelime: s.kelime, tur:'sure', p: dogrusu });
+    await geriBildirimGoster(s, { iyi:false, mesaj: MESAJ.sure + (y.dogru ? ' Bu satır doğruydu.' : ' Bu satır yanlıştı. ' + MESAJ[y.tur]), p: y.dogru ? null : dogrusu });
+  }
+  if (oturum !== Oyun.oturum) return;
+  gecmiseEkle(s);
+  sonrakiSoru();
 }
 function hizDurdur(sifirla){
   if (Oyun.hizAnim){ if (sifirla) Oyun.hizAnim.cancel(); else Oyun.hizAnim.pause(); }
