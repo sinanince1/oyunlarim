@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sözlük Postası</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='14' width='56' height='38' rx='7' fill='%23FFF8F0' stroke='%23FF6B35' stroke-width='5'/%3E%3Cpath d='M7 18 L32 36 L57 18' stroke='%23FF6B35' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+<meta name="description" content="Gugu ile kelimeleri sözlük sırasına diz, mektupları doğru eve götür. 2. sınıf Türkçe oyunu.">
+<style>
+/* =========================================================
+   1) TEMEL DEĞİŞKENLER — site paleti
+   ========================================================= */
+:root{
+  --turuncu:#FF6B35; --sari:#FFD600; --pembe:#FF4D8D; --yesil:#00C9A7;
+  --mavi:#4D9FFF; --mor:#A855F7; --zemin:#FFF8F0; --yazi:#2B2D42;
+  --soluk:#8D93A8; --kart:#FFFFFF; --cizgi:#EADFD3;
+  --golge:0 .35rem 0 rgba(43,45,66,.12);
+  --radius:24px;
+  --gecis:280ms;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:clamp(14px, 1.6vmin + 8px, 26px)}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Nunito','Varela Round','Segoe UI Rounded','Segoe UI',system-ui,sans-serif;
+  background:var(--zemin);color:var(--yazi);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,.mektup:focus-visible{outline:4px solid var(--mavi);outline-offset:3px}
+
+/* Gugu tepkileri */
+@keyframes sevin{0%,100%{transform:none}30%{transform:translateY(-14px) rotate(-6deg)}60%{transform:translateY(-4px) rotate(4deg)}}
+@keyframes uzgun{0%,100%{transform:none}25%{transform:rotate(-10deg)}75%{transform:rotate(8deg)}}
+.gugu-kucuk.sevin{animation:sevin .6s ease}
+.gugu-kucuk.uzgun{animation:uzgun .5s ease}
+
+/* Konfeti (sokak bitince) */
+.konfeti{position:fixed;inset:0;pointer-events:none;z-index:80;overflow:hidden}
+.konfeti i{position:absolute;top:-1rem;width:.6rem;height:.9rem;border-radius:2px;animation:dus linear forwards}
+@keyframes dus{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* Başlangıç ekranı manzarası: bulutlar + küçük sokak */
+.manzara{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bulut{position:absolute;opacity:.9;animation:bulutKay linear infinite}
+@keyframes bulutKay{from{transform:translateX(-12vw)}to{transform:translateX(112vw)}}
+.mini-sokak{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:space-around;padding:0 4vw 1.6rem}
+.mini-sokak::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1.4rem;background:#C9C2B8}
+.mini-sokak svg{width:min(6vw,8vh,5.5rem);height:auto;opacity:.45}
+#s-baslangic{padding-bottom:calc(1.6rem + min(7.2vw,9.6vh,6.6rem) + .75rem)}
+#s-baslangic > *:not(.manzara){position:relative;z-index:1}
+svg{display:block}
+
+/* =========================================================
+   2) UYGULAMA ÇERÇEVESİ + ALTBİLGİ
+   ========================================================= */
+#uygulama{position:fixed;inset:0;display:flex;flex-direction:column}
+#sahne-alani{position:relative;flex:1;min-height:0}
+#altbilgi{
+  text-align:center;font-size:.7rem;color:var(--soluk);
+  padding:.25rem 0 .4rem;flex:0 0 auto;
+}
+
+/* =========================================================
+   3) SAHNE YÖNETİCİSİ STİLLERİ
+   ========================================================= */
+.sahne{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  padding:1rem 1.25rem .5rem;
+  opacity:0;visibility:hidden;transform:translateY(18px) scale(.98);
+  transition:opacity var(--gecis) ease, transform var(--gecis) ease, visibility 0s linear var(--gecis);
+}
+.sahne.aktif{
+  opacity:1;visibility:visible;transform:none;
+  transition:opacity var(--gecis) ease, transform var(--gecis) ease, visibility 0s;
+}
+.sahne.cikis{opacity:0;visibility:visible;transform:translateY(-18px) scale(.98)}
+
+/* =========================================================
+   4) ORTAK BİLEŞENLER — düğmeler, üst çubuk, kartlar
+   ========================================================= */
+.dugme{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  font-weight:800;font-size:1.1rem;padding:.75rem 1.5rem;border-radius:999px;
+  background:var(--kart);box-shadow:var(--golge);border:3px solid var(--cizgi);
+  transition:transform .1s ease, box-shadow .1s ease;min-height:3rem;
+}
+.dugme:active{transform:translateY(.25rem);box-shadow:0 .1rem 0 rgba(43,45,66,.12)}
+.dugme.ana{background:var(--turuncu);color:#fff;border-color:#E2551F;font-size:1.6rem;padding:.9rem 2.6rem}
+.dugme.yesil{background:var(--yesil);color:#fff;border-color:#00A98C}
+.dugme.kirmizi{background:var(--pembe);color:#fff;border-color:#E2306F}
+.dugme svg{width:1.3em;height:1.3em}
+.yuvarlak{
+  width:3.1rem;height:3.1rem;border-radius:50%;display:grid;place-items:center;
+  background:var(--kart);box-shadow:var(--golge);border:3px solid var(--cizgi);flex:0 0 auto;
+}
+.yuvarlak:active{transform:translateY(.2rem)}
+.yuvarlak svg{width:1.5rem;height:1.5rem}
+
+.ust-cubuk{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex:0 0 auto}
+.ust-cubuk h2{font-size:1.5rem;font-weight:900;flex:1;line-height:1.1}
+.rozet{
+  background:var(--kart);border:3px solid var(--cizgi);border-radius:999px;
+  padding:.3rem .9rem;font-weight:800;font-size:1rem;white-space:nowrap
+}
+.yildizlar{display:inline-flex;gap:.15rem;vertical-align:middle}
+.yildiz{width:1.1rem;height:1.1rem}
+.yildiz path{fill:#E6E0D8}
+.yildiz.dolu path{fill:var(--sari);stroke:#E0B800;stroke-width:1.5}
+
+@keyframes salla{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.salla{animation:salla .4s ease}
+@keyframes suzul{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* =========================================================
+   5) EKRAN 1 — BAŞLANGIÇ
+   ========================================================= */
+#s-baslangic{align-items:center;justify-content:center;text-align:center;gap:1rem}
+#s-baslangic .gugu-buyuk{width:min(30vmin,13rem);animation:suzul 2.4s ease-in-out infinite}
+#s-baslangic h1{font-size:3rem;font-weight:900;line-height:1;letter-spacing:-.02em}
+#s-baslangic h1 span{color:var(--turuncu)}
+#s-baslangic p{font-size:1.15rem;color:var(--soluk);font-weight:700}
+.alt-dugmeler{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center}
+
+/* =========================================================
+   6) EKRAN 2 — HARİTA (sokak seçimi)
+   ========================================================= */
+.sokak-izgara{
+  flex:1;min-height:0;display:grid;gap:1rem;
+  grid-template-columns:repeat(4,1fr);align-content:center;
+}
+.sokak-karti{
+  background:var(--kart);border-radius:var(--radius);border:4px solid var(--cizgi);
+  box-shadow:var(--golge);padding:1rem .75rem;display:flex;flex-direction:column;
+  align-items:center;gap:.5rem;text-align:center;position:relative;
+}
+.sokak-karti:active{transform:translateY(.25rem)}
+.sokak-karti .cicek{width:4.5rem;height:4.5rem}
+.sokak-karti h3{font-size:1.2rem;font-weight:900}
+.sokak-karti .ipucu{font-size:.85rem;color:var(--soluk);font-weight:700;min-height:2.4em}
+.sokak-karti.kilitli{filter:grayscale(1);opacity:.55}
+.sokak-karti .kilit{
+  position:absolute;top:.6rem;right:.6rem;width:1.8rem;height:1.8rem;display:none
+}
+.sokak-karti.kilitli .kilit{display:block}
+.sokak-karti .kart-pul{position:absolute;top:.5rem;left:.5rem;width:1.9rem;height:2.4rem;display:none}
+.sokak-karti.pullu .kart-pul{display:block}
+.sokak-karti .kart-pul svg{width:100%;height:100%}
+.sokak-karti .devam{
+  background:var(--mavi);color:#fff;border-radius:999px;padding:.1rem .6rem;font-size:.8rem;font-weight:900
+}
+
+/* =========================================================
+   7) EKRAN 3 — OYUN
+   ========================================================= */
+/* Alfabe şeridi: 29 harf */
+.alfabe-seridi{
+  display:grid;grid-template-columns:repeat(29,1fr);gap:.2rem;
+  background:var(--kart);border:3px solid var(--cizgi);border-radius:16px;
+  padding:.35rem;margin-bottom:.75rem;flex:0 0 auto;
+}
+.alfabe-seridi.gizli{display:none}
+.harf{
+  aspect-ratio:1/1.15;display:grid;place-items:center;border-radius:8px;
+  font-weight:900;font-size:clamp(.75rem, 1.9vw, 1.35rem);background:#F6F1EA;
+}
+.harf{transition:background .2s, transform .2s, color .2s}
+.harf.yanik{background:var(--sari);transform:scale(1.2);box-shadow:0 0 0 2px #E0B800}
+
+/* Geri bildirim: tabelada karşılaştırılan harf */
+.h{display:inline-block;border-radius:5px;transition:background .2s}
+.h.vurgu{background:var(--sari);box-shadow:0 0 0 2px #E0B800}
+.h.ayni{text-decoration:underline 3px var(--yesil);text-underline-offset:4px}
+
+/* Sokak: evlerin dizildiği alan */
+.sokak{
+  flex:1;min-height:0;position:relative;display:flex;align-items:flex-end;justify-content:center;
+  gap:1.2rem;padding:0 1rem 2.6rem;
+}
+.sokak::after{ /* yol */
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2.2rem;border-radius:14px;
+  background:#C9C2B8 repeating-linear-gradient(90deg,transparent 0 2rem,#fff 2rem 3.4rem) center/100% .3rem no-repeat;
+}
+/* Ev: SVG çizim + üstünde kelime tabelası */
+.ev{
+  flex:0 1 min(13rem, 34vh);min-width:0;position:relative;z-index:1;
+  cursor:grab;touch-action:none;transition:transform .15s ease;
+}
+.ev svg{width:100%;height:auto}
+.ev .tabela{
+  position:absolute;left:6%;right:6%;top:44%;background:#fff;border:3px solid var(--yazi);
+  border-radius:10px;padding:.15rem .25rem;text-align:center;overflow:hidden;
+  box-shadow:0 .2rem 0 rgba(43,45,66,.15);
+}
+.ev .tabela > span{display:inline-block;font-weight:900;font-size:1.45rem;line-height:1.25;white-space:nowrap}
+.ev.secili{transform:translateY(-.6rem)}
+.ev.secili svg{filter:drop-shadow(0 0 .45rem var(--sari))}
+.ev.secili .tabela{border-color:#E0B800;background:#FFF8D6}
+.ev.tasiniyor{
+  position:fixed;z-index:60;pointer-events:none;cursor:grabbing;flex:none;
+  filter:drop-shadow(0 .8rem .6rem rgba(43,45,66,.25));
+}
+.ev-yer{flex:none;border:4px dashed var(--cizgi);border-radius:16px;background:rgba(255,255,255,.4)}
+.ev.hatali{animation:salla .45s ease 2}
+.ev.hatali .tabela{border-color:var(--pembe);background:#FFE3EE}
+@keyframes zipla{0%,100%{transform:none}40%{transform:translateY(-1.2rem)}}
+.ev.zipla{animation:zipla .5s ease}
+.ev.zipla .tabela{border-color:var(--yesil);background:#DDF8F2}
+
+/* Alt bölüm: Gugu + konuşma balonu + Kontrol Et */
+.oyun-alt{display:flex;align-items:center;gap:1rem;margin-top:.75rem;flex:0 0 auto}
+.oyun-alt .gugu-kucuk{width:4.5rem;flex:0 0 auto}
+.balon{
+  flex:1;min-height:3.4rem;background:#fff;border:3px solid var(--cizgi);border-radius:18px;
+  padding:.55rem 1rem;font-weight:800;font-size:1.15rem;display:flex;align-items:center;position:relative;
+  transition:border-color .2s, background .2s;
+}
+.balon::before{ /* balon kuyruğu Gugu'ya doğru */
+  content:"";position:absolute;left:-.75rem;top:50%;margin-top:-.5rem;
+  border:.5rem solid transparent;border-right:.75rem solid var(--cizgi);border-left:0;
+}
+.balon.uyari{border-color:var(--pembe);background:#FFF0F5}
+.balon.uyari::before{border-right-color:var(--pembe)}
+.balon.iyi{border-color:var(--yesil);background:#EEFBF8}
+.balon.iyi::before{border-right-color:var(--yesil)}
+/* Mektup çantası: o anki mektup + kaç mektup kaldı */
+.canta{
+  flex:0 0 auto;display:flex;align-items:center;gap:.6rem;position:relative;
+}
+.mektup{
+  width:11rem;height:4.6rem;position:relative;cursor:grab;touch-action:none;
+  transition:transform .15s ease;flex:0 0 auto;
+}
+.mektup svg{position:absolute;inset:0;width:100%;height:100%}
+.mektup .mektup-yazi{
+  position:absolute;left:0;right:0;bottom:.35rem;text-align:center;
+  font-weight:900;font-size:1.4rem;white-space:nowrap;
+}
+.mektup.secili{transform:translateY(-.4rem) rotate(-3deg)}
+.mektup.secili svg{filter:drop-shadow(0 0 .45rem var(--sari))}
+.mektup.tasiniyor,.mektup.ucan{
+  position:fixed;z-index:60;pointer-events:none;margin:0;
+  filter:drop-shadow(0 .8rem .6rem rgba(43,45,66,.25));
+}
+.mektup.ucan{transition:left .4s ease, top .4s ease, transform .4s ease, opacity .4s ease}
+.mektup.geri{animation:salla .4s ease}
+.mektup-sayac{
+  background:var(--mavi);color:#fff;font-weight:900;border-radius:999px;
+  padding:.25rem .65rem;font-size:.95rem;white-space:nowrap
+}
+
+/* Boşluk: iki ev arasındaki posta kutusu (mektup buraya bırakılır) */
+.bosluk{
+  flex:0 0 3.4rem;align-self:stretch;position:relative;z-index:2;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  border-radius:14px;transition:background .15s;
+}
+.bosluk .kutu{width:2.6rem;flex:0 0 auto;transition:transform .2s}
+.bosluk .gelenler{
+  position:absolute;bottom:4.2rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column-reverse;align-items:center;gap:.2rem;
+}
+.bosluk .gelen{
+  background:#fff;border:2px solid var(--yesil);border-radius:8px;padding:.05rem .4rem;
+  font-weight:900;font-size:.85rem;white-space:nowrap;box-shadow:0 .15rem 0 rgba(43,45,66,.12);
+}
+.bosluk.hedef{background:rgba(255,214,0,.28)}
+.bosluk.hedef .kutu{transform:scale(1.18)}
+.bosluk.yanlis{animation:salla .45s ease;background:rgba(255,77,141,.18)}
+.bosluk.dogru .kutu .bayrak{fill:var(--pembe)}
+@keyframes parla{0%,100%{background:rgba(0,201,167,.12)}50%{background:rgba(0,201,167,.45)}}
+.bosluk.ipucu{animation:parla 1s ease-in-out infinite}
+.bosluk.ipucu .kutu{transform:scale(1.15)}
+.dugme.kontrol{font-size:1.25rem;padding:.75rem 1.6rem;flex:0 0 auto}
+.dugme:disabled{opacity:.45;pointer-events:none}
+.anahtar:disabled{opacity:.35;cursor:not-allowed}
+[hidden]{display:none!important}
+
+/* =========================================================
+   8) EKRAN 4 — TUR SONU
+   ========================================================= */
+#s-tursonu{align-items:center;justify-content:center;text-align:center;gap:1.1rem}
+#s-tursonu .buyuk-yildizlar{display:flex;gap:.6rem}
+#s-tursonu .buyuk-yildizlar .yildiz{width:5rem;height:5rem}
+#s-tursonu h2{font-size:2.2rem;font-weight:900}
+.ozet-ust{font-size:.9rem;margin-bottom:.35rem}
+.ciftler{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-top:.4rem}
+.cift{
+  background:#FFF8D6;border:2px solid #E0B800;border-radius:999px;padding:.15rem .7rem;
+  font-weight:900;font-size:1.25rem;color:var(--yazi)
+}
+.ozet-kutu{
+  background:var(--kart);border:3px solid var(--cizgi);border-radius:18px;
+  padding:.75rem 1.25rem;min-width:min(26rem,85vw);font-weight:700;color:var(--soluk)
+}
+
+/* =========================================================
+   9) EKRAN 5 — PUL ALBÜMÜ
+   ========================================================= */
+.album-izgara{
+  flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;
+  align-content:center;justify-items:center;
+}
+.pul{
+  width:min(11rem,20vw);aspect-ratio:3/4;background:#fff;padding:.6rem;
+  border:6px dotted var(--cizgi);border-radius:6px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.4rem;box-shadow:var(--golge);
+}
+.pul .cicek{width:70%}
+.pul .pul-ad{font-weight:900;font-size:.95rem;text-align:center}
+.pul.bos{filter:grayscale(1);opacity:.4}
+.pul.bos .pul-ad::after{content:" ?"}
+.album-sayac{font-weight:900;color:var(--soluk);font-size:1.1rem}
+
+/* Sokak bitince: pul ödülü */
+.odul{display:flex;align-items:center;gap:1rem;text-align:left}
+.odul .pul{width:5.5rem;flex:0 0 auto;padding:.35rem;animation:pulGel .7s cubic-bezier(.3,1.6,.5,1) both}
+.odul .pul .pul-ad{font-size:.75rem}
+.odul-yazi{display:flex;flex-direction:column;gap:.25rem;font-weight:800;color:var(--yazi)}
+.odul-yazi .buyuk{font-size:1.3rem;font-weight:900}
+.odul-yazi .acildi{color:var(--yesil)}
+@keyframes pulGel{0%{transform:scale(0) rotate(-30deg)}100%{transform:none}}
+
+/* =========================================================
+   10) EKRAN 6 — AYARLAR + ONAY PENCERESİ
+   ========================================================= */
+.ayar-liste{max-width:34rem;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:.9rem;flex:1;justify-content:center}
+.ayar{
+  display:flex;align-items:center;gap:1rem;background:var(--kart);border:3px solid var(--cizgi);
+  border-radius:18px;padding:.85rem 1.1rem;font-weight:800;font-size:1.15rem;
+}
+.ayar span{flex:1}
+.anahtar{
+  width:4.2rem;height:2.3rem;border-radius:999px;background:#DDD6CC;position:relative;
+  transition:background .2s;flex:0 0 auto;
+}
+.anahtar::after{
+  content:"";position:absolute;top:.25rem;left:.25rem;width:1.8rem;height:1.8rem;border-radius:50%;
+  background:#fff;box-shadow:0 2px 3px rgba(0,0,0,.2);transition:transform .2s;
+}
+.anahtar[aria-checked="true"]{background:var(--yesil)}
+.anahtar[aria-checked="true"]::after{transform:translateX(1.9rem)}
+
+#onay-arka{
+  position:fixed;inset:0;background:rgba(43,45,66,.45);display:none;
+  align-items:center;justify-content:center;z-index:50;padding:1rem;
+}
+#onay-arka.acik{display:flex}
+.onay-kutu{
+  background:var(--kart);border-radius:var(--radius);padding:1.5rem;max-width:26rem;
+  text-align:center;display:flex;flex-direction:column;gap:1rem;
+}
+.onay-kutu h3{font-size:1.4rem;font-weight:900}
+.onay-kutu p{color:var(--soluk);font-weight:700}
+.onay-kutu .alt-dugmeler{gap:.6rem}
+
+/* =========================================================
+   11) DİKEY YERLEŞİM (telefon, dikey tablet)
+   ========================================================= */
+@media (orientation:portrait){
+  .sokak-izgara{grid-template-columns:repeat(2,1fr)}
+  .album-izgara{grid-template-columns:repeat(2,1fr)}
+  .pul{width:min(10rem,36vw)}
+  .alfabe-seridi{grid-template-columns:repeat(15,1fr)}
+  .harf{font-size:clamp(.8rem, 4vw, 1.4rem)}
+  .sokak{flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:0 0 0 2.8rem}
+  .sokak::after{ /* yol dikeyde solda */
+    top:0;bottom:0;left:0;right:auto;width:2.2rem;height:auto;
+    background:#C9C2B8 repeating-linear-gradient(180deg,transparent 0 2rem,#fff 2rem 3.4rem) center/.3rem 100% no-repeat;
+  }
+  /* dikeyde ev yatay bir şerit olur: solda küçük ev, sağda tabela */
+  .ev{flex:none;width:min(18rem,74vw);height:min(4rem,9vh);display:flex;align-items:center;gap:.5rem}
+  .ev svg{width:auto;height:100%}
+  .ev .tabela{position:static;flex:1}
+  .ev.secili{transform:translateX(.6rem)}
+  .oyun-alt .gugu-kucuk{width:3.2rem}
+  .balon{font-size:1rem;padding:.45rem .7rem}
+  .dugme.kontrol{font-size:1.05rem;padding:.6rem 1rem}
+  /* dikeyde boşluk evlerin arasında yatay ince şerit olur */
+  .bosluk{flex:0 0 2.3rem;height:2.3rem;align-self:auto;width:min(18rem,74vw);flex-direction:row;align-items:center;justify-content:flex-start;gap:.4rem}
+  .bosluk .kutu{width:1.45rem;height:2.3rem}
+  .bosluk .gelenler{position:static;transform:none;flex-direction:row;flex-wrap:wrap}
+  .sokak.mektup-modu{gap:0}
+  .sokak.mektup-modu .ev{height:min(3.4rem,7.5vh)}
+  .mektup{width:8.5rem;height:3.6rem}
+  .mektup .mektup-yazi{font-size:1.1rem;bottom:.25rem}
+  .mektup-sayac{position:absolute;top:-.6rem;right:-.4rem;font-size:.8rem;padding:.15rem .5rem}
+  #s-baslangic h1{font-size:2.5rem}
+}
+@media (orientation:landscape) and (max-height:500px){ /* yatay telefon */
+  .sahne{padding:.5rem 1rem .25rem}
+  #s-baslangic .gugu-buyuk{width:28vmin}
+  #s-baslangic{padding-bottom:.25rem}
+  .mini-sokak{display:none}
+  #s-baslangic h1{font-size:2.2rem}
+  .ev{flex-basis:min(10.5rem, 30vh)}
+  /* mektup modunda kutular incelir, evler genişler: uzun kelimeler okunur kalsın */
+  .sokak.mektup-modu{gap:.3rem}
+  .sokak.mektup-modu .bosluk{flex-basis:2.3rem}
+  .sokak.mektup-modu .bosluk .kutu{width:1.9rem}
+  .sokak.mektup-modu .ev .tabela{left:-1rem;right:-1rem}   /* boşluğun yarısından az taşar, komşuya değmez */
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:1ms!important}
+}
+</style>
+</head>
+<body>
+<div id="uygulama">
+  <main id="sahne-alani">
+
+    <!-- ============ EKRAN 1: BAŞLANGIÇ ============ -->
+    <section class="sahne" data-sahne="baslangic" id="s-baslangic" aria-label="Başlangıç">
+      <div class="manzara" id="manzara" aria-hidden="true"></div>
+      <div class="gugu-buyuk" data-svg="gugu"></div>
+      <h1>Sözlük <span>Postası</span></h1>
+      <p>Gugu ile kelimeleri sözlük sırasına diz!</p>
+      <button class="dugme ana" data-git="harita">Oyna</button>
+      <div class="alt-dugmeler">
+        <button class="dugme" data-git="album"><span data-svg="pul-ikon"></span>Pul Albümü</button>
+        <button class="dugme" data-git="ayarlar"><span data-svg="disli"></span>Ayarlar</button>
+      </div>
+    </section>
+
+    <!-- ============ EKRAN 2: HARİTA ============ -->
+    <section class="sahne" data-sahne="harita" id="s-harita" aria-label="Harita">
+      <div class="ust-cubuk">
+        <button class="yuvarlak" data-git="baslangic" aria-label="Geri"><span data-svg="geri"></span></button>
+        <h2>Hangi sokağa gidelim?</h2>
+      </div>
+      <div class="sokak-izgara" id="sokak-izgara"></div>
+    </section>
+
+    <!-- ============ EKRAN 3: OYUN ============ -->
+    <section class="sahne" data-sahne="oyun" id="s-oyun" aria-label="Oyun">
+      <div class="ust-cubuk">
+        <button class="yuvarlak" data-git="harita" aria-label="Haritaya dön"><span data-svg="geri"></span></button>
+        <h2 id="oyun-baslik">Sokak</h2>
+        <span class="rozet" id="oyun-tur">Tur 1/5</span>
+      </div>
+      <div class="alfabe-seridi" id="alfabe-seridi" aria-label="Alfabe"></div>
+      <div class="sokak" id="sokak"></div>
+      <div class="oyun-alt">
+        <div class="gugu-kucuk" data-svg="gugu"></div>
+        <div class="balon" id="gugu-balon" aria-live="polite">Evleri sözlük sırasına göre diz.</div>
+        <div class="canta" id="canta" hidden></div>
+        <button class="dugme ana kontrol" id="kontrol-et">Kontrol Et</button>
+      </div>
+    </section>
+
+    <!-- ============ EKRAN 4: TUR SONU ============ -->
+    <section class="sahne" data-sahne="tursonu" id="s-tursonu" aria-label="Tur sonu">
+      <div class="buyuk-yildizlar" id="tursonu-yildiz"></div>
+      <h2 id="tursonu-baslik">Harika!</h2>
+      <div class="ozet-kutu" id="tursonu-ozet">Tur özeti burada görünecek.</div>
+      <div class="alt-dugmeler">
+        <button class="dugme" data-git="harita">Haritaya Dön</button>
+        <button class="dugme ana" id="sonraki-tur">Sonraki Tur</button>
+      </div>
+    </section>
+
+    <!-- ============ EKRAN 5: PUL ALBÜMÜ ============ -->
+    <section class="sahne" data-sahne="album" id="s-album" aria-label="Pul albümü">
+      <div class="ust-cubuk">
+        <button class="yuvarlak" data-git="baslangic" aria-label="Geri"><span data-svg="geri"></span></button>
+        <h2>Pul Albümüm</h2>
+        <span class="album-sayac" id="album-sayac"></span>
+      </div>
+      <div class="album-izgara" id="album-izgara"></div>
+    </section>
+
+    <!-- ============ EKRAN 6: AYARLAR ============ -->
+    <section class="sahne" data-sahne="ayarlar" id="s-ayarlar" aria-label="Ayarlar">
+      <div class="ust-cubuk">
+        <button class="yuvarlak" data-git="baslangic" aria-label="Geri"><span data-svg="geri"></span></button>
+        <h2>Ayarlar</h2>
+      </div>
+      <div class="ayar-liste">
+        <div class="ayar"><span>Sesler</span>
+          <button class="anahtar" role="switch" data-ayar="ses" aria-label="Sesler"></button></div>
+        <div class="ayar"><span>Alfabe şeridi</span>
+          <button class="anahtar" role="switch" data-ayar="serit" aria-label="Alfabe şeridi"></button></div>
+        <div class="ayar" id="okuma-satir"><span>Kelimeleri sesli oku <small id="okuma-not" style="color:var(--soluk)"></small></span>
+          <button class="anahtar" role="switch" data-ayar="okuma" aria-label="Kelimeleri sesli oku"></button></div>
+        <div class="ayar" id="ogretmen-satir" hidden><span>Öğretmen modu (tüm sokaklar açık)</span>
+          <button class="anahtar" role="switch" data-ayar="ogretmen" aria-label="Öğretmen modu"></button></div>
+        <div class="ayar"><span>İlerlemeyi sıfırla</span>
+          <button class="dugme kirmizi" id="sifirla-ac">Sıfırla</button></div>
+      </div>
+    </section>
+
+  </main>
+  <footer id="altbilgi">Sinan İnce 2026</footer>
+</div>
+
+<!-- Onay penceresi (sıfırlama, öğretmen modu) -->
+<div id="onay-arka" role="dialog" aria-modal="true" aria-labelledby="onay-baslik">
+  <div class="onay-kutu">
+    <h3 id="onay-baslik"></h3>
+    <p id="onay-metin"></p>
+    <div class="alt-dugmeler">
+      <button class="dugme" id="onay-hayir">Vazgeç</button>
+      <button class="dugme kirmizi" id="onay-evet">Evet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   A) SABİTLER — Türk alfabesi, sokaklar
+   ========================================================= */
+const ALFABE = 'abcçdefgğhıijklmnoöprsştuüvyz'.split('');   // 29 harf
+const OZEL_HARFLER = new Set(['ç','ğ','ı','ö','ş','ü']);
+const TUR_SAYISI = 5;                                       // her sokakta 5 tur
+
+const SOKAKLAR = [
+  { ad:'Lale Sokağı',    renk:'#FF4D8D', ev:3, ipucu:'İlk harfe bak' },
+  { ad:'Papatya Sokağı', renk:'#FFD600', ev:4, ipucu:'ç, ı, ö, ş, ü harflerine dikkat' },
+  { ad:'Gül Sokağı',     renk:'#FF6B35', ev:4, ipucu:'İlk harf aynıysa ikinci harfe bak' },
+  { ad:'Menekşe Sokağı', renk:'#A855F7', ev:5, ipucu:'Hepsi bir arada' },
+];
+
+/* =========================================================
+   A2) SÖZLÜK SIRALAMA MOTORU
+   Tarayıcının localeCompare'ine güvenilmez; sıra yalnızca
+   yukarıdaki 29 harflik ALFABE dizisinden gelir.
+   ========================================================= */
+const Sozluk = (() => {
+  const SIRA = new Map(ALFABE.map((h, i) => [h, i]));
+  const SAPKALI = { 'â':'a', 'î':'i', 'û':'u' };   // şapkalı harfler düz harf sayılır
+
+  // Türkçe küçük harfe çevir (I → ı, İ → i)
+  function kucult(kelime){
+    return String(kelime).trim()
+      .replace(/I/g, 'ı').replace(/İ/g, 'i')
+      .toLocaleLowerCase('tr')
+      .replace(/[âîû]/g, h => SAPKALI[h]);
+  }
+  function harfSirasi(h){
+    return SIRA.has(h) ? SIRA.get(h) : 100 + h.charCodeAt(0);   // bilinmeyen harf en sona
+  }
+
+  // İki kelimeyi karşılaştırır.
+  // sonuc: -1 (a önce), 0 (aynı), 1 (b önce)
+  // konum: ilk farklı harfin sırası (0 = ilk harf)
+  // harfA / harfB: o konumdaki harfler (kelime bittiyse null)
+  function fark(a, b){
+    const x = [...kucult(a)], y = [...kucult(b)];
+    const n = Math.min(x.length, y.length);
+    for (let i = 0; i < n; i++){
+      if (x[i] !== y[i]){
+        return { sonuc: harfSirasi(x[i]) < harfSirasi(y[i]) ? -1 : 1,
+                 konum: i, harfA: x[i], harfB: y[i] };
+      }
+    }
+    if (x.length === y.length) return { sonuc: 0, konum: -1, harfA: null, harfB: null };
+    // Biri ötekinin başı ise kısa olan önce gelir (ay < ayı)
+    return { sonuc: x.length < y.length ? -1 : 1, konum: n,
+             harfA: x[n] ?? null, harfB: y[n] ?? null };
+  }
+  const karsilastir = (a, b) => fark(a, b).sonuc;
+
+  // Listeyi sözlük sırasına dizer (yeni dizi döner)
+  const sirala = liste => [...liste].sort(karsilastir);
+
+  // Liste sıralı mı? Değilse ilk hatalı komşu çiftini verir.
+  function siraliMi(liste){
+    for (let i = 0; i < liste.length - 1; i++){
+      const f = fark(liste[i], liste[i + 1]);
+      if (f.sonuc > 0) return { dogru: false, hataIndex: i, once: liste[i + 1], sonra: liste[i], fark: f };
+    }
+    return { dogru: true, hataIndex: -1 };
+  }
+
+  // Sıralı listede yeni kelimenin gireceği boşluk (0 = en başa, n = en sona)
+  function dogruKonum(siraliListe, kelime){
+    let i = 0;
+    while (i < siraliListe.length && karsilastir(siraliListe[i], kelime) < 0) i++;
+    return i;
+  }
+
+  return { kucult, fark, karsilastir, sirala, siraliMi, dogruKonum };
+})();
+
+/* =========================================================
+   B) DURUM + KAYIT (localStorage)
+   Anahtar: sozluk_postasi_v1
+   Saklananlar: açık sokaklar, sokak başına en iyi yıldız, pullar,
+   yarım kalan sokak (hangi turda, o ana kadarki yıldızlar), ayarlar.
+   ========================================================= */
+const KAYIT_ANAHTARI = 'sozluk_postasi_v1';
+const varsayilanDurum = () => ({
+  acik:   [true, false, false, false],   // kazanılarak açılan sokaklar
+  yildiz: [0, 0, 0, 0],                  // sokak başına en iyi yıldız (5 turun ortalaması)
+  pullar: [false, false, false, false],  // kazanılan pullar
+  devam:  [null, null, null, null],      // yarım kalan sokak: { tur, yildizlar: [...] }
+  ses: true,
+  serit: true,
+  ogretmen: false,                       // gizli öğretmen modu: tüm sokaklar açık
+  okuma: true,                           // kelimeleri sesli oku (cihazda Türkçe ses varsa)
+});
+
+// Kayıtlı veriyi oku; bozuk ya da eksik alanlar varsayılana döner
+function durumYukle(){
+  const d = varsayilanDurum();
+  try {
+    const k = JSON.parse(localStorage.getItem(KAYIT_ANAHTARI) || 'null');
+    if (!k || typeof k !== 'object') return d;
+    const dizi4 = (v, gecerli) => Array.isArray(v) && v.length === 4 && v.every(gecerli);
+    if (dizi4(k.acik,   x => typeof x === 'boolean')) d.acik = k.acik;
+    if (dizi4(k.pullar, x => typeof x === 'boolean')) d.pullar = k.pullar;
+    if (dizi4(k.yildiz, x => Number.isInteger(x) && x >= 0 && x <= 3)) d.yildiz = k.yildiz;
+    if (dizi4(k.devam,  x => x === null || (Number.isInteger(x.tur) && x.tur >= 1 && x.tur <= TUR_SAYISI &&
+                                             Array.isArray(x.yildizlar)))) d.devam = k.devam;
+    ['ses', 'serit', 'ogretmen', 'okuma'].forEach(a => { if (typeof k[a] === 'boolean') d[a] = k[a]; });
+    d.acik[0] = true;
+  } catch (e) { /* gizli pencere vb.: kayıtsız devam */ }
+  return d;
+}
+function durumKaydet(){
+  try { localStorage.setItem(KAYIT_ANAHTARI, JSON.stringify(durum)); } catch (e) { /* kayıt yapılamıyor */ }
+}
+const durum = durumYukle();
+const acikMi = i => durum.acik[i] || durum.ogretmen;
+const oturum = { sokak: 0, tur: 1, turYildizlari: [] };   // o anki oyun
+
+/* =========================================================
+   B2) SESLER — hepsi Web Audio API ile üretilir, ses dosyası yok
+   Tarayıcılar sesi ilk dokunuştan sonra açar; bağlam o anda kurulur.
+   ========================================================= */
+const Ses = (() => {
+  let ctx = null, ana = null;
+  function hazirla(){
+    if (ctx){ if (ctx.state === 'suspended') ctx.resume(); return true; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    try {
+      ctx = new AC();
+      ana = ctx.createGain();
+      ana.gain.value = 0.35;
+      ana.connect(ctx.destination);
+      return true;
+    } catch (e){ ctx = null; return false; }
+  }
+  document.addEventListener('pointerdown', hazirla, { capture: true });
+
+  // Tek nota: frekans, başlangıç (sn), süre (sn), seçenekler
+  function nota(frek, bas, sure, { tip = 'sine', guc = .5, kayma = null } = {}){
+    const t = ctx.currentTime + bas;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = tip;
+    o.frequency.setValueAtTime(frek, t);
+    if (kayma) o.frequency.exponentialRampToValueAtTime(kayma, t + sure);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(guc, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
+    o.connect(g); g.connect(ana);
+    o.start(t); o.stop(t + sure + 0.05);
+  }
+  // Kâğıt hışırtısı: süzülmüş beyaz gürültü
+  function hisirti(bas, sure, guc = .3){
+    const t = ctx.currentTime + bas;
+    const n = Math.floor(ctx.sampleRate * sure);
+    const tampon = ctx.createBuffer(1, n, ctx.sampleRate);
+    const veri = tampon.getChannelData(0);
+    for (let i = 0; i < n; i++) veri[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const kaynak = ctx.createBufferSource(), filtre = ctx.createBiquadFilter(), g = ctx.createGain();
+    kaynak.buffer = tampon;
+    filtre.type = 'bandpass'; filtre.frequency.value = 2600; filtre.Q.value = .8;
+    g.gain.value = guc;
+    kaynak.connect(filtre); filtre.connect(g); g.connect(ana);
+    kaynak.start(t);
+  }
+  const SESLER = {
+    tik:     () => nota(700, 0, .06, { tip: 'triangle', guc: .22 }),
+    al:      () => nota(500, 0, .09, { tip: 'triangle', guc: .3, kayma: 760 }),
+    birak:   () => nota(760, 0, .09, { tip: 'triangle', guc: .3, kayma: 480 }),
+    yanlis:  () => nota(230, 0, .28, { tip: 'triangle', guc: .5, kayma: 140 }),
+    kilit:   () => nota(170, 0, .2,  { tip: 'square', guc: .12, kayma: 110 }),
+    dizildi: () => [523, 659, 784, 1047].forEach((f, i) => nota(f, i * .09, .32, { tip: 'triangle', guc: .35 })),
+    mektup:  () => { hisirti(0, .18, .35); nota(1568, .14, .45, { guc: .3 }); nota(3136, .14, .25, { guc: .08 }); },
+    tur:     () => [784, 988, 1175, 1568].forEach((f, i) => nota(f, i * .11, .4, { guc: .32 })),
+    pul:     () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) =>
+               nota(f, [0, .12, .24, .36, .6, .72][i], i === 5 ? .7 : .2, { tip: 'triangle', guc: .4 })),
+  };
+  function cal(ad){
+    if (!durum.ses || !SESLER[ad] || !hazirla()) return;
+    try { SESLER[ad](); } catch (e) { /* ses çalınamadı: oyun devam eder */ }
+  }
+  return { cal };
+})();
+
+/* =========================================================
+   B3) SESLİ OKUMA — tarayıcının Türkçe sesi varsa kelimeyi okur,
+   yoksa sessiz kalır (yanlış dilde okumaz).
+   ========================================================= */
+const Okuyucu = (() => {
+  const ss = window.speechSynthesis;
+  let ses = null;
+  function sesBul(){
+    if (!ss) return null;
+    try { ses = ss.getVoices().find(v => /^tr([-_]|$)/i.test(v.lang)) || null; } catch (e) { ses = null; }
+    return ses;
+  }
+  if (ss){
+    sesBul();
+    if (ss.addEventListener) ss.addEventListener('voiceschanged', sesBul);
+    else ss.onvoiceschanged = sesBul;
+  }
+  const varMi = () => !!(ss && (ses || sesBul()));
+  function oku(metin){
+    if (!durum.okuma || !varMi()) return;
+    try {
+      ss.cancel();
+      const u = new SpeechSynthesisUtterance(metin);
+      u.voice = ses; u.lang = ses.lang; u.rate = .85;
+      ss.speak(u);
+    } catch (e) { /* okuma yapılamadı */ }
+  }
+  return { oku, varMi };
+})();
+
+/* =========================================================
+   C) SVG ÇİZİMLERİ
+   ========================================================= */
+const SVG = {
+  gugu: `
+<svg viewBox="0 0 200 200" role="img" aria-label="Postacı güvercin Gugu">
+  <ellipse cx="100" cy="186" rx="52" ry="8" fill="rgba(43,45,66,.12)"/>
+  <path d="M52 128 L18 150 L30 120 L14 112 L54 108 Z" fill="#7F8DB0"/>
+  <ellipse cx="100" cy="128" rx="56" ry="48" fill="#9AA8C7"/>
+  <ellipse cx="114" cy="140" rx="32" ry="30" fill="#DCE2F1"/>
+  <path d="M60 112 Q92 98 118 122 Q96 150 62 140 Z" fill="#8392B6"/>
+  <ellipse cx="118" cy="98" rx="28" ry="18" fill="#6FC7B8" opacity=".85"/>
+  <circle cx="122" cy="74" r="29" fill="#9AA8C7"/>
+  <circle cx="134" cy="84" r="6" fill="#FF9FBF" opacity=".7"/>
+  <circle cx="131" cy="68" r="8" fill="#fff"/>
+  <circle cx="133" cy="68" r="4.5" fill="#2B2D42"/>
+  <circle cx="134.5" cy="66.3" r="1.6" fill="#fff"/>
+  <path d="M148 72 L166 78 L148 84 Z" fill="#FF6B35"/>
+  <path d="M94 62 Q120 28 150 56 L150 60 Q120 50 94 64 Z" fill="#4D9FFF"/>
+  <path d="M146 56 Q162 58 166 64 Q156 64 146 61 Z" fill="#2F7FE0"/>
+  <circle cx="122" cy="48" r="5" fill="#FFD600"/>
+  <path d="M86 92 L58 150" stroke="#B5461E" stroke-width="6" stroke-linecap="round"/>
+  <rect x="34" y="138" width="46" height="36" rx="8" fill="#FF6B35"/>
+  <rect x="42" y="128" width="30" height="20" rx="2" fill="#fff"/>
+  <path d="M42 128 L57 140 L72 128" stroke="#C9C2B8" stroke-width="2.5" fill="none"/>
+  <path d="M34 146 Q57 158 80 146 L80 140 Q57 152 34 140 Z" fill="#E2551F"/>
+  <path d="M92 172 L88 182 M100 172 L100 182 M108 172 L112 182" stroke="#FF6B35" stroke-width="4" stroke-linecap="round"/>
+</svg>`,
+  geri: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" stroke="#2B2D42" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  disli: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#8D93A8" d="M13.7 2l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 3-2 1.7c.1.6.1 1.3 0 1.9l2 1.7-1.7 3-2.5-.9c-.5.4-1.1.7-1.7.9L13.7 22h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-3 2-1.7a6 6 0 010-1.9l-2-1.7 1.7-3 2.5.9c.5-.4 1.1-.7 1.7-.9L10.3 2h3.4zM12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"/></svg>`,
+  'pul-ikon': `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5" fill="#FF4D8D"/><rect x="7" y="6" width="10" height="9" rx="1" fill="#fff"/><circle cx="12" cy="10.5" r="2.5" fill="#FFD600"/><rect x="7" y="17" width="10" height="1.6" rx=".8" fill="#fff"/></svg>`,
+  kilit: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3" fill="#2B2D42"/><path d="M8 10V7a4 4 0 018 0v3" stroke="#2B2D42" stroke-width="2.6" fill="none"/></svg>`,
+};
+// Sokak çiçeği: renk parametreli
+function cicekSVG(renk){
+  let yapraklar = '';
+  for (let i = 0; i < 6; i++){
+    yapraklar += `<ellipse cx="50" cy="26" rx="13" ry="20" fill="${renk}" transform="rotate(${i*60} 50 50)"/>`;
+  }
+  return `<svg class="cicek" viewBox="0 0 100 100" aria-hidden="true">${yapraklar}
+    <circle cx="50" cy="50" r="13" fill="#FFF8F0" stroke="${renk}" stroke-width="4"/></svg>`;
+}
+function yildizSVG(dolu){
+  return `<svg class="yildiz${dolu ? ' dolu' : ''}" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`;
+}
+// data-svg="ad" olan her öğeye çizimi yerleştir
+function svgleriYerlestir(kok = document){
+  kok.querySelectorAll('[data-svg]').forEach(el => { el.innerHTML = SVG[el.dataset.svg] || ''; });
+}
+
+/* =========================================================
+   D) SAHNE YÖNETİCİSİ
+   ========================================================= */
+const Sahne = (() => {
+  const sahneler = {};
+  document.querySelectorAll('.sahne').forEach(el => {
+    sahneler[el.dataset.sahne] = { el, giris: null };
+    el.inert = true;
+  });
+  let aktif = null;
+  let gecisVar = false;
+  const GECIS_MS = 280;
+
+  function kaydet(id, giris){ sahneler[id].giris = giris; }
+
+  function git(id, param = {}){
+    const hedef = sahneler[id];
+    if (!hedef || gecisVar) return;
+    if (hedef.giris) hedef.giris(param);   // ekranı hazırla
+    if (aktif === id) return;              // aynı ekran: sadece yenile
+    gecisVar = true;
+    const eski = aktif ? sahneler[aktif].el : null;
+    if (eski){ eski.classList.remove('aktif'); eski.classList.add('cikis'); eski.inert = true; }
+    hedef.el.classList.add('aktif');
+    hedef.el.inert = false;
+    aktif = id;
+    setTimeout(() => {
+      if (eski) eski.classList.remove('cikis');
+      gecisVar = false;
+    }, GECIS_MS);
+  }
+  return { kaydet, git, get aktif(){ return aktif; } };
+})();
+
+// data-git="ekran" olan her düğme o ekrana gider
+// Genel düğmeler kısa bir tık sesi çıkarır (oyun düğmelerinin kendi sesleri var)
+document.addEventListener('click', e => {
+  if (e.target.closest('.dugme:not(.kontrol), .yuvarlak, .anahtar')) Ses.cal('tik');
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-git]');
+  if (b) Sahne.git(b.dataset.git);
+});
+
+/* =========================================================
+   E) EKRAN 2 — HARİTA
+   ========================================================= */
+function haritaCiz(){
+  const izgara = document.getElementById('sokak-izgara');
+  izgara.innerHTML = SOKAKLAR.map((s, i) => {
+    const devam = durum.devam[i];
+    return `
+    <button class="sokak-karti${acikMi(i) ? '' : ' kilitli'}${durum.pullar[i] ? ' pullu' : ''}" data-sokak="${i}"
+      aria-label="${s.ad}${acikMi(i) ? '' : ' (kilitli)'}">
+      <span class="kilit">${SVG.kilit}</span>
+      <span class="kart-pul">${SVG['pul-ikon']}</span>
+      ${cicekSVG(s.renk)}
+      <h3>${s.ad}</h3>
+      <span class="yildizlar">${[1,2,3].map(n => yildizSVG(n <= durum.yildiz[i])).join('')}</span>
+      ${devam && acikMi(i) ? `<span class="devam">Tur ${devam.tur}/${TUR_SAYISI}</span>` : ''}
+      <span class="ipucu">${s.ipucu}</span>
+    </button>`;
+  }).join('');
+}
+Sahne.kaydet('harita', haritaCiz);
+
+document.getElementById('sokak-izgara').addEventListener('click', e => {
+  const kart = e.target.closest('.sokak-karti');
+  if (!kart) return;
+  const i = Number(kart.dataset.sokak);
+  if (!acikMi(i)){
+    kart.classList.remove('salla'); void kart.offsetWidth; kart.classList.add('salla');
+    Ses.cal('kilit');
+    return;
+  }
+  // Yarım kalan sokak kaldığı turdan devam eder
+  const devam = durum.devam[i];
+  oturum.turYildizlari = devam ? [...devam.yildizlar] : [];
+  Sahne.git('oyun', { sokak: i, tur: devam ? devam.tur : 1 });
+});
+
+/* =========================================================
+   F) EKRAN 3 — OYUN
+   ========================================================= */
+/* ---------- F0) KELİME HAVUZU (TASLAK — Sinan'ın onayını bekliyor) ----------
+   2. sınıf düzeyinde, somut, küçük harfli kelimeler. Ğ ile başlayan kelime yoktur.
+   Tüm sokaklar bu tek havuzdan beslenir; hangi kelimenin hangi sokağa
+   uygun olduğuna aşağıdaki tur üretici karar verir.
+   Kelime eklemek/çıkarmak için ilgili satırı düzenlemen yeterli.
+   -------------------------------------------------------------------- */
+const KELIME_HAVUZU = `
+  arı ayı at ağaç anne araba ateş ayna armut aslan abla ahtapot anahtar ayva ayak ada aile
+  balık bulut baba bebek bardak boya biber buz böcek balon bahçe bal bayrak bilet boncuk burun börek bisküvi bina baca bere
+  cam ceviz cep ceket civciv cüzdan cetvel ceylan cips cadde cımbız
+  çay çiçek çanta çatı çorap çorba çilek çocuk çekiç çadır çatal çekirdek çizme çoban çuval çamur çakıl çember
+  dede deniz dere defter domates dut davul dağ dalga damla dondurma duvar düdük dünya dolap diş
+  elma ev ekmek erik eşek etek eldiven elbise ekran emzik el
+  fil fare fener fındık fırın fincan fasulye fırça fidan fiyonk fok
+  gemi göz gül güneş gece gömlek gitar gazete gözlük göl güvercin gazoz gergedan giysi
+  horoz havuç halı hamak hediye hırka havuz harita hindi hayvan hamsi halat hece
+  ıhlamur ırmak ıspanak ızgara ışık ıslık
+  inek iğne ip ipek incir ilaç iskele iplik inci işçi
+  jeton jöle jelibon judo
+  kedi kuş kale kitap kalem kapı kiraz kum koyun köpek kaplan kurbağa kek karınca kaşık kova kutu kulak kaz keçi kelebek kestane kurabiye kamyon kazak kirpi
+  limon lale lamba leylek lokum leğen lastik liman lahana
+  masa muz mum mısır maymun mantar mektup makas meyve marul mendil merdiven mutfak minder martı maske
+  nar nane nehir nohut nergis nine nota
+  okul oyun oda ocak orman oyuncak otobüs ok oklava otel
+  ördek öykü ödev örtü örgü ölçü öğretmen önlük örümcek
+  pasta peynir palto pamuk papatya pencere pil pul patates pijama pilav penguen parmak portakal papağan pide
+  radyo resim roket reçel renk robot raf rende ressam rüya
+  su sabun saat sepet simit sinek soba salata sandal saksı sandalye sincap süt sakız sözlük salıncak sürahi
+  şeker şapka şişe şemsiye şelale şeftali şimşek şarkı şato şerit şiir şal
+  top tavuk tavşan tencere tren tuz tarak tepe tilki tabak tahta takvim tarla tepsi terlik tırtıl tüy
+  uçak uçurtma un uyku uzay uydu ufuk uskumru
+  üzüm ütü ülke üçgen üniforma
+  vazo vapur valiz vişne vagon vida voleybol
+  yol yaprak yıldız yumurta yastık yatak yağmur yelek yay yelken yengeç yorgan yoğurt yüzük
+  zil zürafa zeytin zebra zar zambak zincir zarf zımba
+`.trim().split(/\s+/);
+
+/* ---------- F0b) TUR ÜRETİCİ + TEKRAR ÖNLEME ----------
+   Her tur için evleri ve mektupları sokağın kurallarına göre seçer.
+   Ortak kurallar (her sokak):
+   - Bir turdaki ev–ev ve ev–mektup karşılaştırmaları en geç 2. harfte biter
+     (ilk iki harfi aynı kelimeler aynı tura girmez).
+   - Biri ötekinin başı olan kelimeler (ip / ipek) aynı tura girmez.
+   - Her mektup ayrı bir posta kutusuna gider (bir kutuya en fazla 1 mektup).
+   - Oturumda aynı kelime tekrar gelmez; havuz biterse son 10 kelime dışında yeniden başlar.
+   ------------------------------------------------------------------- */
+const Kelimeler = (() => {
+  const OZEL_CIFTLER = [['c','ç'], ['ı','i'], ['o','ö'], ['s','ş'], ['u','ü']];
+  const CIFT_HARFLER = new Set(OZEL_CIFTLER.flat());
+  const ilk = k => k[0];
+  const sira = h => ALFABE.indexOf(h);
+  const rastgele = d => d[Math.floor(Math.random() * d.length)];
+
+  const kullanilan = new Set();   // bu oturumda gelen kelimeler
+  let sonOn = [];                  // en son gelen 10 kelime
+
+  // İki kelime aynı turda olabilir mi? (fark 1. ya da 2. harfte)
+  function uyumlu(a, b){
+    const f = Sozluk.fark(a, b);
+    return f.sonuc !== 0 && f.harfA !== null && f.harfB !== null && f.konum <= 1;
+  }
+  const hepsiUyumlu = (k, liste) => liste.every(x => uyumlu(k, x));
+
+  // Her mektup ayrı kutuya gitsin: bir kutuya en fazla 1 mektup
+  function kutularCesitli(evler, mektuplar){
+    const sirali = Sozluk.sirala(evler);
+    return new Set(mektuplar.map(m => Sozluk.dogruKonum(sirali, m))).size === mektuplar.length;
+  }
+
+  // Havuzdan, verilen koşula uyan rastgele bir kelime
+  function sec(aday, kosul){
+    const uyan = aday.filter(kosul);
+    return uyan.length ? rastgele(uyan) : null;
+  }
+
+  /* Sokak kuralları — her biri tek bir deneme yapar, olmazsa null döner */
+  const KURALLAR = [
+    // 1) Lale: 3 ev, ilk harfler farklı ve alfabede birbirinden uzak (en az 3 harf), özel harf yok
+    aday => {
+      const duz = aday.filter(k => !OZEL_HARFLER.has(ilk(k)) && !CIFT_HARFLER.has(ilk(k)));
+      const evler = [];
+      for (let n = 0; n < 3; n++){
+        const k = sec(duz, k => !evler.includes(k) &&
+          evler.every(e => Math.abs(sira(ilk(e)) - sira(ilk(k))) >= 3));
+        if (!k) return null;
+        evler.push(k);
+      }
+      const mektuplar = [];
+      for (let n = 0; n < MEKTUP_SAYISI; n++){
+        const k = sec(duz, k => ![...evler, ...mektuplar].some(x => ilk(x) === ilk(k)));
+        if (!k) return null;
+        mektuplar.push(k);
+      }
+      return { evler, mektuplar };
+    },
+    // 2) Papatya: 4 ev, ilk harfler farklı, en az bir özel çift (c-ç, ı-i, o-ö, s-ş, u-ü) birlikte
+    aday => {
+      const [a, b] = rastgele(OZEL_CIFTLER);
+      const evler = [sec(aday, k => ilk(k) === a), sec(aday, k => ilk(k) === b)];
+      if (evler.includes(null)) return null;
+      for (let n = 0; n < 2; n++){
+        const k = sec(aday, k => !evler.some(e => ilk(e) === ilk(k)));
+        if (!k) return null;
+        evler.push(k);
+      }
+      const mektuplar = [];
+      for (let n = 0; n < MEKTUP_SAYISI; n++){
+        // ilk mektup mutlaka özel çift harflerinden biriyle başlar
+        const k = sec(aday, k => ![...evler, ...mektuplar].some(x => ilk(x) === ilk(k)) &&
+          (n > 0 || CIFT_HARFLER.has(ilk(k))));
+        if (!k) return null;
+        mektuplar.push(k);
+      }
+      return { evler, mektuplar };
+    },
+    // 3) Gül: 4 ev, ikisinin ilk harfi aynı (2. harfe bakılır), mektupların en az 2'si de bir evle aynı harfle başlar
+    aday => {
+      const e1 = rastgele(aday);
+      const e2 = sec(aday, k => k !== e1 && ilk(k) === ilk(e1) && uyumlu(k, e1));
+      if (!e2) return null;
+      const evler = [e1, e2];
+      for (let n = 0; n < 2; n++){
+        const k = sec(aday, k => !evler.some(e => ilk(e) === ilk(k)));
+        if (!k) return null;
+        evler.push(k);
+      }
+      const mektuplar = [];
+      for (let n = 0; n < MEKTUP_SAYISI; n++){
+        const k = sec(aday, k => !evler.includes(k) && !mektuplar.includes(k) && hepsiUyumlu(k, evler) &&
+          (n === 2 || evler.some(e => ilk(e) === ilk(k))));
+        if (!k) return null;
+        mektuplar.push(k);
+      }
+      return { evler, mektuplar };
+    },
+    // 4) Menekşe: 5 ev — bir aynı-harf ikilisi + bir özel çift + bir ev; mektuplar karışık
+    aday => {
+      const e1 = rastgele(aday);
+      const e2 = sec(aday, k => k !== e1 && ilk(k) === ilk(e1) && uyumlu(k, e1));
+      if (!e2) return null;
+      const ciftler = OZEL_CIFTLER.filter(c => !c.includes(ilk(e1)));
+      const [a, b] = rastgele(ciftler);
+      const evler = [e1, e2, sec(aday, k => ilk(k) === a), sec(aday, k => ilk(k) === b)];
+      if (evler.includes(null)) return null;
+      const k5 = sec(aday, k => !evler.some(e => ilk(e) === ilk(k)));
+      if (!k5) return null;
+      evler.push(k5);
+      const mektuplar = [];
+      for (let n = 0; n < MEKTUP_SAYISI; n++){
+        const k = sec(aday, k => !evler.includes(k) && !mektuplar.includes(k) && hepsiUyumlu(k, evler) &&
+          (n !== 0 || evler.some(e => ilk(e) === ilk(k))) &&      // 1. mektup: bir evle aynı harf
+          (n !== 1 || CIFT_HARFLER.has(ilk(k))));                   // 2. mektup: özel çift harfi
+        if (!k) return null;
+        mektuplar.push(k);
+      }
+      return { evler, mektuplar };
+    },
+  ];
+
+  function gecerli(t){
+    if (!t) return false;
+    const { evler, mektuplar } = t;
+    for (let i = 0; i < evler.length; i++)
+      for (let j = i + 1; j < evler.length; j++) if (!uyumlu(evler[i], evler[j])) return false;
+    if (!mektuplar.every(m => hepsiUyumlu(m, evler))) return false;
+    if (new Set([...evler, ...mektuplar]).size !== evler.length + mektuplar.length) return false;
+    return kutularCesitli(evler, mektuplar);
+  }
+
+  function dene(sokak, haric, deneme = 400){
+    const aday = KELIME_HAVUZU.filter(k => !haric.has(k));
+    for (let i = 0; i < deneme; i++){
+      const t = KURALLAR[sokak](aday);
+      if (gecerli(t)) return t;
+    }
+    return null;
+  }
+
+  // Yeni tur: önce hiç gelmemiş kelimelerle dener, olmazsa sadece son 10'u dışarıda bırakır
+  function turUret(sokak){
+    let t = dene(sokak, kullanilan) || dene(sokak, new Set(sonOn)) || dene(sokak, new Set(), 2000);
+    if (!t) throw new Error('Tur üretilemedi: sokak ' + sokak);
+    const yeni = [...t.evler, ...t.mektuplar];
+    if (yeni.some(k => kullanilan.has(k))) kullanilan.clear();   // havuz döndü
+    yeni.forEach(k => kullanilan.add(k));
+    sonOn = [...sonOn, ...yeni].slice(-10);
+    return t;
+  }
+
+  return { turUret, uyumlu, kuralSayisi: KURALLAR.length, _sifirla(){ kullanilan.clear(); sonOn = []; } };
+})();
+const EV_RENKLERI = ['#FF4D8D', '#4D9FFF', '#00C9A7', '#A855F7', '#FF6B35'];
+
+const sokakEl   = document.getElementById('sokak');
+const balonEl   = document.getElementById('gugu-balon');
+const kontrolEl = document.getElementById('kontrol-et');
+let kilit = false;            // animasyon sırasında dokunmaları durdurur
+
+function alfabeSeridiCiz(){
+  const serit = document.getElementById('alfabe-seridi');
+  serit.innerHTML = ALFABE.map(h =>
+    `<div class="harf" data-harf="${h}">${h}</div>`).join('');
+}
+function evSVG(renk){
+  return `<svg viewBox="0 0 100 120" aria-hidden="true">
+    <rect x="68" y="12" width="11" height="24" rx="2" fill="${renk}" opacity=".7"/>
+    <path d="M50 6 L96 46 L4 46 Z" fill="${renk}" stroke="${renk}" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="10" y="42" width="80" height="74" rx="6" fill="#FFFDF8" stroke="#EADFD3" stroke-width="3"/>
+    <rect x="40" y="86" width="20" height="30" rx="4" fill="${renk}" opacity=".85"/>
+    <circle cx="55" cy="102" r="1.8" fill="#fff"/>
+  </svg>`;
+}
+function karistir(dizi){
+  const d = [...dizi];
+  for (let i = d.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+function balon(metin, tur = ''){
+  balonEl.textContent = metin;
+  balonEl.className = 'balon' + (tur ? ' ' + tur : '');
+  // Gugu sevinir ya da başını sallar
+  const g = document.querySelector('#s-oyun .gugu-kucuk');
+  const tepki = tur === 'iyi' ? 'sevin' : tur === 'uyari' ? 'uzgun' : '';
+  g.classList.remove('sevin', 'uzgun');
+  if (tepki){ void g.offsetWidth; g.classList.add(tepki); }
+}
+const evleriAl = () => [...sokakEl.querySelectorAll('.ev')];
+
+// Uzun kelimeler tabelaya sığsın diye yazıyı küçült
+function tabelalariSigdir(){
+  sokakEl.querySelectorAll('.tabela > span').forEach(span => {
+    span.style.fontSize = '';
+    const kutu = span.parentElement;
+    let boyut = parseFloat(getComputedStyle(span).fontSize);
+    while (span.scrollWidth > kutu.clientWidth - 8 && boyut > 10){
+      boyut -= 1;
+      span.style.fontSize = boyut + 'px';
+    }
+  });
+}
+window.addEventListener('resize', tabelalariSigdir);
+
+function oyunHazirla(param){
+  if (param.sokak !== undefined) oturum.sokak = param.sokak;
+  if (param.tur   !== undefined) oturum.tur   = param.tur;
+  const s = SOKAKLAR[oturum.sokak];
+  document.getElementById('oyun-baslik').textContent = s.ad;
+  document.getElementById('oyun-tur').textContent = `Tur ${oturum.tur}/${TUR_SAYISI}`;
+  document.getElementById('alfabe-seridi').classList.toggle('gizli', !durum.serit);
+
+  Surukle.iptal();
+  const tur = Kelimeler.turUret(oturum.sokak);
+  const set = tur.evler;
+  oturum.mektuplar = tur.mektuplar;
+  let dizi;
+  do { dizi = karistir(set); } while (Sozluk.siraliMi(dizi).dogru);   // hiçbir zaman hazır sıralı gelmez
+
+  Postaci.iptal();
+  oturum.hata = 0;
+  oturum.ciftler = new Set();   // turda karıştırılan harf çiftleri (Tur Sonu'nda gösterilir)
+  GeriBildirim.temizle();
+  oturum.set = set;
+  oturum.asama = 'diz';       // 'diz' → 'mektup' → 'bitti'
+  kilit = false;
+  sokakEl.classList.remove('mektup-modu');
+  kontrolEl.hidden = false;
+  document.getElementById('canta').hidden = true;
+  sokakEl.innerHTML = dizi.map((k, i) => `
+    <div class="ev" data-kelime="${k}">${evSVG(EV_RENKLERI[i % EV_RENKLERI.length])}
+      <div class="tabela"><span>${harfliYazi(k)}</span></div>
+    </div>`).join('');
+  balon('Evleri sözlük sırasına göre diz.');
+  kontrolEl.disabled = false;
+  requestAnimationFrame(tabelalariSigdir);
+}
+Sahne.kaydet('oyun', oyunHazirla);
+
+/* ---------- F1) FLIP: yer değiştiren evleri kaydırarak taşı ---------- */
+function flip(ogeler, degistir){
+  const once = new Map(ogeler.map(o => [o, o.getBoundingClientRect()]));
+  degistir();
+  ogeler.forEach(o => {
+    const a = once.get(o), b = o.getBoundingClientRect();
+    const dx = a.left - b.left, dy = a.top - b.top;
+    if (!dx && !dy) return;
+    o.style.transition = 'none';
+    o.style.transform = `translate(${dx}px, ${dy}px)`;
+    void o.offsetWidth;
+    o.style.transition = 'transform .2s ease';
+    o.style.transform = '';
+    o.addEventListener('transitionend', () => { o.style.transition = ''; }, { once: true });
+  });
+}
+const dikeyMi = () => matchMedia('(orientation: portrait)').matches;
+
+/* ---------- F2) SÜRÜKLE-BIRAK + DOKUNARAK TAKAS ----------
+   Sürükle: ev parmağı izler, diğer evler kayarak yer açar.
+   Dokun:   bir eve dokun (seçilir), sonra diğerine dokun → yer değiştirir.
+   -------------------------------------------------------- */
+const Surukle = (() => {
+  const ESIK = 8;             // bu kadar pikselden az hareket = dokunma
+  let tas = null;             // { ev, id, sx, sy, basladi, yer }
+  let secili = null;
+
+  function secimiKaldir(){
+    if (secili) secili.classList.remove('secili');
+    secili = null;
+  }
+  function takas(a, b){
+    const gecici = document.createElement('div');
+    flip(evleriAl(), () => {
+      sokakEl.replaceChild(gecici, a);
+      sokakEl.replaceChild(a, b);
+      sokakEl.replaceChild(b, gecici);
+    });
+  }
+  function dokun(ev){
+    if (!secili){
+      secili = ev; ev.classList.add('secili');
+      Ses.cal('al');
+      Okuyucu.oku(ev.dataset.kelime);
+      return;
+    }
+    if (secili === ev){ secimiKaldir(); return; }
+    const a = secili;
+    secimiKaldir();
+    takas(a, ev);
+    Ses.cal('birak');
+  }
+  function baslat(){
+    const r = tas.ev.getBoundingClientRect();
+    secimiKaldir();
+    const yer = document.createElement('div');
+    yer.className = 'ev-yer';
+    yer.style.width = r.width + 'px';
+    yer.style.height = r.height + 'px';
+    sokakEl.insertBefore(yer, tas.ev);
+    document.body.appendChild(tas.ev);
+    Object.assign(tas.ev.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    tas.ev.classList.add('tasiniyor');
+    tas.yer = yer;
+    tas.basladi = true;
+    Ses.cal('al');
+  }
+  function hedefBul(x, y){
+    const dikey = dikeyMi();
+    const evler = evleriAl();
+    let sonraki = null;
+    for (const h of evler){
+      const r = h.getBoundingClientRect();
+      const orta = dikey ? r.top + r.height / 2 : r.left + r.width / 2;
+      if ((dikey ? y : x) < orta){ sonraki = h; break; }
+    }
+    const ayni = sonraki ? tas.yer.nextElementSibling === sonraki : tas.yer === sokakEl.lastElementChild;
+    if (!ayni) flip(evler, () => sokakEl.insertBefore(tas.yer, sonraki));
+  }
+  function birak(){
+    Ses.cal('birak');
+    const t = tas;
+    tas = null;
+    kilit = true;
+    const r = t.yer.getBoundingClientRect();
+    Object.assign(t.ev.style, { transition: 'left .18s ease, top .18s ease, transform .18s ease',
+                                left: r.left + 'px', top: r.top + 'px', transform: 'none' });
+    setTimeout(() => {
+      if (t.yer.parentNode === sokakEl) sokakEl.replaceChild(t.ev, t.yer);
+      t.ev.classList.remove('tasiniyor');
+      ['left','top','width','height','transform','transition'].forEach(p => t.ev.style[p] = '');
+      kilit = false;
+    }, 190);
+  }
+
+  sokakEl.addEventListener('pointerdown', e => {
+    const ev = e.target.closest('.ev');
+    if (!ev || tas || kilit || oturum.asama !== 'diz') return;
+    e.preventDefault();
+    tas = { ev, id: e.pointerId, sx: e.clientX, sy: e.clientY, basladi: false, yer: null };
+  });
+  window.addEventListener('pointermove', e => {
+    if (!tas || e.pointerId !== tas.id) return;
+    const dx = e.clientX - tas.sx, dy = e.clientY - tas.sy;
+    if (!tas.basladi){
+      if (Math.hypot(dx, dy) < ESIK) return;
+      baslat();
+    }
+    tas.ev.style.transform = `translate(${dx}px, ${dy}px) scale(1.06) rotate(-2deg)`;
+    hedefBul(e.clientX, e.clientY);
+  });
+  const bitir = e => {
+    if (!tas || e.pointerId !== tas.id) return;
+    if (!tas.basladi){ const ev = tas.ev; tas = null; dokun(ev); return; }
+    birak();
+  };
+  window.addEventListener('pointerup', bitir);
+  window.addEventListener('pointercancel', bitir);
+
+  // Ekran değişirken yarım kalan sürüklemeyi temizle
+  function iptal(){
+    secimiKaldir();
+    document.querySelectorAll('body > .ev.tasiniyor').forEach(e => e.remove());
+    tas = null;
+  }
+  return { iptal, secimiKaldir };
+})();
+
+/* ---------- F2b) ÖĞRETİCİ GERİ BİLDİRİM ----------
+   İki kelimeden hangisinin önce geldiğini harf harf açıklar:
+   tabelada karşılaştırılan harf sarı, aynı olan harflerin altı yeşil çizilir,
+   alfabe şeridinde iki harf yanar, Gugu kısa bir cümle söyler.
+   -------------------------------------------------------- */
+// Kelimeyi harf harf <span>'lere böl (vurgu için)
+function harfliYazi(kelime){
+  return [...kelime].map(h => `<span class="h">${h}</span>`).join('');
+}
+// Harf adından sonra gelen ek: a, ı, o, u → 'dan; diğerleri (be, ce, e, i, ö, ü...) → 'den
+function harfEki(h){ return 'aıou'.includes(h) ? "'dan" : "'den"; }
+
+// once: önce gelmesi gereken kelime, sonra: sonra gelmesi gereken kelime
+function kuralMetni(once, sonra){
+  const f = Sozluk.fark(once, sonra);
+  if (f.harfA === null) return { ...f, metin: `${once} daha kısa. Kısa olan önce gelir.` };
+  const kural = `${f.harfA}, ${f.harfB}${harfEki(f.harfB)} önce gelir.`;
+  if (f.konum === 0) return { ...f, metin: `İlk harfe bak: ${kural}` };
+  if (f.konum === 1) return { ...f, metin: `İlk harf aynı! 2. harfe bak: ${kural}` };
+  return { ...f, metin: `İlk ${f.konum} harf aynı! ${f.konum + 1}. harfe bak: ${kural}` };
+}
+
+const GeriBildirim = (() => {
+  function vurgula(kap, konum){
+    if (!kap) return;
+    kap.querySelectorAll('.h').forEach((h, j) => {
+      h.classList.toggle('ayni', j < konum);
+      h.classList.toggle('vurgu', j === konum);
+    });
+  }
+  function goster(once, sonra, onceKap, sonraKap){
+    const k = kuralMetni(once, sonra);
+    if (k.harfA !== null){
+      vurgula(onceKap, k.konum);
+      vurgula(sonraKap, k.konum);
+      document.querySelectorAll(`.harf[data-harf="${k.harfA}"], .harf[data-harf="${k.harfB}"]`)
+        .forEach(el => el.classList.add('yanik'));
+      if (oturum.ciftler) oturum.ciftler.add(`${k.harfA}|${k.harfB}`);
+    }
+    return k;
+  }
+  // ipucuKalsin: mektupta parlayan kutu silinmesin
+  function temizle(ipucuKalsin = false){
+    document.querySelectorAll('.h.vurgu, .h.ayni').forEach(h => h.classList.remove('vurgu', 'ayni'));
+    document.querySelectorAll('.harf.yanik').forEach(h => h.classList.remove('yanik'));
+    if (!ipucuKalsin) document.querySelectorAll('.bosluk.ipucu').forEach(b => b.classList.remove('ipucu'));
+  }
+  return { goster, temizle };
+})();
+
+/* ---------- F3) KONTROL ET ---------- */
+function kontrolEt(){
+  if (oturum.asama !== 'diz' || kilit) return;
+  Surukle.secimiKaldir();
+  GeriBildirim.temizle();
+  const evler = evleriAl();
+  const sonuc = Sozluk.siraliMi(evler.map(e => e.dataset.kelime));
+
+  if (!sonuc.dogru){
+    oturum.hata++;
+    const sonraEv = evler[sonuc.hataIndex], onceEv = evler[sonuc.hataIndex + 1];
+    [sonraEv, onceEv].forEach(e => {
+      e.classList.remove('hatali'); void e.offsetWidth; e.classList.add('hatali');
+      setTimeout(() => e.classList.remove('hatali'), 1400);
+    });
+    // Önce gelmesi gereken kelime sağda/altta kalmış: hangi harfe bakılacağını göster
+    const f = GeriBildirim.goster(onceEv.dataset.kelime, sonraEv.dataset.kelime,
+      onceEv.querySelector('.tabela'), sonraEv.querySelector('.tabela'));
+    Ses.cal('yanlis');
+    balon(f.metin, 'uyari');
+    return;
+  }
+  // Doğru: evler sırayla zıplar, sonra mektup bölümü başlar
+  oturum.asama = 'gecis';
+  kontrolEl.disabled = true;
+  Ses.cal('dizildi');
+  balon('Harika! Sokak sözlük sırasında.', 'iyi');
+  evler.forEach((e, i) => setTimeout(() => e.classList.add('zipla'), i * 130));
+  setTimeout(() => {
+    if (Sahne.aktif !== 'oyun' || oturum.asama !== 'gecis') return;
+    evler.forEach(e => e.classList.remove('zipla'));
+    Postaci.basla();
+  }, 900 + evler.length * 130);
+}
+kontrolEl.addEventListener('click', kontrolEt);
+
+/* ---------- F4) MEKTUP DAĞITMA ----------
+   Sokak dizilince evlerin arasına (ve iki uca) posta kutuları gelir.
+   Çantadaki mektup doğru kutuya sürüklenir ya da kutuya dokunulur.
+   -------------------------------------------------------- */
+const MEKTUP_SAYISI = 3;
+
+function postaKutusuSVG(){
+  return `<svg class="kutu" viewBox="0 0 40 64" aria-hidden="true">
+    <rect x="18" y="30" width="4" height="34" rx="1.5" fill="#8D93A8"/>
+    <path d="M6 18 a14 14 0 0 1 28 0 V34 H6 Z" fill="#4D9FFF" stroke="#2F7FE0" stroke-width="2"/>
+    <rect x="11" y="20" width="18" height="3.5" rx="1.7" fill="#1E5FB8"/>
+    <rect x="32" y="8" width="3" height="16" fill="#8D93A8"/>
+    <rect class="bayrak" x="35" y="8" width="5" height="6" fill="#C9C2B8"/>
+  </svg>`;
+}
+function zarfSVG(){
+  return `<svg viewBox="0 0 176 74" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="2" y="2" width="172" height="70" rx="10" fill="#fff" stroke="#EADFD3" stroke-width="3"/>
+    <path d="M4 6 L88 40 L172 6" stroke="#EADFD3" stroke-width="3" fill="none"/>
+    <rect x="146" y="10" width="20" height="16" rx="2" fill="#FF4D8D"/>
+    <circle cx="156" cy="18" r="4" fill="#FFD600"/>
+  </svg>`;
+}
+
+const Postaci = (() => {
+  const cantaEl = document.getElementById('canta');
+  const ESIK = 8;
+  let kuyruk = [];          // dağıtılacak mektuplar
+  let suanki = null;        // { kelime, el }
+  let tas = null;           // { id, sx, sy, basladi }
+  let secili = false;
+  let hedefBosluk = null;
+
+  const bosluklar = () => [...sokakEl.querySelectorAll('.bosluk')];
+  const evKelimeleri = () => evleriAl().map(e => e.dataset.kelime);
+
+  function mektuplariSec(){
+    return karistir(oturum.mektuplar || []);
+  }
+
+  function basla(){
+    oturum.asama = 'mektup';
+    kuyruk = mektuplariSec();
+    // Boşlukları ekle: ev1 | ev2 | ev3 → [0] ev1 [1] ev2 [2] ev3 [3]
+    flip(evleriAl(), () => {
+      sokakEl.classList.add('mektup-modu');
+      const evler = evleriAl();
+      const yeni = () => {
+        const b = document.createElement('div');
+        b.className = 'bosluk';
+        b.innerHTML = `${postaKutusuSVG()}<div class="gelenler"></div>`;
+        return b;
+      };
+      evler.forEach(ev => sokakEl.insertBefore(yeni(), ev));
+      sokakEl.appendChild(yeni());
+      bosluklar().forEach((b, i) => {
+        b.dataset.index = i;
+        b.setAttribute('aria-label', `Posta kutusu ${i + 1}`);
+      });
+    });
+    kontrolEl.hidden = true;
+    cantaEl.hidden = false;
+    requestAnimationFrame(tabelalariSigdir);
+    sonrakiMektup();
+  }
+
+  function sonrakiMektup(){
+    secili = false;
+    if (!kuyruk.length){ hepsiBitti(); return; }
+    const kelime = kuyruk.shift();
+    const kalan = kuyruk.length + 1;
+    cantaEl.innerHTML = `
+      <div class="mektup" role="button" aria-label="Mektup: ${kelime}">${zarfSVG()}
+        <span class="mektup-yazi">${harfliYazi(kelime)}</span></div>
+      <span class="mektup-sayac">${MEKTUP_SAYISI - kalan + 1}/${MEKTUP_SAYISI}</span>`;
+    suanki = { kelime, el: cantaEl.querySelector('.mektup'), hata: 0 };
+    GeriBildirim.temizle();
+    balon('Bu mektup hangi iki evin arasına gider?');
+    Okuyucu.oku(kelime);
+  }
+
+  /* --- Bırakılacak kutuyu bul: sokak içindeyse en yakın boşluk --- */
+  function enYakinBosluk(x, y){
+    const r = sokakEl.getBoundingClientRect();
+    const pay = 40;
+    if (x < r.left - pay || x > r.right + pay || y < r.top - pay || y > r.bottom + pay) return null;
+    const dikey = dikeyMi();
+    let en = null, enMesafe = Infinity;
+    bosluklar().forEach(b => {
+      const br = b.getBoundingClientRect();
+      const m = dikey ? Math.abs(y - (br.top + br.height / 2)) : Math.abs(x - (br.left + br.width / 2));
+      if (m < enMesafe){ enMesafe = m; en = b; }
+    });
+    return en;
+  }
+  function hedefIsaretle(b){
+    if (hedefBosluk === b) return;
+    if (hedefBosluk) hedefBosluk.classList.remove('hedef');
+    hedefBosluk = b;
+    if (b) b.classList.add('hedef');
+  }
+
+  /* --- Teslim: doğru mu? --- */
+  function teslim(bosluk){
+    if (!suanki || kilit) return;
+    hedefIsaretle(null);
+    secimiKaldir();
+    GeriBildirim.temizle(true);   // ipucu (parlayan kutu) kalsın
+    const i = Number(bosluk.dataset.index);
+    const dogruI = Sozluk.dogruKonum(evKelimeleri(), suanki.kelime);
+    if (i === dogruI) dogruTeslim(bosluk);
+    else yanlisTeslim(bosluk, i, dogruI);
+  }
+
+  function dogruTeslim(bosluk){
+    kilit = true;
+    const m = suanki;
+    suanki = null;
+    // Mektup kutuya uçar
+    const r = m.el.getBoundingClientRect();
+    const kr = bosluk.querySelector('.kutu').getBoundingClientRect();
+    if (!m.el.classList.contains('tasiniyor')){
+      document.body.appendChild(m.el);
+      Object.assign(m.el.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    }
+    m.el.classList.remove('tasiniyor', 'secili');
+    m.el.classList.add('ucan');
+    void m.el.offsetWidth;
+    Object.assign(m.el.style, {
+      left: (kr.left + kr.width / 2 - r.width / 2) + 'px',
+      top: (kr.top + kr.height / 2 - r.height / 2) + 'px',
+      transform: 'scale(.2)', opacity: '0',
+    });
+    setTimeout(() => {
+      m.el.remove();
+      bosluk.classList.add('dogru');
+      const gelen = document.createElement('span');
+      gelen.className = 'gelen';
+      gelen.textContent = m.kelime;
+      bosluk.querySelector('.gelenler').appendChild(gelen);
+      Ses.cal('mektup');
+      balon('Doğru adres! Teşekkürler.', 'iyi');
+      kilit = false;
+      setTimeout(() => { if (oturum.asama === 'mektup') sonrakiMektup(); }, 700);
+    }, 420);
+  }
+
+  function yanlisTeslim(bosluk, i, dogruI){
+    oturum.hata++;
+    suanki.hata++;
+    bosluk.classList.remove('yanlis'); void bosluk.offsetWidth; bosluk.classList.add('yanlis');
+    setTimeout(() => bosluk.classList.remove('yanlis'), 500);
+    geriGonder();
+    Ses.cal('yanlis');
+
+    // Kuralı bozan komşu ev: kutu çok soldaysa sağındaki ev, çok sağdaysa solundaki ev
+    const evler = evleriAl();
+    const komsu = i < dogruI ? evler[i] : evler[i - 1];
+    komsu.classList.remove('hatali'); void komsu.offsetWidth; komsu.classList.add('hatali');
+    setTimeout(() => komsu.classList.remove('hatali'), 1400);
+    const mektupYazi = suanki.el.querySelector('.mektup-yazi');
+    const f = i < dogruI
+      ? GeriBildirim.goster(komsu.dataset.kelime, suanki.kelime, komsu.querySelector('.tabela'), mektupYazi)
+      : GeriBildirim.goster(suanki.kelime, komsu.dataset.kelime, mektupYazi, komsu.querySelector('.tabela'));
+
+    // Aynı mektupta ikinci hata: doğru kutu parlar
+    if (suanki.hata >= 2){
+      bosluklar()[dogruI].classList.add('ipucu');
+      balon(f.metin + ' Parlayan kutuya götür!', 'uyari');
+    } else {
+      balon(f.metin, 'uyari');
+    }
+  }
+
+  // Sürüklenen mektubu çantaya geri koy
+  function geriGonder(){
+    if (!suanki) return;
+    const el = suanki.el;
+    if (el.classList.contains('tasiniyor')){
+      el.classList.remove('tasiniyor');
+      ['left','top','width','height','transform'].forEach(p => el.style[p] = '');
+      cantaEl.prepend(el);
+    }
+    el.classList.remove('geri'); void el.offsetWidth; el.classList.add('geri');
+  }
+
+  function hepsiBitti(){
+    oturum.asama = 'bitti';
+    cantaEl.innerHTML = '';
+    balon('Bütün mektuplar teslim edildi!', 'iyi');
+    setTimeout(() => { if (Sahne.aktif === 'oyun' && oturum.asama === 'bitti') turuBitir(); }, 1100);
+  }
+
+  function secimiKaldir(){
+    secili = false;
+    if (suanki) suanki.el.classList.remove('secili');
+  }
+
+  /* --- Girdi: mektubu sürükle ya da dokun --- */
+  cantaEl.addEventListener('pointerdown', e => {
+    const el = e.target.closest('.mektup');
+    if (!el || !suanki || kilit || tas || oturum.asama !== 'mektup') return;
+    e.preventDefault();
+    tas = { id: e.pointerId, sx: e.clientX, sy: e.clientY, basladi: false };
+  });
+  window.addEventListener('pointermove', e => {
+    if (!tas || e.pointerId !== tas.id || !suanki) return;
+    const dx = e.clientX - tas.sx, dy = e.clientY - tas.sy;
+    if (!tas.basladi){
+      if (Math.hypot(dx, dy) < ESIK) return;
+      tas.basladi = true;
+      secimiKaldir();
+      Ses.cal('al');
+      const el = suanki.el, r = el.getBoundingClientRect();
+      tas.r = r;
+      document.body.appendChild(el);
+      Object.assign(el.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+      el.classList.add('tasiniyor');
+    }
+    suanki.el.style.transform = `translate(${dx}px, ${dy}px) rotate(-4deg)`;
+    hedefIsaretle(enYakinBosluk(e.clientX, e.clientY));
+  });
+  const birak = e => {
+    if (!tas || e.pointerId !== tas.id) return;
+    const t = tas;
+    tas = null;
+    if (!t.basladi){   // dokunma: mektubu seç / seçimi kaldır
+      if (!suanki) return;
+      secili = !secili;
+      suanki.el.classList.toggle('secili', secili);
+      if (secili){
+        Ses.cal('al');
+        Okuyucu.oku(suanki.kelime);
+        balon('Şimdi doğru posta kutusuna dokun.');
+      }
+      return;
+    }
+    const b = enYakinBosluk(e.clientX, e.clientY);
+    hedefIsaretle(null);
+    if (b) teslim(b);
+    else geriGonder();
+  };
+  window.addEventListener('pointerup', birak);
+  window.addEventListener('pointercancel', birak);
+
+  // Posta kutusuna dokunma: o anki mektubu oraya teslim et
+  sokakEl.addEventListener('click', e => {
+    const b = e.target.closest('.bosluk');
+    if (!b || tas || oturum.asama !== 'mektup' || !suanki) return;
+    teslim(b);
+  });
+
+  // Ekran değişirken yarım kalan işleri temizle
+  function iptal(){
+    tas = null; suanki = null; secili = false; kuyruk = [];
+    hedefBosluk = null;
+    document.querySelectorAll('body > .mektup').forEach(e => e.remove());
+    cantaEl.innerHTML = '';
+  }
+  return { basla, iptal };
+})();
+
+// Yıldız: hatasız 3, 1–2 hata 2, daha fazlası 1
+function turuBitir(){
+  const h = oturum.hata;
+  const y = h === 0 ? 3 : h <= 2 ? 2 : 1;
+  const s = oturum.sokak;
+  oturum.turYildizlari[oturum.tur - 1] = y;
+  let sokakSonu = null;
+
+  if (oturum.tur < TUR_SAYISI){
+    durum.devam[s] = { tur: oturum.tur + 1, yildizlar: [...oturum.turYildizlari] };
+  } else {
+    // Sokak bitti: puan = 5 turun yıldız ortalaması; pul + sonraki sokak
+    const liste = oturum.turYildizlari.filter(Number.isInteger);
+    const puan = Math.max(1, Math.round(liste.reduce((a, b) => a + b, 0) / liste.length));
+    const yeniPul = !durum.pullar[s];
+    const acilan = s + 1 < SOKAKLAR.length && !durum.acik[s + 1] ? s + 1 : null;
+    durum.pullar[s] = true;
+    durum.yildiz[s] = Math.max(durum.yildiz[s], puan);
+    if (acilan !== null) durum.acik[acilan] = true;
+    durum.devam[s] = null;
+    oturum.turYildizlari = [];
+    sokakSonu = { puan, yeniPul, acilan, rekor: puan === durum.yildiz[s] };
+  }
+  durumKaydet();
+  Sahne.git('tursonu', { yildiz: y, ciftler: [...(oturum.ciftler || [])], sokakSonu });
+}
+
+/* =========================================================
+   G) EKRAN 4 — TUR SONU
+   ========================================================= */
+const TUR_SONU_MESAJ = ['', 'Güzel deneme!', 'Çok iyi!', 'Harika!'];
+function turSonuHazirla(param){
+  const y = param.yildiz || 0;
+  document.getElementById('tursonu-yildiz').innerHTML = [1,2,3].map(n => yildizSVG(n <= y)).join('');
+  document.getElementById('tursonu-baslik').textContent = TUR_SONU_MESAJ[y] || 'Tur bitti';
+  const ciftler = param.ciftler || [];
+  document.getElementById('tursonu-ozet').innerHTML =
+    `<div class="ozet-ust">${SOKAKLAR[oturum.sokak].ad} · Tur ${oturum.tur}/${TUR_SAYISI}</div>` +
+    (ciftler.length
+      ? `<div>Bu harflere dikkat:</div><div class="ciftler">${ciftler.map(c => {
+          const [a, b] = c.split('|');
+          return `<span class="cift">${a} → ${b}</span>`;
+        }).join('')}</div>`
+      : `<div>Hiç hata yok. Süper postacı!</div>`);
+
+  // Sokak bitti mi? Pul ödülü + açılan sokak
+  const ss = param.sokakSonu;
+  const sonrakiEl = document.getElementById('sonraki-tur');
+  setTimeout(() => Ses.cal(ss ? 'pul' : 'tur'), 150);
+  if (ss) konfeti();
+  if (ss){
+    const s = SOKAKLAR[oturum.sokak];
+    document.getElementById('tursonu-ozet').innerHTML += `
+      <div class="odul" style="margin-top:.75rem">
+        <div class="pul" style="border-color:${s.renk}">${cicekSVG(s.renk)}<span class="pul-ad">${s.ad.replace(' Sokağı', '')}</span></div>
+        <div class="odul-yazi">
+          <span class="buyuk">${ss.yeniPul ? 'Yeni pul kazandın!' : 'Sokağı yine bitirdin!'}</span>
+          <span>Sokak puanı: <span class="yildizlar">${[1,2,3].map(n => yildizSVG(n <= ss.puan)).join('')}</span></span>
+          ${ss.acilan !== null ? `<span class="acildi">${SOKAKLAR[ss.acilan].ad} açıldı!</span>` : ''}
+        </div>
+      </div>`;
+    sonrakiEl.textContent = ss.acilan !== null ? 'Yeni Sokağa Git' : 'Albüme Bak';
+    tursonuSonraki = ss.acilan !== null
+      ? () => { oturum.turYildizlari = []; Sahne.git('oyun', { sokak: ss.acilan, tur: 1 }); }
+      : () => Sahne.git('album');
+  } else {
+    sonrakiEl.textContent = 'Sonraki Tur';
+    tursonuSonraki = () => Sahne.git('oyun', { tur: oturum.tur + 1 });
+  }
+}
+let tursonuSonraki = () => Sahne.git('harita');
+
+// Sokak bitince ekrana renkli kâğıtlar yağar
+function konfeti(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const kap = document.createElement('div');
+  kap.className = 'konfeti';
+  const renkler = ['#FF6B35', '#FFD600', '#FF4D8D', '#00C9A7', '#4D9FFF', '#A855F7'];
+  for (let i = 0; i < 60; i++){
+    const p = document.createElement('i');
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.background = renkler[i % renkler.length];
+    p.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
+    p.style.animationDelay = (Math.random() * .5) + 's';
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    kap.appendChild(p);
+  }
+  document.body.appendChild(kap);
+  setTimeout(() => kap.remove(), 3500);
+}
+Sahne.kaydet('tursonu', turSonuHazirla);
+
+document.getElementById('sonraki-tur').addEventListener('click', () => tursonuSonraki());
+
+/* =========================================================
+   H) EKRAN 5 — PUL ALBÜMÜ
+   ========================================================= */
+function albumCiz(){
+  document.getElementById('album-izgara').innerHTML = SOKAKLAR.map((s, i) => `
+    <div class="pul${durum.pullar[i] ? '' : ' bos'}" style="border-color:${s.renk}">
+      ${cicekSVG(s.renk)}
+      <span class="pul-ad">${s.ad.replace(' Sokağı', '')}</span>
+      ${durum.pullar[i] ? `<span class="yildizlar">${[1,2,3].map(n => yildizSVG(n <= durum.yildiz[i])).join('')}</span>` : ''}
+    </div>`).join('');
+  document.getElementById('album-sayac').textContent =
+    `${durum.pullar.filter(Boolean).length}/${SOKAKLAR.length}`;
+}
+Sahne.kaydet('album', albumCiz);
+
+/* =========================================================
+   I) EKRAN 6 — AYARLAR + SIFIRLAMA ONAYI
+   ========================================================= */
+function ayarlariCiz(){
+  document.querySelectorAll('[data-ayar]').forEach(a =>
+    a.setAttribute('aria-checked', String(!!durum[a.dataset.ayar])));
+  // Öğretmen modu satırı yalnızca mod açıkken görünür (kapatabilmek için)
+  document.getElementById('ogretmen-satir').hidden = !durum.ogretmen;
+  // Cihazda Türkçe ses yoksa sesli okuma anahtarı pasif
+  const okumaVar = Okuyucu.varMi();
+  document.querySelector('[data-ayar="okuma"]').disabled = !okumaVar;
+  document.getElementById('okuma-not').textContent = okumaVar ? '' : '(bu cihazda Türkçe ses yok)';
+}
+Sahne.kaydet('ayarlar', ayarlariCiz);
+
+document.querySelectorAll('[data-ayar]').forEach(a => a.addEventListener('click', () => {
+  durum[a.dataset.ayar] = !durum[a.dataset.ayar];
+  durumKaydet();
+  ayarlariCiz();
+}));
+
+/* --- Genel onay penceresi --- */
+const onayArka = document.getElementById('onay-arka');
+let onayIslem = null;
+function onayAc(baslik, metin, evetYazi, islem){
+  document.getElementById('onay-baslik').textContent = baslik;
+  document.getElementById('onay-metin').textContent = metin;
+  document.getElementById('onay-evet').textContent = evetYazi;
+  onayIslem = islem;
+  onayArka.classList.add('acik');
+}
+function onayKapat(){ onayArka.classList.remove('acik'); onayIslem = null; }
+document.getElementById('onay-hayir').addEventListener('click', onayKapat);
+onayArka.addEventListener('click', e => { if (e.target === onayArka) onayKapat(); });
+document.getElementById('onay-evet').addEventListener('click', () => {
+  const islem = onayIslem;
+  onayKapat();
+  if (islem) islem();
+});
+
+/* --- Sıfırlama: ilerleme silinir, ses ve şerit ayarları kalır --- */
+document.getElementById('sifirla-ac').addEventListener('click', () =>
+  onayAc('Her şey silinsin mi?', 'Yıldızlar, pullar ve açılan sokaklar sıfırlanır. Ayarlar kalır.', 'Evet, sıfırla', () => {
+    const { ses, serit, okuma } = durum;
+    Object.assign(durum, varsayilanDurum(), { ses, serit, okuma });
+    oturum.turYildizlari = [];
+    try { localStorage.removeItem(KAYIT_ANAHTARI); } catch (e) {}
+    durumKaydet();
+    Sahne.git('baslangic');
+  }));
+
+/* --- Gizli öğretmen modu: başlangıçta Gugu'ya 3 saniye içinde 5 kez dokun --- */
+(() => {
+  const dokunuslar = [];
+  document.querySelector('#s-baslangic .gugu-buyuk').addEventListener('click', () => {
+    const simdi = Date.now();
+    dokunuslar.push(simdi);
+    while (dokunuslar.length && simdi - dokunuslar[0] > 3000) dokunuslar.shift();
+    if (dokunuslar.length < 5) return;
+    dokunuslar.length = 0;
+    if (durum.ogretmen) return;
+    onayAc('Öğretmen modu', 'Tüm sokaklar açılsın mı? Ayarlar\'dan kapatabilirsin.', 'Evet, aç', () => {
+      durum.ogretmen = true;
+      durumKaydet();
+      Sahne.git('harita');
+    });
+  });
+})();
+
+/* =========================================================
+   J) MOTOR TESTLERİ
+   Adres sonuna ?test eklenince çalışır (sozluk_postasi.html?test).
+   Sonuç konsola tablo olarak, ekranın köşesine rozet olarak gelir.
+   Konsoldan elle: Sozluk.testleriCalistir()
+   ========================================================= */
+Sozluk.testleriCalistir = function(){
+  const sonuclar = [];
+  const test = (ad, beklenen, gercek) => {
+    const b = JSON.stringify(beklenen), g = JSON.stringify(gercek);
+    sonuclar.push({ test: ad, beklenen: b, gercek: g, durum: b === g ? 'GEÇTİ' : 'KALDI' });
+  };
+  const once = (a, b) => test(`${a} < ${b}`, -1, Sozluk.karsilastir(a, b));
+
+  // 1) Alfabe
+  test('alfabe 29 harf', 29, ALFABE.length);
+  test('alfabede tekrar yok', 29, new Set(ALFABE).size);
+
+  // 2) Türkçeye özgü harf sıraları
+  [['c','ç'],['ç','d'],['g','ğ'],['ğ','h'],['h','ı'],['ı','i'],['i','j'],
+   ['o','ö'],['ö','p'],['s','ş'],['ş','t'],['u','ü'],['ü','v']].forEach(([a, b]) => once(a, b));
+
+  // 3) İlk harfe göre kelimeler
+  once('cam', 'çay');    once('çay', 'dede');
+  once('ılık', 'inek');  once('okul', 'öykü');
+  once('sabun', 'şeker'); once('uçak', 'üzüm');
+  once('balık', 'zil');
+
+  // 4) İlk harf aynı → ikinci harf
+  once('elma', 'erik');  once('kedi', 'kuş');
+  once('masa', 'mısır'); once('sarı', 'su');
+  once('çanta', 'çiçek'); once('ördek', 'örümcek');
+  test('elma/erik farkı 2. harfte', { konum: 1, harfA: 'l', harfB: 'r' },
+       (({ konum, harfA, harfB }) => ({ konum, harfA, harfB }))(Sozluk.fark('elma', 'erik')));
+
+  // 5) Kenar durumlar
+  once('ay', 'ayı');
+  test('aynı kelime', 0, Sozluk.karsilastir('top', 'top'));
+  test('ters sıra', 1, Sozluk.karsilastir('zil', 'arı'));
+  test('büyük harf: Irmak < İnek', -1, Sozluk.karsilastir('Irmak', 'İnek'));
+  test('küçült: KİRAZ', 'kiraz', Sozluk.kucult('KİRAZ'));
+  test('küçült: IŞIK', 'ışık', Sozluk.kucult('IŞIK'));
+  test('şapkalı harf: kâğıt = kağıt', 0, Sozluk.karsilastir('kâğıt', 'kağıt'));
+
+  // 6) Liste işlemleri
+  test('sırala', ['sabun','şeker','tavuk','uçak','üzüm'],
+       Sozluk.sirala(['üzüm','şeker','uçak','tavuk','sabun']));
+  test('sırala (aynı ilk harf)', ['kale','kedi','kiraz','kuş'],
+       Sozluk.sirala(['kuş','kiraz','kale','kedi']));
+  test('sıralı mı: evet', true, Sozluk.siraliMi(['arı','elma','top']).dogru);
+  test('sıralı mı: ilk hata 1. çiftte', 1, Sozluk.siraliMi(['cam','çay','ceviz']).hataIndex);
+  test('hatalı çiftte farklı harfler', ['ç','c'],
+       (f => [f.fark.harfA, f.fark.harfB])(Sozluk.siraliMi(['cam','çay','ceviz'])));
+  test('mektup: en başa', 0, Sozluk.dogruKonum(['elma','kedi','top'], 'arı'));
+  test('mektup: araya', 2, Sozluk.dogruKonum(['elma','kedi','top'], 'masa'));
+  test('mektup: en sona', 3, Sozluk.dogruKonum(['elma','kedi','top'], 'üzüm'));
+  test('mektup: aynı ilk harf', 1, Sozluk.dogruKonum(['kale','kuş'], 'kedi'));
+
+  // 6b) Geri bildirim cümleleri
+  test('cümle: cam/çay', "İlk harfe bak: c, ç'den önce gelir.", kuralMetni('cam', 'çay').metin);
+  test('cümle: ılık/inek', "İlk harfe bak: ı, i'den önce gelir.", kuralMetni('ılık', 'inek').metin);
+  test('cümle: ek -dan (o)', "İlk harfe bak: k, o'dan önce gelir.", kuralMetni('kedi', 'okul').metin);
+  test('cümle: ek -dan (ı)', "İlk harf aynı! 2. harfe bak: a, ı'dan önce gelir.", kuralMetni('masa', 'mısır').metin);
+  test('cümle: 2. harf', "İlk harf aynı! 2. harfe bak: e, u'dan önce gelir.", kuralMetni('kedi', 'kuş').metin);
+  test('cümle: 3. harf', "İlk 2 harf aynı! 3. harfe bak: l, r'den önce gelir.", kuralMetni('salça', 'sarı').metin);
+
+  // 7) Rastgele kelimelerle tutarlılık (500 liste)
+  let tutarli = true;
+  for (let t = 0; t < 500 && tutarli; t++){
+    const liste = Array.from({ length: 6 }, () =>
+      Array.from({ length: 1 + Math.floor(Math.random() * 4) },
+        () => ALFABE[Math.floor(Math.random() * 29)]).join(''));
+    const s = Sozluk.sirala(liste);
+    if (!Sozluk.siraliMi(s).dogru) tutarli = false;
+    for (const a of liste) for (const b of liste)
+      if (Sozluk.karsilastir(a, b) !== -Sozluk.karsilastir(b, a)) tutarli = false;
+  }
+  test('rastgele 500 liste tutarlı', true, tutarli);
+
+  // 8) Kelime havuzu
+  const yabanci = KELIME_HAVUZU.filter(k => [...k].some(h => !ALFABE.includes(h)));
+  test('havuzda alfabe dışı harf yok', [], yabanci);
+  test('havuzda tekrar yok', KELIME_HAVUZU.length, new Set(KELIME_HAVUZU).size);
+  test('ğ ile başlayan yok', 0, KELIME_HAVUZU.filter(k => k[0] === 'ğ').length);
+  test('her harf (ğ hariç) en az 2 kelime', [],
+       ALFABE.filter(h => h !== 'ğ' && KELIME_HAVUZU.filter(k => k[0] === h).length < 2));
+
+  // 9) Tur üretici: her sokakta 300 tur, sokak kuralları
+  const ozel = new Set(['c','ç','ı','i','o','ö','s','ş','u','ü']);
+  for (let s = 0; s < 4; s++){
+    const hatalar = new Set();
+    Kelimeler._sifirla();
+    let sonTur = [];
+    for (let t = 0; t < 300; t++){
+      const { evler, mektuplar } = Kelimeler.turUret(s);
+      const tum = [...evler, ...mektuplar];
+      const ilkler = evler.map(k => k[0]);
+      const ayniIlk = ilkler.length - new Set(ilkler).size;
+      if (evler.length !== SOKAKLAR[s].ev) hatalar.add('ev sayısı');
+      if (mektuplar.length !== 3) hatalar.add('mektup sayısı');
+      if (new Set(tum).size !== tum.length) hatalar.add('turda tekrar');
+      for (const a of tum) for (const b of evler) if (a !== b && !Kelimeler.uyumlu(a, b)) hatalar.add('3. harfe kalan çift');
+      const sirali = Sozluk.sirala(evler);
+      if (new Set(mektuplar.map(m => Sozluk.dogruKonum(sirali, m))).size !== 3) hatalar.add('bir kutuya 2 mektup');
+      if (t < 4 && sonTur.some(k => tum.includes(k))) hatalar.add('ilk turlarda tekrar');
+      sonTur = [...sonTur, ...tum];
+      if (s === 0){
+        if (ayniIlk || ilkler.some(h => ozel.has(h))) hatalar.add('Lale: özel/aynı harf');
+        if (mektuplar.some(m => ilkler.includes(m[0]))) hatalar.add('Lale: mektup aynı harf');
+      }
+      if (s === 1){
+        if (ayniIlk) hatalar.add('Papatya: aynı ilk harf');
+        if (![['c','ç'],['ı','i'],['o','ö'],['s','ş'],['u','ü']].some(([a, b]) => ilkler.includes(a) && ilkler.includes(b))) hatalar.add('Papatya: özel çift yok');
+      }
+      if (s === 2){
+        if (ayniIlk !== 1) hatalar.add('Gül: tam bir aynı-harf ikilisi');
+        if (mektuplar.filter(m => ilkler.includes(m[0])).length < 2) hatalar.add('Gül: mektup 2. harf');
+      }
+      if (s === 3){
+        if (ayniIlk < 1) hatalar.add('Menekşe: aynı-harf ikilisi yok');
+        if (![['c','ç'],['ı','i'],['o','ö'],['s','ş'],['u','ü']].some(([a, b]) => ilkler.includes(a) && ilkler.includes(b))) hatalar.add('Menekşe: özel çift yok');
+      }
+    }
+    test(`${SOKAKLAR[s].ad}: 300 tur kurallara uygun`, [], [...hatalar]);
+  }
+  Kelimeler._sifirla();
+
+  // Rapor
+  const kalan = sonuclar.filter(s => s.durum === 'KALDI');
+  console.table(sonuclar);
+  console.log(`Sözlük motoru: ${sonuclar.length - kalan.length}/${sonuclar.length} test geçti`);
+  return { toplam: sonuclar.length, gecen: sonuclar.length - kalan.length, kalan };
+};
+
+function testRozetiGoster(r){
+  const el = document.createElement('div');
+  el.id = 'test-rozeti';
+  el.textContent = r.kalan.length
+    ? `Motor testi: ${r.gecen}/${r.toplam} — ${r.kalan.map(k => k.test).join(', ')}`
+    : `Motor testi: ${r.gecen}/${r.toplam} geçti`;
+  Object.assign(el.style, {
+    position:'fixed', top:'.5rem', right:'.5rem', zIndex:99, padding:'.4rem .8rem',
+    borderRadius:'999px', fontWeight:'800', fontSize:'.8rem', color:'#fff',
+    background: r.kalan.length ? 'var(--pembe)' : 'var(--yesil)', maxWidth:'90vw',
+  });
+  document.body.appendChild(el);
+}
+
+/* =========================================================
+   K) BAŞLATMA
+   ========================================================= */
+svgleriYerlestir();
+alfabeSeridiCiz();
+// Başlangıç ekranı: kayan bulutlar + arkada küçük bir sokak
+(() => {
+  const bulut = w => `<svg viewBox="0 0 120 50" width="${w}" aria-hidden="true">
+    <ellipse cx="40" cy="32" rx="30" ry="16" fill="#fff"/><ellipse cx="72" cy="26" rx="30" ry="20" fill="#fff"/>
+    <ellipse cx="95" cy="35" rx="20" ry="12" fill="#fff"/></svg>`;
+  const m = document.getElementById('manzara');
+  m.innerHTML =
+    [[8, 160, 70], [26, 110, 95], [14, 130, 120]].map(([ust, gen, sure], i) =>
+      `<div class="bulut" style="top:${ust}%;animation-duration:${sure}s;animation-delay:-${i * 35}s">${bulut(gen)}</div>`).join('') +
+    `<div class="mini-sokak">${EV_RENKLERI.map(r => evSVG(r)).join('')}</div>`;
+})();
+Sahne.git('baslangic');
+if (new URLSearchParams(location.search).has('test')) testRozetiGoster(Sozluk.testleriCalistir());
+</script>
+</body>
+</html>
