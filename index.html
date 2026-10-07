@@ -738,6 +738,44 @@
       .sm-bek { transform: translate(40px,126px); fill: #2B2340; }
       .sm-makas { opacity: 0; }
     }
+    /* ---- Limonata Tezgâhı kart animasyonu ---- */
+    .limonata-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .lt-sahne { width: 100%; height: 100%; }
+    .lt-bardak { transform-box: view-box; transform-origin: 128px 50px; animation: ltBardak 6s ease-in-out infinite; }
+    @keyframes ltBardak {
+      0%, 4%    { transform: rotate(0deg); }
+      10%, 20%  { transform: rotate(105deg); }
+      26%, 37%  { transform: rotate(0deg); }
+      43%, 53%  { transform: rotate(105deg); }
+      59%, 70%  { transform: rotate(0deg); }
+      76%, 86%  { transform: rotate(105deg); }
+      92%, 100% { transform: rotate(0deg); }
+    }
+    .lt-bardak-sivi { transform-box: fill-box; transform-origin: bottom; animation: ltBardakSivi 6s linear infinite; }
+    @keyframes ltBardakSivi {
+      0%, 10% { transform: scaleY(1); } 20%, 26% { transform: scaleY(0); } 32%, 43% { transform: scaleY(1); }
+      53%, 59% { transform: scaleY(0); } 65%, 76% { transform: scaleY(1); } 86%, 92% { transform: scaleY(0); } 98%, 100% { transform: scaleY(1); }
+    }
+    .lt-akinti { animation: ltAkinti 6s linear infinite; }
+    @keyframes ltAkinti {
+      0%, 10% { opacity: 0; } 11%, 20% { opacity: 1; } 21%, 43% { opacity: 0; } 44%, 53% { opacity: 1; }
+      54%, 76% { opacity: 0; } 77%, 86% { opacity: 1; } 87%, 100% { opacity: 0; }
+    }
+    .lt-sivi { transform-box: fill-box; transform-origin: bottom; animation: ltSivi 6s linear infinite; }
+    @keyframes ltSivi {
+      0%, 10%   { transform: scaleY(0); }
+      20%, 43%  { transform: scaleY(.3333); }
+      53%, 76%  { transform: scaleY(.6667); }
+      86%, 94%  { transform: scaleY(1); }
+      100%      { transform: scaleY(0); }
+    }
+    .lt-soru { transform-box: fill-box; transform-origin: center; animation: ltSoru 1.5s ease-in-out infinite; }
+    @keyframes ltSoru { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) scale(1.08); } }
+    @media (prefers-reduced-motion: reduce) {
+      .lt-bardak, .lt-bardak-sivi, .lt-akinti, .lt-sivi, .lt-soru { animation: none; }
+      .lt-sivi { transform: scaleY(.6667); }
+      .lt-akinti { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -986,6 +1024,60 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Limonata Tezgâhı",
+        file: "limonata_tezgahi.html",
+        desc: "Kaba kaç bardak limonata sığar? Önce tahmin et, sonra dök ve karşılaştır!",
+        sinif: "2. Sınıf — Sıvı miktarını tahmin etme",
+        isNew: true,
+        thumbBg: "linear-gradient(160deg, #FFF8D6 0%, #FFE98A 55%, #FFD84D 100%)",
+        customThumb: `
+<div class="limonata-thumb">
+<svg class="lt-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- tente -->
+  <rect x="0" y="0" width="240" height="14" fill="#FF6B35"/>
+  <rect x="20" y="0" width="20" height="14" fill="#fff"/><rect x="60" y="0" width="20" height="14" fill="#fff"/>
+  <rect x="100" y="0" width="20" height="14" fill="#fff"/><rect x="140" y="0" width="20" height="14" fill="#fff"/>
+  <rect x="180" y="0" width="20" height="14" fill="#fff"/><rect x="220" y="0" width="20" height="14" fill="#fff"/>
+  <!-- tezgâh -->
+  <rect x="0" y="128" width="240" height="22" fill="#C98B5A"/>
+  <rect x="0" y="128" width="240" height="5" fill="#E0A877"/>
+  <!-- limonata makinesi -->
+  <g transform="translate(60,128)">
+    <rect x="-24" y="-96" width="48" height="56" rx="7" fill="#EAF5FF" stroke="#7A6A62" stroke-width="3"/>
+    <rect x="-21" y="-80" width="42" height="38" rx="4" fill="#FFE14D"/>
+    <circle cx="-8" cy="-62" r="7" fill="#FFF3A6" stroke="#FFD600" stroke-width="2.5"/>
+    <rect x="-26" y="-102" width="52" height="8" rx="3" fill="#FF6B35"/>
+    <rect x="-4" y="-42" width="8" height="8" rx="2" fill="#9AA3AD"/>
+    <rect x="-20" y="-40" width="4" height="40" fill="#B37748"/><rect x="16" y="-40" width="4" height="40" fill="#B37748"/>
+  </g>
+  <!-- döküm akıntısı -->
+  <rect class="lt-akinti" x="127" y="50" width="5" height="72" rx="2.5" fill="#FFE14D"/>
+  <!-- kap -->
+  <g transform="translate(160,128)">
+    <defs><clipPath id="lt-ic"><rect x="-36" y="-66" width="72" height="66" rx="6"/></clipPath></defs>
+    <rect x="-36" y="-66" width="72" height="66" rx="6" fill="#EAF5FF" fill-opacity=".85"/>
+    <g clip-path="url(#lt-ic)"><rect class="lt-sivi" x="-36" y="-66" width="72" height="66" fill="#FFE14D"/></g>
+    <path d="M-36 -44 H36 M-36 -22 H36" stroke="#E5A900" stroke-width="2" stroke-dasharray="5 4" opacity=".8"/>
+    <rect x="-36" y="-66" width="72" height="66" rx="6" fill="none" stroke="#4D9FFF" stroke-width="4"/>
+    <path d="M36 -56 C54 -54 54 -14 36 -12" stroke="#4D9FFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- çay bardağı (döküyor) -->
+  <g class="lt-bardak">
+    <defs><clipPath id="lt-bardak-ic"><path d="M112 50 C112 62 117 64 116.5 70 C116 76 113 78 114 82 L126 82 C127 78 124 76 123.5 70 C123 64 128 62 128 50 Z"/></clipPath></defs>
+    <path d="M112 50 C112 62 117 64 116.5 70 C116 76 113 78 114 82 L126 82 C127 78 124 76 123.5 70 C123 64 128 62 128 50 Z" fill="#EAF5FF"/>
+    <g clip-path="url(#lt-bardak-ic)"><rect class="lt-bardak-sivi" x="110" y="54" width="20" height="28" fill="#FFE14D"/></g>
+    <path d="M112 50 C112 62 117 64 116.5 70 C116 76 113 78 114 82 L126 82 C127 78 124 76 123.5 70 C123 64 128 62 128 50 Z" fill="none" stroke="#4D9FFF" stroke-width="2.5"/>
+    <path d="M112 82 H128" stroke="#4D9FFF" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+  <!-- tahmin balonu -->
+  <g class="lt-soru">
+    <circle cx="18" cy="42" r="13" fill="#fff" stroke="#FF6B35" stroke-width="3"/>
+    <text x="18" y="48.5" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="18" fill="#FF6B35">?</text>
+  </g>
+</svg>
+</div>`,
+      },
       {
         name: "Yapı Ustaları",
         file: "yapi_ustasi.html",
