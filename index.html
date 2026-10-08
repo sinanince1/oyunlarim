@@ -760,6 +760,33 @@
       .sm-bek { transform: translate(40px,126px); fill: #2B2340; }
       .sm-makas { opacity: 0; }
     }
+    /* ---- Kurabiye Fırını kart animasyonu: 3 kutu + 7 tek = 37 ---- */
+    .kurabiye-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .kf-sahne { width: 100%; height: 100%; }
+    .kf-p { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+    .kf-b1 { animation: kfb1 7s ease-out infinite; }
+    @keyframes kfb1 { 0%, 6% { transform: scale(0); } 9% { transform: scale(1.2); } 11%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-b2 { animation: kfb2 7s ease-out infinite; }
+    @keyframes kfb2 { 0%, 13% { transform: scale(0); } 16% { transform: scale(1.2); } 18%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-b3 { animation: kfb3 7s ease-out infinite; }
+    @keyframes kfb3 { 0%, 20% { transform: scale(0); } 23% { transform: scale(1.2); } 25%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c1 { animation: kfc1 7s ease-out infinite; }
+    @keyframes kfc1 { 0%, 29% { transform: scale(0); } 32% { transform: scale(1.2); } 34%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c2 { animation: kfc2 7s ease-out infinite; }
+    @keyframes kfc2 { 0%, 34% { transform: scale(0); } 37% { transform: scale(1.2); } 39%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c3 { animation: kfc3 7s ease-out infinite; }
+    @keyframes kfc3 { 0%, 39% { transform: scale(0); } 42% { transform: scale(1.2); } 44%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c4 { animation: kfc4 7s ease-out infinite; }
+    @keyframes kfc4 { 0%, 44% { transform: scale(0); } 47% { transform: scale(1.2); } 49%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c5 { animation: kfc5 7s ease-out infinite; }
+    @keyframes kfc5 { 0%, 49% { transform: scale(0); } 52% { transform: scale(1.2); } 54%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c6 { animation: kfc6 7s ease-out infinite; }
+    @keyframes kfc6 { 0%, 54% { transform: scale(0); } 57% { transform: scale(1.2); } 59%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-c7 { animation: kfc7 7s ease-out infinite; }
+    @keyframes kfc7 { 0%, 59% { transform: scale(0); } 62% { transform: scale(1.2); } 64%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    .kf-ok { animation: kfok 7s ease-out infinite; }
+    @keyframes kfok { 0%, 68% { transform: scale(0); } 71% { transform: scale(1.2); } 73%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+    @media (prefers-reduced-motion: reduce) { .kf-p { animation: none; transform: scale(1); } }
     /* ---- Limonata Tezgâhı kart animasyonu ---- */
     .limonata-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .lt-sahne { width: 100%; height: 100%; }
@@ -1133,6 +1160,31 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Kurabiye Fırını",
+        file: "kurabiye_firini.html",
+        desc: "Siparişi oku, kutu ve kurabiyelerle hazırla, sayıyı rakamla ve yazıyla yaz!",
+        sinif: "2. Sınıf — 100'e kadar sayıların temsilleri",
+        isNew: true,
+        thumbBg: "linear-gradient(160deg, #FFF8EE 0%, #FCE7CF 55%, #F6D3AE 100%)",
+        customThumb: `
+<div class="kurabiye-thumb">
+<svg class="kf-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- tente -->
+  <rect x="0" y="0" width="240" height="12" fill="#fff"/><circle cx="30" cy="12" r="10" fill="#fff"/><circle cx="70" cy="12" r="10" fill="#fff"/><circle cx="110" cy="12" r="10" fill="#fff"/><circle cx="150" cy="12" r="10" fill="#fff"/><circle cx="190" cy="12" r="10" fill="#fff"/><circle cx="230" cy="12" r="10" fill="#fff"/><rect x="0" y="0" width="20" height="12" fill="#FF4D8D"/><circle cx="10" cy="12" r="10" fill="#FF4D8D"/><rect x="40" y="0" width="20" height="12" fill="#FF4D8D"/><circle cx="50" cy="12" r="10" fill="#FF4D8D"/><rect x="80" y="0" width="20" height="12" fill="#FF4D8D"/><circle cx="90" cy="12" r="10" fill="#FF4D8D"/><rect x="120" y="0" width="20" height="12" fill="#FF4D8D"/><circle cx="130" cy="12" r="10" fill="#FF4D8D"/><rect x="160" y="0" width="20" height="12" fill="#FF4D8D"/><circle cx="170" cy="12" r="10" fill="#FF4D8D"/><rect x="200" y="0" width="20" height="12" fill="#FF4D8D"/><circle cx="210" cy="12" r="10" fill="#FF4D8D"/>
+  <!-- tezgâh -->
+  <rect x="0" y="128" width="240" height="22" fill="#C98B5A"/><rect x="0" y="128" width="240" height="5" fill="#E0A877"/>
+  <!-- sipariş fişi (rozet altında kalsın diye aşağıda) -->
+  <path d="M16 36 H84 V112 l-5.7 6 -5.7 -6 -5.7 6 -5.7 -6 -5.7 6 -5.6 -6 -5.7 6 -5.7 -6 -5.7 6 -5.7 -6 -5.7 6 -5.7 -6 Z" fill="#fff" stroke="#E2C99A" stroke-width="2"/>
+  <text x="50" y="56" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="800" font-size="10" fill="#7A6450">SİPARİŞ</text>
+  <text x="50" y="92" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="32" fill="#2B2140">37</text>
+  <g class="kf-p kf-ok"><circle cx="80" cy="38" r="11" fill="#00C9A7"/><path d="M74.5 38.5 l4 4 7 -8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <!-- tepsi -->
+  <rect x="98" y="44" width="134" height="80" rx="10" fill="#F6DDB4" stroke="#B07436" stroke-width="5"/>
+  <g class="kf-p kf-b1"><rect x="106" y="54" width="36" height="22" rx="4" fill="#C98B4F" stroke="#8A5524" stroke-width="2"/><rect x="108.5" y="56.5" width="31" height="17" rx="2" fill="#F6E3C0"/><circle cx="114" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="120" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="126" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="132" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="138" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="114" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="120" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="126" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="132" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="138" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/></g><g class="kf-p kf-b2"><rect x="146" y="54" width="36" height="22" rx="4" fill="#C98B4F" stroke="#8A5524" stroke-width="2"/><rect x="148.5" y="56.5" width="31" height="17" rx="2" fill="#F6E3C0"/><circle cx="154" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="160" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="166" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="172" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="178" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="154" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="160" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="166" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="172" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="178" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/></g><g class="kf-p kf-b3"><rect x="186" y="54" width="36" height="22" rx="4" fill="#C98B4F" stroke="#8A5524" stroke-width="2"/><rect x="188.5" y="56.5" width="31" height="17" rx="2" fill="#F6E3C0"/><circle cx="194" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="200" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="206" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="212" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="218" cy="62" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="194" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="200" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="206" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="212" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/><circle cx="218" cy="70" r="2.3" fill="#E3A857" stroke="#B9782F" stroke-width=".6"/></g><g class="kf-p kf-c1"><circle cx="116" cy="94" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="114" cy="92.5" r="1.1" fill="#5A3825"/><circle cx="118" cy="96" r="1.1" fill="#5A3825"/></g><g class="kf-p kf-c2"><circle cx="132" cy="94" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="130" cy="92.5" r="1.1" fill="#5A3825"/><circle cx="134" cy="96" r="1.1" fill="#5A3825"/></g><g class="kf-p kf-c3"><circle cx="148" cy="94" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="146" cy="92.5" r="1.1" fill="#5A3825"/><circle cx="150" cy="96" r="1.1" fill="#5A3825"/></g><g class="kf-p kf-c4"><circle cx="164" cy="94" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="162" cy="92.5" r="1.1" fill="#5A3825"/><circle cx="166" cy="96" r="1.1" fill="#5A3825"/></g><g class="kf-p kf-c5"><circle cx="180" cy="94" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="178" cy="92.5" r="1.1" fill="#5A3825"/><circle cx="182" cy="96" r="1.1" fill="#5A3825"/></g><g class="kf-p kf-c6"><circle cx="116" cy="110" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="114" cy="108.5" r="1.1" fill="#5A3825"/><circle cx="118" cy="112" r="1.1" fill="#5A3825"/></g><g class="kf-p kf-c7"><circle cx="132" cy="110" r="6.5" fill="#E3A857" stroke="#B9782F" stroke-width="1.2"/><circle cx="130" cy="108.5" r="1.1" fill="#5A3825"/><circle cx="134" cy="112" r="1.1" fill="#5A3825"/></g>
+</svg>
+</div>`,
+      },
       {
         name: "Kedi Kasabası",
         file: "kedi_kasabasi.html",
