@@ -703,6 +703,16 @@
     }
 
     /* ---- Sözlük Postası kart animasyonu ---- */
+    .hikaye-sahnesi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .hikaye-sahnesi-thumb svg { width: 100%; height: 100%; }
+    .hs-perde-sol { transform-origin: 0 0; animation: hsPerde 3.2s ease-in-out infinite; }
+    .hs-perde-sag { transform-origin: 240px 0; animation: hsPerde 3.2s ease-in-out infinite; }
+    .hs-kale { transform-origin: 160px 118px; animation: hsKale 3.2s ease-in-out infinite; }
+    .hs-elif { animation: hsZipla 1.6s ease-in-out infinite; }
+    @keyframes hsPerde { 0%,100% { transform: scaleX(1); } 45%,75% { transform: scaleX(.45); } }
+    @keyframes hsKale { 0%,35% { transform: scale(0); } 55%,100% { transform: scale(1); } }
+    @keyframes hsZipla { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @media (prefers-reduced-motion: reduce) { .hs-perde-sol, .hs-perde-sag, .hs-kale, .hs-elif { animation: none; } .hs-perde-sol, .hs-perde-sag { transform: scaleX(.45); } }
     .sozluk-postasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .sp-sahne { width: 100%; height: 100%; }
     .sp-zarf  { animation: spZarf 4.5s ease-in-out infinite; }
@@ -905,6 +915,50 @@ const categories = [
     iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
     lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
     games: [
+      {
+        name: "Hikâye Sahnesi",
+        file: "hikaye_sahnesi.html",
+        desc: "Hikâyeyi oku; kahramanı, yeri, zamanı ve olayı bul. Perde açılsın, hikâye sahnelensin!",
+        sinif: "2. Sınıf — Hikâye unsurları",
+        isNew: true,
+        thumbBg: "linear-gradient(170deg, #4A0F22 0%, #2A0A14 100%)",
+        customThumb: `
+<div class="hikaye-sahnesi-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- fon: park, sabah -->
+  <rect x="0" y="0" width="240" height="118" fill="#BFE7FF"/>
+  <circle cx="58" cy="40" r="14" fill="#FFD25A"/>
+  <path d="M0 96Q60 78 120 92T240 88V118H0Z" fill="#7BD389"/>
+  <g fill="#fff"><ellipse cx="150" cy="30" rx="18" ry="7"/><ellipse cx="163" cy="26" rx="12" ry="8"/></g>
+  <!-- sahne zemini -->
+  <rect x="0" y="116" width="240" height="22" fill="#C8874A"/>
+  <rect x="0" y="114" width="240" height="3" fill="#8E5A2B"/>
+  <!-- kumdan kale (olay) -->
+  <g class="hs-kale">
+    <path d="M136 118V100H140V95H146V100H152V95H158V100H164V95H170V100H176V95H184V118Z" fill="#EBC883" stroke="#C9A05A" stroke-width="1.5"/>
+    <path d="M148 100V88H152V84H156V88H160V84H164V88H168V100Z" fill="#EBC883" stroke="#C9A05A" stroke-width="1.5"/>
+    <path d="M158 84V68" stroke="#6B4A2B" stroke-width="1.6"/><path d="M158.8 68L172 72L158.8 76Z" fill="#FF4D8D"/>
+  </g>
+  <!-- kahraman: Elif -->
+  <g class="hs-elif">
+    <rect x="96" y="104" width="6" height="14" rx="3" fill="#F5CFA8"/><rect x="106" y="104" width="6" height="14" rx="3" fill="#F5CFA8"/>
+    <rect x="93" y="80" width="22" height="26" rx="8" fill="#FF4D8D"/>
+    <path d="M93 95H115L119 106Q104 109 89 106Z" fill="#4D9FFF"/>
+    <rect x="91" y="62" width="26" height="20" rx="8" fill="#4A2C1A"/>
+    <circle cx="104" cy="70" r="11" fill="#F5CFA8"/>
+    <path d="M93 68A11 11 0 0 1 115 68Q104 63 93 68Z" fill="#4A2C1A"/>
+    <circle cx="100" cy="71" r="1.6" fill="#2B2340"/><circle cx="108" cy="71" r="1.6" fill="#2B2340"/>
+    <path d="M100.5 75Q104 77.5 107.5 75" stroke="#2B2340" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- perde ve saçak -->
+  <rect class="hs-perde-sol" x="0" y="0" width="64" height="138" fill="#C21845"/>
+  <rect class="hs-perde-sag" x="176" y="0" width="64" height="138" fill="#C21845"/>
+  <path d="M0 0H240V16Q228 24 216 16Q204 24 192 16Q180 24 168 16Q156 24 144 16Q132 24 120 16Q108 24 96 16Q84 24 72 16Q60 24 48 16Q36 24 24 16Q12 24 0 16Z" fill="#7A0C28"/>
+  <rect x="0" y="136" width="240" height="14" fill="#6B3A1E"/>
+  <g fill="#FFF2B8"><circle cx="20" cy="143" r="2.5"/><circle cx="60" cy="143" r="2.5"/><circle cx="100" cy="143" r="2.5"/><circle cx="140" cy="143" r="2.5"/><circle cx="180" cy="143" r="2.5"/><circle cx="220" cy="143" r="2.5"/></g>
+</svg>
+</div>`,
+      },
       {
         name: "Sözlük Postası",
         file: "sozluk_postasi.html",
