@@ -798,6 +798,31 @@
       .lt-sivi { transform: scaleY(.6667); }
       .lt-akinti { opacity: 0; }
     }
+    /* ---- Kedi Kasabası kart animasyonu ---- */
+    .kedi-kasabasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .kk-sahne { width: 100%; height: 100%; }
+    .kk-kedi { animation: kkZipla 4.8s ease-in-out infinite; }
+    @keyframes kkZipla {
+      0%, 12%   { transform: translate(0px, 0px); }
+      20%       { transform: translate(28px, -20px); }
+      28%, 40%  { transform: translate(56px, 0px); }
+      48%       { transform: translate(84px, -20px); }
+      56%, 68%  { transform: translate(112px, 0px); }
+      76%       { transform: translate(140px, -20px); }
+      84%, 94%  { transform: translate(168px, 0px); }
+      100%      { transform: translate(0px, 0px); }
+    }
+    .kk-soru { animation: kkSoru 4.8s linear infinite; }
+    .kk-cevap { opacity: 0; animation: kkCevap 4.8s linear infinite; }
+    @keyframes kkSoru  { 0%, 82% { opacity: 1; } 84%, 96% { opacity: 0; } 98%, 100% { opacity: 1; } }
+    @keyframes kkCevap { 0%, 82% { opacity: 0; } 84%, 96% { opacity: 1; } 98%, 100% { opacity: 0; } }
+    .kk-yildiz { transform-box: fill-box; transform-origin: center; animation: kkPirilti 2.4s ease-in-out infinite; }
+    .kk-yildiz:nth-of-type(2) { animation-delay: .8s; }
+    .kk-yildiz:nth-of-type(3) { animation-delay: 1.6s; }
+    @keyframes kkPirilti { 50% { transform: scale(1.8); opacity: .5; } }
+    @media (prefers-reduced-motion: reduce) {
+      .kk-kedi, .kk-soru, .kk-cevap, .kk-yildiz { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -1108,6 +1133,74 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Kedi Kasabası",
+        file: "kedi_kasabasi.html",
+        desc: "Çatılarda ritmik say, mamaları doğru kapıya götür, kedileri sepetlere doldur!",
+        sinif: "2. Sınıf — 100'e kadar sayılar",
+        isNew: true,
+        thumbBg: "linear-gradient(170deg, #2A2554 0%, #463F82 100%)",
+        customThumb: `
+<div class="kedi-kasabasi-thumb">
+<svg class="kk-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- gece gökyüzü -->
+  <rect width="240" height="150" fill="url(#kkGece)"/>
+  <defs><linearGradient id="kkGece" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#211D48"/><stop offset="1" stop-color="#463F82"/></linearGradient></defs>
+  <circle cx="210" cy="24" r="12" fill="#FFE98A"/><circle cx="216" cy="20" r="10" fill="#2A2554"/>
+  <circle class="kk-yildiz" cx="30" cy="18" r="1.8" fill="#fff"/>
+  <circle class="kk-yildiz" cx="96" cy="12" r="1.6" fill="#fff"/>
+  <circle class="kk-yildiz" cx="150" cy="30" r="1.8" fill="#fff"/>
+  <!-- çatılar (rozet altında kalsın diye 14px aşağıda) -->
+  <g transform="translate(0,14)">
+  <polygon points="10,78 36,56 62,78" fill="#A855F7"/>
+  <rect x="14" y="78" width="44" height="50" fill="#7C3AED"/>
+  <rect x="19" y="85" width="34" height="18" rx="5" fill="#fff"/>
+  <rect x="30" y="109" width="12" height="11" rx="2" fill="#FFE98A" opacity=".85"/>
+  <text x="36" y="99" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="14" fill="#2B2140">10</text>
+  <polygon points="66,78 92,56 118,78" fill="#FF4D8D"/>
+  <rect x="70" y="78" width="44" height="50" fill="#D93673"/>
+  <rect x="75" y="85" width="34" height="18" rx="5" fill="#fff"/>
+  <rect x="86" y="109" width="12" height="11" rx="2" fill="#FFE98A" opacity=".85"/>
+  <text x="92" y="99" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="14" fill="#2B2140">20</text>
+  <polygon points="122,78 148,56 174,78" fill="#FF6B35"/>
+  <rect x="126" y="78" width="44" height="50" fill="#D9531F"/>
+  <rect x="131" y="85" width="34" height="18" rx="5" fill="#fff"/>
+  <rect x="142" y="109" width="12" height="11" rx="2" fill="#FFE98A" opacity=".85"/>
+  <text x="148" y="99" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="14" fill="#2B2140">30</text>
+  <polygon points="178,78 204,56 230,78" fill="#4D9FFF"/>
+  <rect x="182" y="78" width="44" height="50" fill="#2F7FE0"/>
+  <rect x="187" y="85" width="34" height="18" rx="5" fill="#FFF6C2" stroke="#E0A800" stroke-width="2" stroke-dasharray="4 3"/>
+  <rect x="198" y="109" width="12" height="11" rx="2" fill="#FFE98A" opacity=".85"/>
+  <text class="kk-soru" x="204" y="99" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="14" fill="#B07D00">?</text>
+  <text class="kk-cevap" x="204" y="99" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="14" fill="#00A88B">40</text>
+  </g>
+  <!-- zemin + adım okları -->
+  <rect x="0" y="128" width="240" height="22" fill="#1A1638"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="10" fill="#2B2140">
+    <rect x="52" y="132" width="24" height="14" rx="7" fill="#FFD600"/><text x="64" y="142.5" text-anchor="middle">+10</text>
+    <rect x="108" y="132" width="24" height="14" rx="7" fill="#FFD600"/><text x="120" y="142.5" text-anchor="middle">+10</text>
+    <rect x="164" y="132" width="24" height="14" rx="7" fill="#FFD600"/><text x="176" y="142.5" text-anchor="middle">+10</text>
+  </g>
+  <!-- zıplayan kedi: çatıdan çatıya -->
+  <g transform="translate(16,32)"><g class="kk-kedi">
+      <g transform="scale(.34)">
+        <path d="M86 98 C108 96 112 74 100 66" fill="none" stroke="#F4A259" stroke-width="9" stroke-linecap="round"/>
+        <ellipse cx="60" cy="88" rx="30" ry="24" fill="#F4A259"/>
+        <ellipse cx="60" cy="94" rx="15" ry="13" fill="#FFF3E6" opacity=".85"/>
+        <path d="M30 34 L36 8 L52 26 Z M90 34 L84 8 L68 26 Z" fill="#F4A259"/>
+        <path d="M35 28 L38 15 L46 24 Z M85 28 L82 15 L74 24 Z" fill="#FFB3C7"/>
+        <ellipse cx="60" cy="45" rx="32" ry="27" fill="#F4A259"/>
+        <path d="M52 20 Q60 26 68 20 M48 26 Q60 32 72 26" fill="none" stroke="#C9732C" stroke-width="3.5" stroke-linecap="round"/>
+        <ellipse cx="47" cy="44" rx="6" ry="7.5" fill="#2B2140"/><ellipse cx="73" cy="44" rx="6" ry="7.5" fill="#2B2140"/>
+        <circle cx="49" cy="41" r="2.2" fill="#fff"/><circle cx="75" cy="41" r="2.2" fill="#fff"/>
+        <path d="M56 54 L64 54 L60 59 Z" fill="#FF7FA3"/>
+        <path d="M60 59 Q55 64 51 61 M60 59 Q65 64 69 61" fill="none" stroke="#2B2140" stroke-width="2.4" stroke-linecap="round"/>
+        <ellipse cx="46" cy="108" rx="10" ry="6" fill="#F4A259"/><ellipse cx="74" cy="108" rx="10" ry="6" fill="#F4A259"/>
+      </g>
+  </g></g>
+</svg>
+</div>`,
+      },
       {
         name: "Limonata Tezgâhı",
         file: "limonata_tezgahi.html",
