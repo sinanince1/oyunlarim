@@ -702,6 +702,17 @@
       .hs-hece2 { transform: translate(30px,96px); opacity: 1; }
     }
 
+    /* ---- Sağlıklı Can kart animasyonu ---- */
+    .saglikli-can-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .saglikli-can-thumb svg { width: 100%; height: 100%; }
+    .sc-can { animation: scZipla 1.8s ease-in-out infinite; }
+    @keyframes scZipla { 0%,60%,100% { transform: translateY(0); } 75% { transform: translateY(-9px); } }
+    .sc-dolgu { transform-box: fill-box; transform-origin: left center; animation: scDol 3.6s ease-in-out infinite; }
+    .sc-dolgu:nth-of-type(2) { animation-delay: .9s; } .sc-dolgu:nth-of-type(3) { animation-delay: 1.8s; } .sc-dolgu:nth-of-type(4) { animation-delay: 2.7s; }
+    @keyframes scDol { 0%,100% { transform: scaleX(.45); } 40%,70% { transform: scaleX(1); } }
+    .sc-elma { animation: scElma 3.6s ease-in-out infinite; }
+    @keyframes scElma { 0% { transform: translate(0,0) scale(1); opacity: 0; } 12% { opacity: 1; } 45% { transform: translate(78px,-38px) scale(.7); opacity: 1; } 55%,100% { transform: translate(84px,-40px) scale(.2); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .sc-can, .sc-dolgu, .sc-elma { animation: none; } .sc-elma { opacity: 0; } }
     /* ---- Sözlük Postası kart animasyonu ---- */
     .hikaye-sahnesi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .hikaye-sahnesi-thumb svg { width: 100%; height: 100%; }
@@ -1570,6 +1581,55 @@ const categories = [
     iconBg: "linear-gradient(135deg, #4CAF50, #00C9A7)",
     lineColor: "linear-gradient(90deg, #4CAF50, #00C9A7)",
     games: [
+      {
+        name: "Sağlıklı Can",
+        file: "saglikli_can.html",
+        desc: "Can'ın gününü planla, sağlıklı alışkanlıkların büyümesine nasıl yardım ettiğini keşfet!",
+        sinif: "2. Sınıf — Sağlıklı büyüme ve alışkanlıklar",
+        isNew: true,
+        thumbBg: "linear-gradient(170deg, #E6FBF6 0%, #FFF8F0 100%)",
+        customThumb: `
+<div class="saglikli-can-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- zemin -->
+  <rect x="0" y="122" width="240" height="28" fill="#E9C79E"/>
+  <rect x="0" y="120" width="240" height="3" fill="#D9B07F"/>
+  <!-- Can -->
+  <g class="sc-can">
+    <ellipse cx="62" cy="140" rx="17" ry="3" fill="rgba(0,0,0,.12)"/>
+    <rect x="53" y="112" width="7" height="22" rx="3.5" fill="#3B5BA5"/><rect x="63" y="112" width="7" height="22" rx="3.5" fill="#3B5BA5"/>
+    <ellipse cx="56" cy="135" rx="7" ry="3.5" fill="#2D2A32"/><ellipse cx="67" cy="135" rx="7" ry="3.5" fill="#2D2A32"/>
+    <path d="M48 92Q38 82 37 72M76 92Q86 82 87 72" stroke="#FF6B35" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="37" cy="70" r="4" fill="#F6C9A0"/><circle cx="87" cy="70" r="4" fill="#F6C9A0"/>
+    <rect x="46" y="85" width="31" height="32" rx="11" fill="#FF6B35"/>
+    <path d="M61.5 94L63.4 98L67.6 98.4L64.4 101.2L65.4 105.4L61.5 103.2L57.6 105.4L58.6 101.2L55.4 98.4L59.6 98Z" fill="#FFD600"/>
+    <circle cx="61.5" cy="68" r="19" fill="#F6C9A0"/>
+    <path d="M42.6 65Q41 46 61.5 46Q82 46 80.4 65Q76 56 67 56Q62 51 55 55Q47 54 42.6 65Z" fill="#5A3825"/>
+    <path d="M53 70Q56 66.5 59 70M64 70Q67 66.5 70 70" stroke="#2D2A32" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M55 75Q61.5 84 68 75Z" fill="#8B2E2E"/><path d="M56.3 75.6L66.7 75.6Q65.8 78.4 61.5 78.4Q57.2 78.4 56.3 75.6Z" fill="#fff"/>
+    <ellipse cx="50" cy="75" rx="3.5" ry="2" fill="#FF8FA8" opacity=".6"/><ellipse cx="73" cy="75" rx="3.5" ry="2" fill="#FF8FA8" opacity=".6"/>
+  </g>
+  <!-- göstergeye uçan elma -->
+  <g class="sc-elma">
+    <circle cx="98" cy="104" r="7" fill="#E5353B"/><path d="M98 97Q101 92 105 94Q101 97 98 97Z" fill="#52C46E"/>
+  </g>
+  <!-- gösterge paneli -->
+  <rect x="122" y="20" width="108" height="96" rx="12" fill="#fff" stroke="#EADFD3" stroke-width="2"/>
+  <g>
+    <circle cx="137" cy="38" r="7" fill="#FF6B35"/><rect x="149" y="34" width="70" height="8" rx="4" fill="#F0E8DF"/>
+    <circle cx="137" cy="58" r="7" fill="#4D9FFF"/><rect x="149" y="54" width="70" height="8" rx="4" fill="#F0E8DF"/>
+    <circle cx="137" cy="78" r="7" fill="#FFD600"/><rect x="149" y="74" width="70" height="8" rx="4" fill="#F0E8DF"/>
+    <circle cx="137" cy="98" r="7" fill="#00C9A7"/><rect x="149" y="94" width="70" height="8" rx="4" fill="#F0E8DF"/>
+  </g>
+  <g>
+    <rect class="sc-dolgu" x="149" y="34" width="70" height="8" rx="4" fill="#FF6B35"/>
+    <rect class="sc-dolgu" x="149" y="54" width="70" height="8" rx="4" fill="#4D9FFF"/>
+    <rect class="sc-dolgu" x="149" y="74" width="70" height="8" rx="4" fill="#FFD600"/>
+    <rect class="sc-dolgu" x="149" y="94" width="70" height="8" rx="4" fill="#00C9A7"/>
+  </g>
+</svg>
+</div>`,
+      },
       {
         name: "Geri Dönüşüm Fabrikası",
         file: "geridonusum.html",

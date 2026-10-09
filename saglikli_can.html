@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sağlıklı Can</title>
+<style>
+/* =========================================================
+   1. TEMA VE TEMEL AYARLAR
+   ========================================================= */
+:root{
+  --turuncu:#FF6B35; --sari:#FFD600; --pembe:#FF4D8D;
+  --yesil:#00C9A7;   --mavi:#4D9FFF; --mor:#A855F7;
+  --zemin:#FFF8F0;   --kart:#FFFFFF; --metin:#2D2A32; --soluk:#635D69;
+  --cizgi:#EADFD3;
+  --turuncu-koyu:#D9481A; --pembe-koyu:#D62F6E; --mor-koyu:#8B3FE0;
+  --r:24px;
+  --dokunma:64px;                 /* tablet/telefon dokunma alanı */
+  --golge:0 5px 0 rgba(0,0,0,.10), 0 10px 22px rgba(0,0,0,.07);
+}
+/* Akıllı tahta: daha büyük dokunma alanı */
+@media (min-width:1400px) and (min-height:780px){ :root{ --dokunma:88px; } }
+
+*{ box-sizing:border-box; }
+html{ font-size:clamp(15px, .75vw + .8vh, 30px); }
+html,body{ height:100%; margin:0; }
+body{
+  background:var(--zemin); color:var(--metin);
+  font-family:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+  user-select:none; -webkit-user-select:none; overflow:hidden;
+}
+h1,h2,h3{ margin:0; line-height:1.15; }
+h1:focus,h2:focus{ outline:none; }
+
+/* =========================================================
+   2. UYGULAMA ÇERÇEVESİ (ekranlar + altbilgi)
+   ========================================================= */
+#uygulama{
+  position:fixed; top:0; right:0; bottom:0; left:0;
+  display:grid; grid-template-rows:1fr auto;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+#sahneler{ position:relative; overflow:hidden; }
+.ekran{
+  position:absolute; top:0; right:0; bottom:0; left:0;
+  display:none; flex-direction:column; gap:1rem;
+  padding:1rem clamp(16px,2.5vw,48px);
+  overflow-y:auto; overflow-x:hidden;
+}
+.ekran.aktif{ display:flex; animation:ekranGiris .32s ease-out; }
+@keyframes ekranGiris{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+footer{
+  text-align:center; font-size:.75rem; color:var(--soluk);
+  padding:.3rem 0 calc(.3rem + env(safe-area-inset-bottom));
+}
+
+/* =========================================================
+   3. DÜĞMELER VE ORTAK PARÇALAR
+   ========================================================= */
+.btn{
+  font:inherit; font-weight:800; font-size:1.1rem;
+  min-height:var(--dokunma); min-width:var(--dokunma);
+  padding:.5em 1.3em; border:none; border-radius:var(--r);
+  background:var(--kart); color:var(--metin); box-shadow:var(--golge);
+  display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+  cursor:pointer; transition:transform .08s, box-shadow .08s;
+}
+.btn:active{ transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.12); }
+.btn:focus-visible, .gun-kart:focus-visible, .vaka-kart:focus-visible{ outline:4px solid var(--mavi); outline-offset:3px; }
+.btn-turuncu{ background:var(--turuncu-koyu); color:#fff; }
+.btn-mor{ background:var(--mor-koyu); color:#fff; }
+.btn-yesil{ background:var(--yesil); color:#fff; }
+.btn-pembe{ background:var(--pembe-koyu); color:#fff; }
+.btn-ikon{ padding:0; width:var(--dokunma); height:var(--dokunma); border-radius:50%; font-size:1.5rem; }
+
+/* Üst bar: geri düğmesi + başlık */
+.ust-bar{ display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+.ust-bar h2{ font-size:1.6rem; font-weight:900; flex:1; }
+
+/* Yer tutucu: sonraki aşamalarda dolacak alanlar */
+.yer-tutucu{
+  border:3px dashed var(--cizgi); border-radius:var(--r);
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  color:var(--soluk); font-weight:700; padding:1rem; min-height:4rem;
+}
+
+
+/* =========================================================
+   4. EKRAN 1 — BAŞLANGIÇ
+   ========================================================= */
+#ekran-baslangic{ justify-content:center; align-items:center; }
+.baslangic-govde{
+  display:grid; grid-template-columns:auto auto; align-items:center;
+  gap:clamp(1.5rem,5vw,5rem); max-width:1100px;
+}
+.can-cerceve{
+  width:clamp(170px,32vmin,380px); height:clamp(170px,32vmin,380px); aspect-ratio:1; border-radius:50%; position:relative;
+  background:radial-gradient(circle at 50% 40%, #FFF1E4, #FFD9B8);
+  box-shadow:inset 0 -8px 0 rgba(255,107,53,.12);
+}
+.can-cerceve .can{ position:absolute; left:50%; bottom:3%; height:112%; width:auto; transform:translateX(-50%); }
+.baslik-blok{ display:flex; flex-direction:column; gap:1rem; align-items:stretch; }
+.oyun-adi{
+  font-size:clamp(2.2rem,6vmin,4.5rem); font-weight:900; color:var(--turuncu);
+  text-shadow:0 4px 0 rgba(255,107,53,.18);
+}
+.oyun-adi span{ color:var(--yesil); }
+.alt-baslik{ font-size:1.15rem; font-weight:700; color:var(--soluk); margin:0 0 .5rem; }
+.mod-btn{ font-size:1.35rem; justify-content:flex-start; padding:.6em 1.2em; }
+.mod-btn .ikon{ font-size:1.8rem; }
+.alt-dugmeler{ display:flex; gap:1rem; justify-content:center; margin-top:.5rem; }
+
+/* =========================================================
+   5. EKRAN 2 — HAFTA HARİTASI
+   ========================================================= */
+.gun-izgara{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:1rem;
+  flex:1; align-content:center;
+}
+.gun-kart{
+  font:inherit; border:none; cursor:pointer; position:relative;
+  background:var(--kart); border-radius:var(--r); box-shadow:var(--golge);
+  min-height:calc(var(--dokunma) * 2.6); padding:1rem .5rem;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.6rem;
+}
+.gun-kart .gun-no{ font-size:.9rem; font-weight:800; color:var(--soluk); }
+.gun-kart .gun-ad{ font-size:1.35rem; font-weight:900; }
+.gun-kart .yildizlar{ font-size:1.5rem; letter-spacing:.1em; color:#CFC4B8; }
+.gun-kart .yildizlar .dolu{ color:#F5B800; }
+.gun-kart.tamam{ background:#E6FBF6; }
+.gun-kart.kilitli{ background:#F2EEEA; color:var(--soluk); cursor:default; box-shadow:none; }
+.gun-kart.kilitli .yildizlar{ opacity:.35; }
+.kilit{ position:absolute; top:.5rem; right:.7rem; font-size:1.4rem; }
+.titre{ animation:titre .35s; }
+@keyframes titre{ 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+/* =========================================================
+   6. EKRAN 3 — GÜN AKIŞI
+   ========================================================= */
+.durak-noktalar{ display:flex; gap:.45rem; }
+.durak-noktalar i{ width:1rem; height:1rem; border-radius:50%; background:var(--cizgi); }
+.durak-noktalar i.gecti{ background:var(--yesil); }
+.durak-noktalar i.simdi{ background:var(--turuncu); transform:scale(1.25); }
+
+.gostergeler{ display:grid; grid-template-columns:repeat(4,1fr); gap:.8rem; }
+.gosterge{   /* <button>: gösterge seçimi adımında dokunulabilir olur */
+  font:inherit; color:inherit; border:none; text-align:left; width:100%;
+  background:var(--kart); border-radius:18px; box-shadow:var(--golge);
+  padding:.5rem .8rem; display:grid; grid-template-columns:auto 1fr; gap:.2rem .6rem; align-items:center;
+}
+.gostergeler.secilebilir .gosterge{ cursor:pointer; animation:nabiz 1.3s ease-in-out infinite; }
+.gostergeler.secilebilir .gosterge:active{ transform:translateY(3px); }
+.gosterge:focus-visible{ outline:4px solid var(--mavi); outline-offset:3px; }
+@keyframes nabiz{ 50%{ box-shadow:0 0 0 6px rgba(168,85,247,.35), var(--golge); } }
+.gosterge.isaret{ animation:isaret .6s ease-in-out 3; }
+@keyframes isaret{ 50%{ box-shadow:0 0 0 7px rgba(255,214,0,.85), var(--golge); transform:scale(1.05); } }
+.gosterge .g-ikon{ font-size:1.7rem; grid-row:span 2; }
+.gosterge .g-ad{ font-weight:800; font-size:.9rem; }
+.cubuk{ height:.9rem; background:#F0E8DF; border-radius:99px; overflow:hidden; }
+.cubuk .dolgu{ height:100%; border-radius:99px; transition:width .5s ease; }
+
+.gosterge.artti{ animation:gostergeArtti .7s ease-out; }
+.gosterge.azaldi{ animation:titre .35s; }
+.gosterge.azaldi .cubuk{ animation:cubukSoluk .7s; }
+@keyframes gostergeArtti{
+  0%{ transform:scale(1); box-shadow:var(--golge); }
+  35%{ transform:scale(1.06); box-shadow:0 0 0 6px rgba(0,201,167,.45), var(--golge); }
+  100%{ transform:scale(1); box-shadow:var(--golge); }
+}
+@keyframes cubukSoluk{ 30%{ opacity:.45; } }
+
+/* Sahne kutusu: arka plan SVG + üstünde Can */
+.gun-sahne{
+  position:relative; flex:1; min-height:clamp(13rem,34vh,32rem);
+  border-radius:var(--r); overflow:hidden; box-shadow:var(--golge); background:#fff;
+}
+.sahne-arka, .sahne-arka svg{ position:absolute; top:0; right:0; bottom:0; left:0; width:100%; height:100%; display:block; }
+.sahne-can{ position:absolute; left:50%; bottom:1.5%; height:88%; aspect-ratio:200/290; transform:translateX(-50%); }
+.sahne-can .can{ width:auto; height:100%; }
+.durak-etiket{
+  position:absolute; top:.6rem; left:.6rem; z-index:2;
+  background:rgba(255,255,255,.92); border-radius:99px; padding:.25rem .9rem;
+  font-weight:800; font-size:.95rem; box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+/* Durum / geri bildirim kutusu */
+.durum-cumlesi{
+  background:var(--kart); border-radius:var(--r); padding:.7rem 1.2rem;
+  font-size:1.3rem; font-weight:800; text-align:center; box-shadow:var(--golge);
+  transition:background .3s;
+}
+.durum-cumlesi.iyi{ background:#E6FBF6; }
+.durum-cumlesi.uyari{ background:#FFF0E6; }
+.durum-cumlesi.soru{ background:#F1ECFF; }
+.durum-cumlesi .alt-satir{ display:block; font-size:1.02rem; font-weight:700; margin-top:.3rem; color:var(--soluk); }
+.durum-cumlesi .alt-satir.turuncu{ color:#A83A12; }
+
+/* Seçim kartları */
+.kartlar{ display:flex; gap:1rem; justify-content:center; }
+.secim-kart{
+  font:inherit; border:none; border-radius:var(--r); position:relative; cursor:pointer;
+  background:var(--kart); box-shadow:var(--golge); color:var(--metin);
+  flex:1; max-width:360px; min-height:calc(var(--dokunma) * 1.8); padding:.6rem 1rem;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.35rem;
+  transition:transform .08s, opacity .3s, box-shadow .2s;
+}
+.secim-kart:active{ transform:translateY(4px); }
+.secim-kart, .neden-btn{ animation:kartGiris .35s ease-out backwards; }
+.secim-kart:nth-child(2), .neden-btn:nth-child(2){ animation-delay:.08s; }
+.secim-kart:nth-child(3), .neden-btn:nth-child(3){ animation-delay:.16s; }
+@keyframes kartGiris{ from{ opacity:0; transform:translateY(12px) scale(.97); } to{ opacity:1; transform:none; } }
+.secim-kart.titre{ animation:titre .35s; }
+.durak-etiket.yeni{ animation:etiketPop .4s ease-out; }
+@keyframes etiketPop{ 0%{ transform:scale(.7); opacity:0; } 70%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
+.secim-kart:focus-visible{ outline:4px solid var(--mavi); outline-offset:3px; }
+.secim-kart .k-ikon{ font-size:2.4rem; line-height:1; }
+.secim-kart .k-metin{ font-size:1.15rem; font-weight:800; }
+.secim-kart:disabled{ cursor:default; }
+.secim-kart.dogru{ box-shadow:0 0 0 5px var(--yesil), var(--golge); }
+.secim-kart.yanlis{ opacity:.45; filter:grayscale(.7); }
+.secim-kart.yanlis::after{ content:"✕"; position:absolute; top:.4rem; right:.8rem; color:#A83A12; font-weight:900; font-size:1.2rem; }
+
+/* Karttan göstergeye uçan ikon */
+.ucan-ikon{ position:fixed; left:0; top:0; z-index:40; font-size:2.6rem; pointer-events:none; }
+[hidden]{ display:none !important; }
+.ikon-svg{ width:1.15em; height:1.15em; display:inline-block; vertical-align:-.18em; }
+
+/* =========================================================
+   7. EKRAN 4 — GÜN SONU
+   ========================================================= */
+.gunsonu-govde{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:start; }
+.gunsonu-govde.soru-asamasi{ grid-template-columns:1fr; max-width:640px; width:100%; align-self:center; }
+.gunsonu-govde.soru-asamasi .ozet-kutu{ display:none; }
+.ortala{ align-self:center; }
+.gs-kutu{
+  background:var(--kart); border-radius:var(--r); box-shadow:var(--golge);
+  padding:1rem 1.2rem; display:flex; flex-direction:column; gap:.7rem;
+}
+.gs-kutu h3{ font-size:1.3rem; font-weight:900; }
+
+/* Özet: alışkanlık ikonu → gösterge ikonu → etki cümlesi */
+.ozet-liste{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.5rem; }
+.ozet-satir{
+  display:grid; grid-template-columns:auto auto auto 1fr; align-items:center; gap:.5rem;
+  background:#FFF8F0; border-radius:14px; padding:.45rem .7rem; font-weight:700; font-size:1.02rem;
+}
+.ozet-satir .o-ikon{ font-size:1.7rem; }
+.ozet-satir .o-ok{ color:var(--soluk); font-weight:900; }
+.ozet-satir .o-g{ font-size:1.4rem; white-space:nowrap; }
+
+/* "Neden?" soruları */
+.neden-soru{ font-size:1.3rem; font-weight:900; margin:0; text-align:center; }
+.neden-sayac{ font-size:.9rem; color:var(--soluk); font-weight:800; text-align:center; }
+.neden-secenekler{ display:flex; flex-direction:column; gap:.6rem; }
+.neden-btn{
+  font:inherit; font-weight:800; font-size:1.15rem; color:var(--metin); cursor:pointer;
+  border:none; border-radius:18px; background:#FFF8F0; box-shadow:0 4px 0 rgba(0,0,0,.08);
+  min-height:var(--dokunma); padding:.4rem 1rem; display:flex; align-items:center; gap:.8rem; text-align:left;
+}
+.neden-btn .n-ikon{ font-size:1.8rem; }
+.neden-btn:active{ transform:translateY(3px); }
+.neden-btn:focus-visible{ outline:4px solid var(--mavi); outline-offset:3px; }
+.neden-btn:disabled{ cursor:default; }
+.neden-btn.dogru{ background:#E6FBF6; box-shadow:0 0 0 4px var(--yesil); }
+.neden-btn.yanlis{ background:#FFF0E6; opacity:.7; }
+.neden-geri{ border-radius:14px; padding:.6rem .9rem; font-weight:800; text-align:center; }
+.neden-geri.iyi{ background:#E6FBF6; }
+.neden-geri.uyari{ background:#FFF0E6; color:#9A3A14; }
+
+/* Sonuç: Can + yıldızlar + çıkartmalar */
+.sonuc{ display:flex; flex-direction:column; align-items:center; gap:.7rem; text-align:center; }
+.sonuc-can{ width:clamp(110px,18vmin,190px); aspect-ratio:200/290; }
+.sonuc-can .can{ width:100%; height:auto; }
+.yildiz-satir{ display:flex; gap:.4rem; font-size:clamp(2.4rem,7vmin,3.6rem); line-height:1; }
+.yildiz-satir span{ color:#E2D8CC; }
+.yildiz-satir span.dolu{ color:var(--sari); text-shadow:0 3px 0 #E0B800; animation:yildizPop .5s ease-out both; }
+@keyframes yildizPop{ 0%{ transform:scale(0) rotate(-40deg); } 70%{ transform:scale(1.3) rotate(8deg); } 100%{ transform:scale(1); } }
+.cikartmalar{ display:flex; flex-wrap:wrap; gap:.6rem; justify-content:center; }
+.cikartma{
+  background:#FFF6C2; border:3px solid var(--sari); border-radius:18px; padding:.5rem .8rem;
+  display:flex; align-items:center; gap:.5rem; font-weight:800; animation:yildizPop .5s ease-out both;
+}
+.cikartma .c-ikon{ font-size:1.8rem; }
+.sonuc-not{ color:var(--soluk); font-weight:700; margin:0; }
+
+/* =========================================================
+   8. EKRAN 5–6 — VAKALAR
+   ========================================================= */
+.vaka-izgara{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; flex:1; align-content:center;
+}
+.vaka-kart{
+  font:inherit; border:none; cursor:pointer; background:var(--kart);
+  border-radius:var(--r); box-shadow:var(--golge);
+  min-height:calc(var(--dokunma) * 1.9); padding:1rem;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem;
+}
+.vaka-kart .v-no{ font-size:.85rem; font-weight:800; color:var(--soluk); }
+.vaka-kart .v-ad{ font-size:1.25rem; font-weight:900; }
+.vaka-kart .v-sorun{ font-size:2.1rem; line-height:1; }
+.vaka-kart .rozet{ position:absolute; top:.5rem; right:.7rem; font-size:1.4rem; }
+.vaka-kart{ position:relative; }
+.vaka-kart.cozuldu{ background:#F1ECFF; }
+.vaka-ilerleme{
+  display:flex; align-items:center; justify-content:center; gap:.6rem; text-align:center;
+  background:var(--kart); border-radius:99px; box-shadow:var(--golge);
+  padding:.5rem 1.2rem; font-weight:800; align-self:center;
+}
+.vaka-ilerleme.usta{ background:#FFF6C2; box-shadow:0 0 0 4px var(--sari), var(--golge); }
+.vaka-ilerleme .can-mini{ width:2.6rem; aspect-ratio:200/290; }
+.vaka-ilerleme .can-mini .can{ width:100%; height:auto; }
+
+/* Vaka sahnesi: Can sağda dedektif, ipuçları solda ve ortada */
+.vaka-sahne .sahne-can{ left:auto; right:2%; transform:none; height:66%; }
+.ipucu{
+  position:absolute; z-index:3; transform:translate(-50%,-50%);
+  width:var(--dokunma); height:var(--dokunma); border-radius:50%;
+  font:inherit; font-size:calc(var(--dokunma) * .5); line-height:1; cursor:pointer;
+  background:rgba(255,255,255,.92); border:3px dashed var(--mor);
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  display:flex; align-items:center; justify-content:center;
+  animation:ipucuSalla 2.4s ease-in-out infinite;
+}
+.ipucu:nth-of-type(2){ animation-delay:.6s; }
+.ipucu:nth-of-type(3){ animation-delay:1.2s; }
+@keyframes ipucuSalla{ 0%,100%{ transform:translate(-50%,-50%); } 50%{ transform:translate(-50%,-58%); } }
+.ipucu:focus-visible{ outline:4px solid var(--mavi); outline-offset:3px; }
+.ipucu:disabled{ cursor:default; animation:none; }
+.ipucu::after{
+  position:absolute; top:-6px; right:-6px; width:1.4rem; height:1.4rem; border-radius:50%;
+  font-size:.85rem; font-weight:900; color:#fff; display:flex; align-items:center; justify-content:center;
+}
+.ipucu.masum{ opacity:.55; filter:grayscale(.8); border-style:solid; border-color:#C9C0B6; }
+.ipucu.masum::after{ content:"✕"; background:#B8AEA3; }
+.ipucu.bulundu{ border:4px solid var(--yesil); transform:translate(-50%,-50%) scale(1.2); animation:none; }
+.ipucu.bulundu::after{ content:"✓"; background:var(--yesil); }
+.vaka-oneriler{ max-width:640px; width:100%; align-self:center; }
+.oneri-soru{ font-size:1.25rem; font-weight:900; text-align:center; margin:0; }
+
+/* =========================================================
+   9. EKRAN 7 — AYARLAR
+   ========================================================= */
+.ayar-liste{ display:flex; flex-direction:column; gap:1rem; max-width:640px; width:100%; margin:0 auto; }
+.ayar-satir{
+  background:var(--kart); border-radius:var(--r); box-shadow:var(--golge);
+  padding:.8rem 1.2rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  font-size:1.2rem; font-weight:800;
+}
+.anahtar{ /* aç/kapa düğmesi */
+  width:calc(var(--dokunma) * 1.6); height:var(--dokunma); border-radius:99px; border:none;
+  background:#D9D2CA; position:relative; cursor:pointer; transition:background .2s;
+}
+.anahtar::after{
+  content:""; position:absolute; top:6px; left:6px;
+  width:calc(var(--dokunma) - 12px); height:calc(var(--dokunma) - 12px);
+  border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:left .2s;
+}
+.anahtar[aria-pressed="true"]{ background:var(--yesil); }
+.anahtar[aria-pressed="true"]::after{ left:calc(100% - var(--dokunma) + 6px); }
+.anahtar:focus-visible{ outline:4px solid var(--mavi); outline-offset:3px; }
+
+/* =========================================================
+   10. KATMANLAR — Gelişim Defteri, onay penceresi, bildirim
+   ========================================================= */
+.katman{
+  position:fixed; top:0; right:0; bottom:0; left:0; z-index:50; display:none;
+  align-items:center; justify-content:center; padding:16px;
+  background:rgba(45,42,50,.45);
+}
+.katman.acik{ display:flex; animation:ekranGiris .25s ease-out; }
+.katman-kutu{
+  background:var(--zemin); border-radius:var(--r); box-shadow:0 20px 60px rgba(0,0,0,.25);
+  padding:1.2rem 1.5rem; width:min(900px,100%); max-height:100%; overflow-y:auto;
+  display:flex; flex-direction:column; gap:1rem;
+}
+.defter-izgara{ display:grid; grid-template-columns:auto repeat(4,1fr); gap:.5rem; align-items:center; }
+.defter-izgara .d-bas{ text-align:center; font-size:1.5rem; }
+.defter-izgara .d-gun{ font-weight:800; padding-right:.5rem; }
+.yuva{
+  width:100%; max-width:5rem; min-height:3rem; aspect-ratio:1; justify-self:center;
+  border-radius:16px; border:3px dashed var(--cizgi);
+  display:flex; align-items:center; justify-content:center; font-size:1.8rem;
+}
+.yuva.dolu{ border-style:solid; border-color:var(--sari); background:#FFF6C2; }
+.onay-kutu{ width:min(520px,100%); text-align:center; }
+.onay-metin{ font-size:1.25rem; font-weight:800; margin:0; }
+.onay-dugmeler{ display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+
+#bildirim{
+  position:fixed; left:50%; bottom:calc(2.5rem + env(safe-area-inset-bottom)); z-index:60;
+  transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none;
+  background:var(--metin); color:#fff; font-weight:800; font-size:1.05rem;
+  padding:.7rem 1.4rem; border-radius:99px; transition:opacity .25s, transform .25s;
+  max-width:calc(100% - 32px); text-align:center;
+}
+#bildirim.goster{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* =========================================================
+   10b. CAN KARAKTERİ — ifadeler ve animasyonlar
+   Her ifade, SVG içindeki .p parçalarından hangilerinin görüneceğini seçer.
+   ========================================================= */
+.can{ display:block; overflow:visible; }
+.can .p{ display:none; }
+.can[data-ifade="mutlu"]   .p-kol-asagi, .can[data-ifade="mutlu"]   .p-goz-acik, .can[data-ifade="mutlu"]   .p-agiz-gulumse{ display:inline; }
+.can[data-ifade="yorgun"]  .p-kol-asagi, .can[data-ifade="yorgun"]  .p-goz-uykulu, .can[data-ifade="yorgun"]  .p-agiz-esneme, .can[data-ifade="yorgun"]  .p-zzz{ display:inline; }
+.can[data-ifade="parlak"]  .p-kol-asagi, .can[data-ifade="parlak"]  .p-goz-mutlu, .can[data-ifade="parlak"]  .p-agiz-parlak, .can[data-ifade="parlak"]  .p-parilti{ display:inline; }
+.can[data-ifade="zipla"]   .p-kol-yukari, .can[data-ifade="zipla"]   .p-goz-mutlu, .can[data-ifade="zipla"]   .p-agiz-acik{ display:inline; }
+.can[data-ifade="dusunen"] .p-kol-dedektif, .can[data-ifade="dusunen"] .p-goz-yukari, .can[data-ifade="dusunen"] .p-kas, .can[data-ifade="dusunen"] .p-agiz-dusunen, .can[data-ifade="dusunen"] .p-sapka{ display:inline; }
+
+.can-govde{ transform-box:view-box; transform-origin:100px 272px; }
+.can-bas{ transform-box:view-box; transform-origin:100px 140px; transition:transform .4s; }
+.can-golge{ transform-box:view-box; transform-origin:100px 280px; }
+
+/* mutlu: hafif nefes alma */
+.can[data-ifade="mutlu"] .can-govde{ animation:nefes 3s ease-in-out infinite; }
+@keyframes nefes{ 50%{ transform:scaleY(1.018); } }
+
+/* yorgun: baş eğik, Z'ler yükselir */
+.can[data-ifade="yorgun"] .can-bas{ transform:rotate(-7deg); }
+.can[data-ifade="yorgun"] .can-govde{ animation:nefes 4.5s ease-in-out infinite; }
+.p-zzz text{ animation:zzz 2.4s ease-in infinite; }
+.p-zzz text:nth-child(2){ animation-delay:1.2s; }
+@keyframes zzz{ 0%{ opacity:0; transform:translate(0,8px); } 30%{ opacity:1; } 100%{ opacity:0; transform:translate(8px,-18px); } }
+
+/* parlak gülüş: pırıltılar yanıp söner */
+.yildizcik{ transform-box:fill-box; transform-origin:center; animation:pirilti 1.4s ease-in-out infinite; }
+.yildizcik:nth-child(2){ animation-delay:.45s; }
+.yildizcik:nth-child(3){ animation-delay:.9s; }
+@keyframes pirilti{ 0%,100%{ opacity:.2; transform:scale(.5); } 50%{ opacity:1; transform:scale(1.15); } }
+
+/* zıplama: çömel → havalan → kon */
+.can[data-ifade="zipla"] .can-govde{ animation:zipla .9s ease-in-out infinite; }
+.can[data-ifade="zipla"] .can-golge{ animation:golgeZipla .9s ease-in-out infinite; }
+@keyframes zipla{
+  0%,100%{ transform:translateY(0) scaleY(1); }
+  15%{ transform:translateY(0) scaleY(.93); }
+  45%{ transform:translateY(-40px) scaleY(1.03); }
+  70%{ transform:translateY(0) scaleY(1); }
+}
+@keyframes golgeZipla{ 45%{ transform:scale(.65); opacity:.6; } }
+
+/* düşünen (dedektif): baş hafif yana */
+.can[data-ifade="dusunen"] .can-bas{ transform:rotate(5deg); }
+
+/* =========================================================
+   10c. SAHNELER — saate göre gökyüzü ve gece
+   ========================================================= */
+.gun-sahne{ --gok:#BFE6FF; }
+.gun-sahne[data-saat="ogle"]{ --gok:#8FD3FF; }
+.gun-sahne[data-saat="aksam"]{ --gok:#FFB98A; }
+.gun-sahne[data-saat="gece"]{ --gok:#2C3A6B; }
+.gok{ fill:var(--gok); transition:fill .6s; }
+.ay, .gece-yildiz, .lamba-isik{ display:none; }
+.gun-sahne[data-saat="gece"] .ay, .gun-sahne[data-saat="gece"] .gece-yildiz, .gun-sahne[data-saat="gece"] .lamba-isik{ display:inline; }
+.gun-sahne[data-saat="gece"] .gunes{ display:none; }
+.gun-sahne[data-saat="aksam"] .gunes{ fill:#FF8A3D; }
+.karartma{ opacity:0; transition:opacity .6s; }
+.gun-sahne[data-saat="aksam"] .karartma{ opacity:.08; }
+.gun-sahne[data-saat="gece"] .karartma{ opacity:.32; }
+
+
+/* =========================================================
+   11. YERLEŞİM — dikey telefon / dar ekran
+   ========================================================= */
+@media (orientation:portrait), (max-width:760px){
+  .baslangic-govde{ grid-template-columns:1fr; justify-items:center; text-align:center; }
+  .baslik-blok{ width:100%; max-width:420px; }
+  .gun-izgara{ grid-template-columns:repeat(2,1fr); }
+  .gun-izgara .gun-kart:last-child{ grid-column:span 2; }
+  .gostergeler{ grid-template-columns:repeat(2,1fr); }
+  .kartlar{ flex-direction:column; align-items:stretch; }
+  .secim-kart{ max-width:none; }
+  .gunsonu-govde{ grid-template-columns:1fr; }
+  .vaka-izgara{ grid-template-columns:repeat(2,1fr); }
+  /* Dar/dikey ekranda dedektif Can sağ alt köşede küçülür; ipuçları açıkta kalır */
+  .vaka-sahne .sahne-can{ height:auto; width:27%; right:1%; bottom:1%; }
+  .vaka-sahne .sahne-can .can{ width:100%; height:auto; }
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+<div id="uygulama">
+  <main id="sahneler">
+
+    <!-- ===================== EKRAN 1: BAŞLANGIÇ ===================== -->
+    <section class="ekran" id="ekran-baslangic" aria-label="Başlangıç">
+      <div class="baslangic-govde">
+        <div class="can-cerceve" id="baslangic-can"></div>
+        <div class="baslik-blok">
+          <h1 class="oyun-adi">Sağlıklı <span>Can</span></h1>
+          <p class="alt-baslik">Can'ın büyümesine yardım et!</p>
+          <button class="btn btn-turuncu mod-btn" data-git="hafta"><span class="ikon">📅</span> Can'ın Haftası</button>
+          <button class="btn btn-mor mod-btn" data-git="vakalar"><span class="ikon">🔍</span> Sağlık Dedektifi</button>
+          <div class="alt-dugmeler">
+            <button class="btn btn-ikon" data-eylem="defter-ac" aria-label="Gelişim Defteri">📖</button>
+            <button class="btn btn-ikon" data-git="ayarlar" aria-label="Ayarlar">⚙️</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== EKRAN 2: HAFTA HARİTASI ===================== -->
+    <section class="ekran" id="ekran-hafta" aria-label="Can'ın Haftası">
+      <div class="ust-bar">
+        <button class="btn btn-ikon" data-git="baslangic" aria-label="Geri">←</button>
+        <h2>Can'ın Haftası</h2>
+      </div>
+      <div class="vaka-ilerleme" id="hafta-ilerleme"></div>
+      <div class="gun-izgara" id="gun-izgara"></div>
+    </section>
+
+    <!-- ===================== EKRAN 3: GÜN AKIŞI ===================== -->
+    <section class="ekran" id="ekran-gun" aria-label="Gün">
+      <div class="ust-bar">
+        <button class="btn btn-ikon" data-eylem="gunden-cik" aria-label="Günden çık">✕</button>
+        <h2 id="gun-baslik">Pazartesi</h2>
+        <div class="durak-noktalar" id="durak-noktalar" aria-label="Durak ilerlemesi"></div>
+      </div>
+      <div class="gostergeler" id="gostergeler"></div>
+      <div class="gun-sahne" id="gun-sahne" data-saat="sabah"></div>
+      <div class="durum-cumlesi" id="durum-cumlesi" aria-live="polite"></div>
+      <div class="kartlar" id="kartlar"></div>
+      <button class="btn btn-turuncu ortala" id="devam-btn" data-eylem="durak-devam" hidden>Devam →</button>
+    </section>
+
+    <!-- ===================== EKRAN 4: GÜN SONU ===================== -->
+    <section class="ekran" id="ekran-gunsonu" aria-label="Günün sonu">
+      <div class="ust-bar"><h2 id="gunsonu-baslik">Günün Sonu</h2></div>
+      <div class="gunsonu-govde" id="gunsonu-govde">
+        <div class="gs-kutu ozet-kutu">
+          <h3>Can bugün ne yaptı?</h3>
+          <ul class="ozet-liste" id="ozet-liste"></ul>
+        </div>
+        <!-- Önce "Neden?" soruları, sonra yıldızlar ve çıkartmalar -->
+        <div class="gs-kutu" id="neden-kutu" aria-live="polite"></div>
+      </div>
+      <button class="btn btn-turuncu ortala" id="gunsonu-don" data-git="hafta" hidden>Haftaya dön →</button>
+    </section>
+
+    <!-- ===================== EKRAN 5: VAKA LİSTESİ ===================== -->
+    <section class="ekran" id="ekran-vakalar" aria-label="Sağlık Dedektifi">
+      <div class="ust-bar">
+        <button class="btn btn-ikon" data-git="baslangic" aria-label="Geri">←</button>
+        <h2>Sağlık Dedektifi</h2>
+      </div>
+      <div class="vaka-ilerleme" id="vaka-ilerleme"></div>
+      <div class="vaka-izgara" id="vaka-izgara"></div>
+    </section>
+
+    <!-- ===================== EKRAN 6: VAKA ===================== -->
+    <section class="ekran" id="ekran-vaka" aria-label="Vaka">
+      <div class="ust-bar">
+        <button class="btn btn-ikon" data-git="vakalar" aria-label="Vakalara dön">✕</button>
+        <h2 id="vaka-baslik">Vaka 1</h2>
+      </div>
+      <div class="gun-sahne vaka-sahne" id="vaka-sahne" data-saat="sabah"></div>
+      <div class="durum-cumlesi" id="vaka-cumle" aria-live="polite"></div>
+      <div class="vaka-oneriler" id="vaka-oneriler" hidden></div>
+      <button class="btn btn-mor ortala" id="vaka-don" data-git="vakalar" hidden>Vakalara dön →</button>
+    </section>
+
+    <!-- ===================== EKRAN 7: AYARLAR ===================== -->
+    <section class="ekran" id="ekran-ayarlar" aria-label="Ayarlar">
+      <div class="ust-bar">
+        <button class="btn btn-ikon" data-git="baslangic" aria-label="Geri">←</button>
+        <h2>Ayarlar</h2>
+      </div>
+      <div class="ayar-liste">
+        <div class="ayar-satir">
+          <span>🔊 Ses</span>
+          <button class="anahtar" id="ses-anahtar" data-eylem="ses-degistir" aria-pressed="true" aria-label="Ses"></button>
+        </div>
+        <div class="ayar-satir">
+          <span>🗑️ İlerlemeyi sıfırla</span>
+          <button class="btn btn-pembe" data-eylem="sifirla">Sıfırla</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer>Sinan İnce 2026</footer>
+</div>
+
+<!-- ===================== KATMAN: GELİŞİM DEFTERİ ===================== -->
+<div class="katman" id="katman-defter" role="dialog" aria-modal="true" aria-labelledby="defter-baslik">
+  <div class="katman-kutu">
+    <div class="ust-bar">
+      <h2 id="defter-baslik">📖 Can'ın Gelişim Defteri</h2>
+      <button class="btn btn-ikon" data-eylem="defter-kapat" aria-label="Kapat">✕</button>
+    </div>
+    <div class="defter-izgara" id="defter-izgara"></div>
+    <p class="sonuc-not" id="defter-sayac"></p>
+  </div>
+</div>
+
+<!-- ===================== KATMAN: ONAY PENCERESİ ===================== -->
+<div class="katman" id="katman-onay" role="alertdialog" aria-modal="true" aria-labelledby="onay-metin">
+  <div class="katman-kutu onay-kutu">
+    <p class="onay-metin" id="onay-metin"></p>
+    <div class="onay-dugmeler">
+      <button class="btn" data-eylem="onay-hayir" id="onay-hayir">Vazgeç</button>
+      <button class="btn btn-pembe" data-eylem="onay-evet" id="onay-evet">Evet</button>
+    </div>
+  </div>
+</div>
+
+<div id="bildirim" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   A. SABİTLER
+   ========================================================= */
+const GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma'];
+const GOSTERGELER = [
+  // yonelme: "… en çok ⚡ Enerjiye yardım eder." cümlesi için
+  { id: 'buyume', ikon: '💪', ad: 'Büyüme',         yonelme: 'Büyümeye',         renk: 'var(--turuncu)' },
+  { id: 'dis',    ikon: '🦷', ad: 'Dişler',         yonelme: 'Dişlere',          renk: 'var(--mavi)'    },
+  { id: 'enerji', ikon: '⚡', ad: 'Enerji',         yonelme: 'Enerjiye',         renk: 'var(--sari)'    },
+  { id: 'kalkan', ikon: '🛡️', ad: 'Mikrop Kalkanı', yonelme: 'Mikrop Kalkanına', renk: 'var(--yesil)'   }
+];
+const gostergeBilgi = id => GOSTERGELER.find(g => g.id === id);
+
+/* =========================================================
+   B. KAYIT (localStorage) — tüm okuma/yazma try/catch ile korunur
+   ========================================================= */
+const Kayit = (() => {
+  const ANAHTAR = 'saglikliCan_v1';
+
+  function varsayilan() {
+    return {
+      surum: 1,
+      gunler: GUNLER.map(() => ({ tamam: false, yildiz: 0, kullanilanVaryantlar: [] })),
+      defter: [],          // beceri kimlikleri: "gunNo-gostergeId"
+      vakalar: [],         // çözülen vaka numaraları
+      ayarlar: { ses: true }
+    };
+  }
+
+  // Okunan veriyi varsayılanla birleştir (eksik/bozuk alanlara karşı)
+  function birlestir(okunan) {
+    const v = varsayilan();
+    if (!okunan || typeof okunan !== 'object') return v;
+    if (Array.isArray(okunan.gunler)) {
+      v.gunler = v.gunler.map((g, i) => Object.assign(g, okunan.gunler[i] || {}));
+    }
+    if (Array.isArray(okunan.defter)) v.defter = okunan.defter;
+    if (Array.isArray(okunan.vakalar)) v.vakalar = okunan.vakalar;
+    if (okunan.ayarlar) Object.assign(v.ayarlar, okunan.ayarlar);
+    return v;
+  }
+
+  let veri = varsayilan();
+
+  function yukle() {
+    try {
+      const ham = localStorage.getItem(ANAHTAR);
+      veri = birlestir(ham ? JSON.parse(ham) : null);
+    } catch (e) {
+      veri = varsayilan();   // depolama kapalıysa oyun bellekte çalışır
+    }
+    return veri;
+  }
+  function kaydet() {
+    try { localStorage.setItem(ANAHTAR, JSON.stringify(veri)); } catch (e) { /* sessizce geç */ }
+  }
+  function sifirla() {
+    try { localStorage.removeItem(ANAHTAR); } catch (e) { /* sessizce geç */ }
+    veri = varsayilan();
+  }
+
+  return { yukle, kaydet, sifirla, get veri() { return veri; } };
+})();
+
+/* =========================================================
+   C. SES (Web Audio API — ses dosyası yok)
+   ========================================================= */
+const Ses = (() => {
+  let ctx = null;
+
+  function hazirla() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    if (ctx.state !== 'running' && ctx.resume) ctx.resume();
+    return ctx;
+  }
+
+  // Tek nota çal: frekans (Hz), süre (sn), dalga tipi, gecikme (sn), seviye,
+  // bitiş frekansı (verilirse nota o frekansa kayar)
+  function nota(frek, sure, tip = 'sine', gecikme = 0, seviye = 0.15, frekBitis = null) {
+    if (!Kayit.veri.ayarlar.ses) return;
+    const c = hazirla();
+    if (!c) return;
+    try {
+      const t = c.currentTime + gecikme;
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = tip;
+      o.frequency.setValueAtTime(frek, t);
+      if (frekBitis) o.frequency.exponentialRampToValueAtTime(frekBitis, t + sure);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(seviye, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + sure);
+      o.connect(g).connect(c.destination);
+      o.start(t);
+      o.stop(t + sure + 0.03);
+    } catch (e) { /* ses çalınamazsa oyun sessiz devam eder */ }
+  }
+
+  // Spec Bölüm 10 — her olayın kendi sesi; müzik yok
+  return {
+    tik()     { nota(660, 0.06, 'triangle', 0, 0.06); },                       // düğme dokunuşu
+    onay()    { nota(523, 0.10); nota(784, 0.16, 'sine', 0.08); },             // ses açılınca deneme
+    saglikli(){ nota(523, 0.12, 'sine', 0, 0.14); nota(784, 0.2, 'sine', 0.1, 0.14); },        // yükselen iki nota
+    sagliksiz(){ nota(392, 0.32, 'triangle', 0, 0.09, 262); },                                 // yumuşak, alçalan
+    pop()     { nota(600, 0.09, 'sine', 0, 0.13, 1000); },                                     // gösterge dolarken
+    can()     { nota(1047, 0.7, 'sine', 0, 0.12); nota(2093, 0.45, 'sine', 0, 0.04);
+                nota(1568, 0.55, 'sine', 0.02, 0.05); },                                       // çan
+    ding()    { nota(1319, 0.4, 'triangle', 0, 0.13); nota(1976, 0.3, 'sine', 0.05, 0.05); },  // ipucu bulundu
+    tikHafif(){ nota(300, 0.05, 'triangle', 0, 0.05); },                                       // masum nokta
+    fanfar()  { [523, 659, 784].forEach((f, i) => nota(f, 0.14, 'triangle', i * 0.12, 0.11));
+                nota(1047, 0.45, 'triangle', 0.36, 0.12); nota(784, 0.45, 'sine', 0.36, 0.06); },
+    pirilti(gecikme = 0) { [1568, 1976, 2349, 2637].forEach((f, i) => nota(f, 0.12, 'sine', gecikme + i * 0.06, 0.06)); }
+  };
+})();
+
+/* =========================================================
+   D. SAHNE YÖNETİCİSİ
+   ========================================================= */
+const Sahne = (() => {
+  const ekranlar = {};
+  let aktif = null;
+
+  // id: "baslangic" → <section id="ekran-baslangic">; gir: ekran açılınca çalışır
+  function tanimla(id, gir) {
+    ekranlar[id] = { el: document.getElementById('ekran-' + id), gir: gir || null };
+  }
+
+  function git(id, parametre = {}) {
+    const hedef = ekranlar[id];
+    if (!hedef) { console.warn('Bilinmeyen ekran:', id); return; }
+    if (aktif) ekranlar[aktif].el.classList.remove('aktif');
+    aktif = id;
+    if (hedef.gir) hedef.gir(parametre);       // önce içerik, sonra görünür
+    hedef.el.classList.add('aktif');
+    hedef.el.scrollTop = 0;
+    const baslik = hedef.el.querySelector('h1, h2');
+    if (baslik) { baslik.setAttribute('tabindex', '-1'); baslik.focus({ preventScroll: true }); }
+  }
+
+  return { tanimla, git, get aktif() { return aktif; } };
+})();
+
+/* =========================================================
+   E. YARDIMCILAR — bildirim, onay penceresi
+   ========================================================= */
+const Bildirim = (() => {
+  const el = document.getElementById('bildirim');
+  let zaman = null;
+  return {
+    goster(metin) {
+      el.textContent = metin;
+      el.classList.add('goster');
+      clearTimeout(zaman);
+      zaman = setTimeout(() => el.classList.remove('goster'), 2200);
+    }
+  };
+})();
+
+const Onay = (() => {
+  const katman = document.getElementById('katman-onay');
+  const metinEl = document.getElementById('onay-metin');
+  const evetEl = document.getElementById('onay-evet');
+  let coz = null;
+
+  // Promise<boolean> döndürür
+  function sor(metin, evetYazi = 'Evet') {
+    metinEl.textContent = metin;
+    evetEl.textContent = evetYazi;
+    katman.classList.add('acik');
+    document.getElementById('onay-hayir').focus();
+    return new Promise(r => { coz = r; });
+  }
+  function kapat(sonuc) {
+    katman.classList.remove('acik');
+    if (coz) { coz(sonuc); coz = null; }
+  }
+  return { sor, kapat, get acik() { return katman.classList.contains('acik'); } };
+})();
+
+
+/* =========================================================
+   E2. CAN KARAKTERİ (SVG)
+   İfadeler: mutlu · yorgun · parlak · zipla · dusunen
+   Hangi parçanın görüneceğini CSS (bölüm 10b) seçer.
+   ========================================================= */
+const RENK = {
+  ten: '#F6C9A0', sac: '#5A3825', tisort: '#FF6B35', pantolon: '#3B5BA5',
+  koyu: '#2D2A32', agizIc: '#8B2E2E', yanak: '#FF8FA8', kahve: '#8B6B4A'
+};
+
+function canSVG(ifade = 'mutlu') {
+  const R = RENK;
+  const kol = (d) => `<path d="${d}" stroke="${R.tisort}" stroke-width="18" stroke-linecap="round" fill="none"/>`;
+  const el  = (x, y) => `<circle cx="${x}" cy="${y}" r="9" fill="${R.ten}"/>`;
+  const goz = (x, y) => `<circle cx="${x}" cy="${y}" r="6.5" fill="${R.koyu}"/><circle cx="${x + 2.5}" cy="${y - 2.5}" r="2.2" fill="#fff"/>`;
+  const cizgi = (d, k = 4) => `<path d="${d}" stroke="${R.koyu}" stroke-width="${k}" stroke-linecap="round" fill="none"/>`;
+  const yildizcik = (x, y, s) => `<path class="yildizcik" transform="translate(${x} ${y}) scale(${s})"
+      d="M0 -10 L3 -3 L10 0 L3 3 L0 10 L-3 3 L-10 0 L-3 -3Z" fill="#FFD600" stroke="#fff" stroke-width="1.5"/>`;
+
+  return `<svg class="can" data-ifade="${ifade}" viewBox="0 0 200 290" role="img" aria-label="Can">
+  <ellipse class="can-golge" cx="100" cy="280" rx="48" ry="7" fill="rgba(0,0,0,.13)"/>
+  <g class="can-govde">
+    <!-- Bacaklar ve ayakkabılar -->
+    <rect x="78" y="208" width="19" height="56" rx="9" fill="${R.pantolon}"/>
+    <rect x="103" y="208" width="19" height="56" rx="9" fill="${R.pantolon}"/>
+    <ellipse cx="85" cy="266" rx="17" ry="9" fill="${R.koyu}"/>
+    <ellipse cx="115" cy="266" rx="17" ry="9" fill="${R.koyu}"/>
+
+    <!-- Kollar: aşağıda -->
+    <g class="p p-kol-asagi">${kol('M68 156 Q50 180 54 206')}${kol('M132 156 Q150 180 146 206')}${el(54, 210)}${el(146, 210)}</g>
+    <!-- Kollar: havada (zıplama) -->
+    <g class="p p-kol-yukari">${kol('M68 156 Q48 134 44 110')}${kol('M132 156 Q152 134 156 110')}${el(44, 105)}${el(156, 105)}</g>
+    <!-- Kollar: dedektif, sağ elde büyüteç -->
+    <g class="p p-kol-dedektif">
+      ${kol('M68 156 Q50 180 54 206')}${el(54, 210)}
+      ${kol('M132 156 Q160 170 157 142')}
+      <line x1="160" y1="132" x2="168" y2="114" stroke="${R.kahve}" stroke-width="6" stroke-linecap="round"/>
+      ${el(157, 138)}
+      <circle cx="174" cy="100" r="15" fill="rgba(191,230,255,.65)" stroke="${R.kahve}" stroke-width="5"/>
+      <path d="M166 95 Q170 89 177 89" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Gövde (tişört) ve göğüsteki yıldız -->
+    <rect x="62" y="140" width="76" height="80" rx="28" fill="${R.tisort}"/>
+    <path d="M100 166 L104.5 175.5 L115 176.5 L107 183.5 L109.5 194 L100 188.5 L90.5 194 L93 183.5 L85 176.5 L95.5 175.5Z" fill="#FFD600"/>
+    <rect x="91" y="128" width="18" height="18" rx="6" fill="${R.ten}"/>
+
+    <!-- Baş -->
+    <g class="can-bas">
+      <circle cx="52" cy="96" r="10" fill="${R.ten}"/>
+      <circle cx="148" cy="96" r="10" fill="${R.ten}"/>
+      <circle cx="100" cy="92" r="48" fill="${R.ten}"/>
+      <path d="M53 88 Q50 40 100 40 Q150 40 147 88 Q136 66 114 66 Q104 56 88 64 Q68 62 53 88Z" fill="${R.sac}"/>
+      <path d="M96 42 Q100 26 113 30 Q104 34 104 44Z" fill="${R.sac}"/>
+      <ellipse cx="70" cy="112" rx="9" ry="5.5" fill="${R.yanak}" opacity=".55"/>
+      <ellipse cx="130" cy="112" rx="9" ry="5.5" fill="${R.yanak}" opacity=".55"/>
+
+      <!-- Gözler -->
+      <g class="p p-goz-acik">${goz(82, 96)}${goz(118, 96)}</g>
+      <g class="p p-goz-uykulu">${cizgi('M74 97 Q82 102 90 97')}${cizgi('M110 97 Q118 102 126 97')}</g>
+      <g class="p p-goz-mutlu">${cizgi('M74 99 Q82 90 90 99')}${cizgi('M110 99 Q118 90 126 99')}</g>
+      <g class="p p-goz-yukari">${goz(84, 92)}${goz(120, 92)}</g>
+      <g class="p p-kas">${cizgi('M74 81 Q82 76 90 80', 3.5)}${cizgi('M110 78 Q118 73 126 79', 3.5)}</g>
+
+      <!-- Ağızlar -->
+      <g class="p p-agiz-gulumse">${cizgi('M86 113 Q100 127 114 113')}</g>
+      <g class="p p-agiz-esneme"><ellipse cx="100" cy="121" rx="9" ry="12" fill="${R.agizIc}"/></g>
+      <g class="p p-agiz-parlak">
+        <path d="M80 111 Q100 142 120 111Z" fill="${R.agizIc}"/>
+        <path d="M83 112 L117 112 Q115 120 100 120 Q85 120 83 112Z" fill="#fff"/>
+      </g>
+      <g class="p p-agiz-acik"><path d="M86 112 Q100 132 114 112Z" fill="${R.agizIc}"/></g>
+      <g class="p p-agiz-dusunen">${cizgi('M91 119 Q101 115 111 119')}</g>
+
+      <!-- Dedektif şapkası -->
+      <g class="p p-sapka">
+        <path d="M58 60 Q62 22 100 20 Q138 22 142 60Z" fill="#A9825A"/>
+        <path d="M59 52 Q100 42 141 52 L142 60 Q100 50 58 60Z" fill="#6E5236"/>
+        <ellipse cx="100" cy="61" rx="58" ry="9" fill="${R.kahve}"/>
+      </g>
+    </g>
+
+    <!-- Uyku Z'leri -->
+    <g class="p p-zzz" font-family="inherit" font-weight="900" fill="#A855F7">
+      <text x="150" y="52" font-size="24">Z</text>
+      <text x="168" y="30" font-size="17">z</text>
+    </g>
+    <!-- Parlak gülüş pırıltıları -->
+    <g class="p p-parilti">${yildizcik(134, 120, 0.9)}${yildizcik(152, 72, 0.6)}${yildizcik(50, 66, 0.7)}</g>
+  </g>
+</svg>`;
+}
+
+/* Bir kapsayıcıdaki Can'ın ifadesini değiştir */
+function canIfade(kapsayici, ifade) {
+  const can = kapsayici.querySelector('.can');
+  if (can) can.setAttribute('data-ifade', ifade);
+}
+
+/* =========================================================
+   E3. SAHNELER (SVG arka planlar, 1600×450, zemin y≈360)
+   Pencerelerdeki gökyüzü .gok sınıfıyla saate göre boyanır (CSS 10c).
+   ========================================================= */
+const IFADELER = ['mutlu', 'yorgun', 'parlak', 'zipla', 'dusunen'];
+const SAATLER = ['sabah', 'ogle', 'aksam', 'gece'];
+
+// Ortak pencere: çerçeve + gökyüzü + güneş/ay/yıldızlar
+function pencere(x, y, w, h) {
+  const cx = x + w / 2, cy = y + h / 2;
+  return `
+    <rect x="${x - 10}" y="${y - 10}" width="${w + 20}" height="${h + 20}" rx="12" fill="#fff"/>
+    <rect class="gok" x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>
+    <circle class="gunes" cx="${x + w * .7}" cy="${y + h * .35}" r="${h * .15}" fill="#FFD600"/>
+    <circle class="ay" cx="${x + w * .7}" cy="${y + h * .35}" r="${h * .13}" fill="#FFF6C2"/>
+    <g class="gece-yildiz" fill="#FFF6C2">
+      <circle cx="${x + w * .22}" cy="${y + h * .25}" r="2.5"/>
+      <circle cx="${x + w * .35}" cy="${y + h * .7}" r="2"/>
+      <circle cx="${x + w * .85}" cy="${y + h * .78}" r="2.5"/>
+    </g>
+    <rect x="${cx - 3}" y="${y}" width="6" height="${h}" fill="#fff"/>
+    <rect x="${x}" y="${cy - 3}" width="${w}" height="6" fill="#fff"/>`;
+}
+
+/* Çizim alanı -400…1200 genişliğindedir (viewBox "-400 0 1600 450").
+   Önemli nesneler ortadaki 0…800 bandında; kenarlar yalnızca süs —
+   dar ekranda kırpılır, geniş tahtada boşluk kalmaz. */
+const karartma = '<rect class="karartma" x="-400" width="1600" height="450" fill="#1B2450"/>';
+const duvarZemin = (duvar, zemin) =>
+  `<rect x="-400" width="1600" height="450" fill="${duvar}"/><rect x="-400" y="360" width="1600" height="90" fill="${zemin}"/>`;
+const saksi = (x, renk = '#FF8FB1') => `
+  <ellipse cx="${x + 10}" cy="268" rx="18" ry="34" fill="#52C46E" transform="rotate(-20 ${x + 10} 268)"/>
+  <ellipse cx="${x + 40}" cy="268" rx="18" ry="34" fill="#45B862" transform="rotate(20 ${x + 40} 268)"/>
+  <ellipse cx="${x + 25}" cy="255" rx="16" ry="36" fill="#5BD077"/>
+  <path d="M${x} 300 h50 l-6 60 h-38z" fill="${renk}"/>`;
+
+const SAHNELER = {
+  banyo() {
+    let fayans = '';
+    for (let x = -350; x < 1200; x += 50) fayans += `<line x1="${x}" y1="0" x2="${x}" y2="360" stroke="#C6E8EF" stroke-width="2"/>`;
+    for (let y = 50; y < 360; y += 50) fayans += `<line x1="-400" y1="${y}" x2="1200" y2="${y}" stroke="#C6E8EF" stroke-width="2"/>`;
+    return `
+      ${duvarZemin('#DDF3F8', '#B9DCE3')}${fayans}
+      <!-- kenar süsleri: küvet ve ördek (sol), saksı (sağ) -->
+      <rect x="-330" y="262" width="270" height="98" rx="34" fill="#fff"/>
+      <rect x="-316" y="256" width="242" height="18" rx="9" fill="#A8DDF5"/>
+      <circle cx="-150" cy="248" r="13" fill="#FFD600"/><circle cx="-139" cy="236" r="9" fill="#FFD600"/>
+      <path d="M-131 236 l10 3 -10 3z" fill="#FF6B35"/>
+      ${saksi(930)}
+      ${pencere(600, 70, 120, 100)}
+      <!-- ayna -->
+      <rect x="90" y="70" width="130" height="150" rx="65" fill="#fff"/>
+      <rect x="100" y="80" width="110" height="130" rx="55" fill="#CFEFFF"/>
+      <path d="M125 110 Q135 95 150 92" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/>
+      <!-- lavabo, musluk, diş fırçası bardağı -->
+      <rect x="135" y="266" width="40" height="94" rx="10" fill="#fff"/>
+      <rect x="70" y="240" width="170" height="30" rx="12" fill="#fff"/>
+      <rect x="148" y="222" width="14" height="20" rx="4" fill="#B0BEC5"/>
+      <rect x="200" y="214" width="22" height="28" rx="5" fill="#FF4D8D"/>
+      <rect x="206" y="194" width="5" height="26" rx="2" fill="#4D9FFF"/>
+      <rect x="213" y="198" width="5" height="22" rx="2" fill="#00C9A7"/>
+      <!-- havluluk -->
+      <rect x="600" y="230" width="130" height="8" rx="4" fill="#B0BEC5"/>
+      <rect x="620" y="236" width="90" height="100" rx="10" fill="#00C9A7"/>
+      <rect x="620" y="310" width="90" height="10" fill="#fff" opacity=".6"/>
+      <!-- paspas -->
+      <ellipse cx="400" cy="398" rx="140" ry="18" fill="#A8E6D9"/>
+      ${karartma}`;
+  },
+
+  mutfak() {
+    return `
+      ${duvarZemin('#FFEBD0', '#E9C79E')}
+      <line x1="-400" y1="392" x2="1200" y2="392" stroke="#DDB78A" stroke-width="3"/>
+      <line x1="-400" y1="424" x2="1200" y2="424" stroke="#DDB78A" stroke-width="3"/>
+      <!-- kenar süsleri: tezgâh ve tencere (sol), saksı (sağ) -->
+      <rect x="-340" y="250" width="290" height="110" rx="10" fill="#fff" stroke="#E6DCD0" stroke-width="3"/>
+      <rect x="-340" y="240" width="290" height="16" rx="6" fill="#C98F5A"/>
+      <rect x="-300" y="276" width="100" height="60" rx="8" fill="#F3EDE6"/>
+      <rect x="-170" y="276" width="100" height="60" rx="8" fill="#F3EDE6"/>
+      <rect x="-280" y="206" width="70" height="36" rx="10" fill="#4D9FFF"/>
+      <rect x="-292" y="200" width="94" height="10" rx="5" fill="#3A86E8"/>
+      ${saksi(930, '#4D9FFF')}
+      ${pencere(110, 60, 180, 130)}
+      <!-- perdeler -->
+      <rect x="86" y="44" width="30" height="170" rx="10" fill="#FF8FB1"/>
+      <rect x="284" y="44" width="30" height="170" rx="10" fill="#FF8FB1"/>
+      <rect x="76" y="38" width="248" height="10" rx="5" fill="#C98F5A"/>
+      <!-- raf ve kavanozlar -->
+      <rect x="60" y="262" width="170" height="10" rx="4" fill="#C98F5A"/>
+      <rect x="75" y="226" width="30" height="36" rx="6" fill="#FFD600"/>
+      <rect x="115" y="232" width="26" height="30" rx="6" fill="#00C9A7"/>
+      <rect x="151" y="222" width="32" height="40" rx="6" fill="#FF8FB1"/>
+      <!-- buzdolabı -->
+      <rect x="640" y="120" width="120" height="240" rx="14" fill="#fff" stroke="#E6DCD0" stroke-width="3"/>
+      <line x1="640" y1="205" x2="760" y2="205" stroke="#E6DCD0" stroke-width="3"/>
+      <rect x="738" y="150" width="8" height="34" rx="4" fill="#C5BBB0"/>
+      <rect x="738" y="222" width="8" height="50" rx="4" fill="#C5BBB0"/>
+      <!-- masa -->
+      <rect x="485" y="296" width="12" height="64" rx="4" fill="#9A6740"/>
+      <rect x="616" y="296" width="12" height="64" rx="4" fill="#9A6740"/>
+      <rect x="470" y="280" width="170" height="18" rx="7" fill="#B07A4F"/>
+      <ellipse cx="530" cy="276" rx="32" ry="7" fill="#fff"/>
+      <rect x="586" y="254" width="22" height="24" rx="5" fill="#4D9FFF"/>
+      ${karartma}`;
+  },
+
+  bahce() {
+    return `
+      <rect class="gok" x="-400" width="1600" height="450"/>
+      <circle class="gunes" cx="690" cy="80" r="34" fill="#FFD600"/>
+      <circle class="ay" cx="690" cy="80" r="28" fill="#FFF6C2"/>
+      <g fill="#fff" opacity=".9">
+        <ellipse cx="470" cy="70" rx="46" ry="18"/><ellipse cx="500" cy="58" rx="30" ry="18"/>
+        <ellipse cx="170" cy="48" rx="38" ry="14"/>
+      </g>
+      <!-- okul binası -->
+      <rect x="80" y="135" width="300" height="225" fill="#FFD6A0"/>
+      <polygon points="60,140 230,70 400,140" fill="#FF6B35"/>
+      <g fill="#BFE6FF" stroke="#fff" stroke-width="5">
+        <rect x="105" y="170" width="50" height="40" rx="5"/><rect x="205" y="170" width="50" height="40" rx="5"/><rect x="305" y="170" width="50" height="40" rx="5"/>
+        <rect x="105" y="235" width="50" height="40" rx="5"/><rect x="305" y="235" width="50" height="40" rx="5"/>
+      </g>
+      <rect x="205" y="285" width="50" height="75" rx="6" fill="#A9825A"/>
+      <!-- çimen -->
+      <rect x="-400" y="345" width="1600" height="105" fill="#9BE07A"/>
+      <path d="M-400 345 Q-200 330 0 345 T400 345 T800 345 T1200 345 V360 H-400Z" fill="#86D466"/>
+      <!-- kenar süsleri: kaydırak (sol), ikinci ağaç (sağ) -->
+      <rect x="-300" y="210" width="10" height="150" rx="4" fill="#4D9FFF"/>
+      <rect x="-250" y="210" width="10" height="150" rx="4" fill="#4D9FFF"/>
+      <g stroke="#4D9FFF" stroke-width="6"><line x1="-295" y1="250" x2="-245" y2="250"/><line x1="-295" y1="290" x2="-245" y2="290"/><line x1="-295" y1="330" x2="-245" y2="330"/></g>
+      <rect x="-305" y="200" width="70" height="14" rx="6" fill="#FF6B35"/>
+      <path d="M-240 205 Q-170 230 -110 350 L-90 350 Q-150 220 -240 190Z" fill="#FFD600"/>
+      <rect x="985" y="250" width="22" height="110" rx="8" fill="#A9825A"/>
+      <circle cx="996" cy="225" r="50" fill="#45B862"/><circle cx="965" cy="250" r="32" fill="#45B862"/><circle cx="1028" cy="250" r="32" fill="#45B862"/>
+      <!-- ağaç -->
+      <rect x="620" y="230" width="26" height="130" rx="8" fill="#A9825A"/>
+      <circle cx="633" cy="200" r="60" fill="#52C46E"/>
+      <circle cx="595" cy="232" r="40" fill="#52C46E"/>
+      <circle cx="672" cy="232" r="40" fill="#52C46E"/>
+      <!-- çiçekler -->
+      <g><circle cx="520" cy="392" r="7" fill="#FF4D8D"/><circle cx="545" cy="410" r="6" fill="#FFD600"/>
+         <circle cx="720" cy="400" r="7" fill="#A855F7"/><circle cx="120" cy="405" r="6" fill="#FFD600"/></g>
+      ${karartma}`;
+  },
+
+  oda() {
+    return `
+      ${duvarZemin('#EDE6FF', '#D9C2A3')}
+      <!-- kenar süsleri: oyuncak kutusu ve top (sol), saksı (sağ) -->
+      <rect x="-320" y="292" width="150" height="68" rx="10" fill="#FF6B35"/>
+      <rect x="-326" y="284" width="162" height="16" rx="6" fill="#E85A27"/>
+      <circle cx="-110" cy="334" r="26" fill="#4D9FFF"/><path d="M-136 334 Q-110 318 -84 334" stroke="#fff" stroke-width="5" fill="none"/>
+      ${saksi(930, '#A855F7')}
+      <ellipse cx="400" cy="402" rx="150" ry="22" fill="#FFB3C7"/>
+      ${pencere(90, 70, 150, 120)}
+      <!-- kitaplık -->
+      <rect x="60" y="260" width="140" height="100" rx="8" fill="#C9A27A"/>
+      <rect x="60" y="306" width="140" height="6" fill="#B08A63"/>
+      <g><rect x="72" y="270" width="14" height="34" rx="2" fill="#FF6B35"/><rect x="90" y="274" width="12" height="30" rx="2" fill="#4D9FFF"/>
+         <rect x="106" y="268" width="16" height="36" rx="2" fill="#00C9A7"/><rect x="72" y="316" width="16" height="34" rx="2" fill="#A855F7"/>
+         <rect x="92" y="320" width="12" height="30" rx="2" fill="#FFD600"/></g>
+      <!-- komodin ve lamba -->
+      <rect x="470" y="300" width="60" height="60" rx="8" fill="#C9A27A"/>
+      <rect x="494" y="272" width="12" height="28" rx="3" fill="#8E6CC9"/>
+      <polygon points="480,272 520,272 512,246 488,246" fill="#FFD600"/>
+      <!-- yatak -->
+      <rect x="560" y="200" width="22" height="160" rx="8" fill="#8E6CC9"/>
+      <rect x="560" y="290" width="210" height="70" rx="10" fill="#A07DD9"/>
+      <rect x="572" y="268" width="196" height="30" rx="10" fill="#fff"/>
+      <rect x="626" y="260" width="142" height="46" rx="12" fill="#4D9FFF"/>
+      <ellipse cx="604" cy="268" rx="26" ry="13" fill="#fff" stroke="#E3DAF5" stroke-width="3"/>
+      ${karartma}
+      <!-- gece lamba ışığı (karartmanın üstünde) -->
+      <circle class="lamba-isik" cx="500" cy="262" r="46" fill="#FFF2A8" opacity=".45"/>`;
+  }
+};
+
+/* Sahne kutusunu kur: arka plan + Can */
+function sahneKur(kutu, sahne, saat, ifade = 'mutlu') {
+  kutu.dataset.saat = saat;
+  kutu.dataset.sahne = sahne;
+  kutu.innerHTML = `
+    <div class="sahne-arka"><svg viewBox="-400 0 1600 450" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${SAHNELER[sahne]()}</svg></div>
+    <div class="sahne-can">${canSVG(ifade)}</div>`;
+}
+/* Can'a dokunmadan yalnızca arka planı değiştir */
+function sahneDegistir(kutu, sahne) {
+  kutu.dataset.sahne = sahne;
+  const arka = kutu.querySelector('.sahne-arka');
+  arka.querySelector('svg').innerHTML = SAHNELER[sahne]();
+  if (arka.animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    arka.animate([{ opacity: .25 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' });
+  }
+}
+function saatAyarla(kutu, saat) { kutu.dataset.saat = saat; }
+
+/* =========================================================
+   E4. GÖSTERGELER — 0–100 arası, en az 20; çocuğa sayı gösterilmez
+   ========================================================= */
+const Gostergeler = (() => {
+  const ALT = 20, UST = 100, BASLANGIC = 50;
+  let degerler = {};
+
+  function sifirla() {
+    degerler = Object.fromEntries(GOSTERGELER.map(g => [g.id, BASLANGIC]));
+  }
+
+  function ciz() {
+    // Göstergeler düğmedir; yalnızca gösterge seçimi adımında etkinleşir
+    document.getElementById('gostergeler').innerHTML = GOSTERGELER.map(g => `
+      <button class="gosterge" data-eylem="gosterge-sec" data-gosterge="${g.id}" disabled>
+        <span class="g-ikon" aria-hidden="true">${g.ikon}</span>
+        <span class="g-ad">${g.ad}</span>
+        <span class="cubuk" role="progressbar" aria-label="${g.ad}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${degerler[g.id]}">
+          <span class="dolgu" style="display:block;width:${degerler[g.id]}%;background:${g.renk}"></span>
+        </span>
+      </button>`).join('');
+  }
+
+  // Gösterge seçimi adımını aç/kapat
+  function secilebilir(acik) {
+    const kap = document.getElementById('gostergeler');
+    kap.classList.toggle('secilebilir', acik);
+    kap.querySelectorAll('.gosterge').forEach(b => { b.classList.remove('artti', 'azaldi', 'isaret'); b.disabled = !acik; });
+    if (acik) kap.querySelector('.gosterge').focus({ preventScroll: true });
+  }
+
+  // Yanlış gösterge seçilince doğrusunu parlat
+  function isaretle(id) {
+    const kutu = document.querySelector(`#gostergeler [data-gosterge="${id}"]`);
+    if (!kutu) return;
+    kutu.classList.remove('isaret'); void kutu.offsetWidth; kutu.classList.add('isaret');
+  }
+
+  // fark: +12, +6, -8 gibi. Yeni değeri döndürür.
+  function degistir(id, fark) {
+    if (!(id in degerler)) return null;
+    const yeni = Math.max(ALT, Math.min(UST, degerler[id] + fark));
+    degerler[id] = yeni;
+    const kutu = document.querySelector(`#gostergeler [data-gosterge="${id}"]`);
+    if (kutu) {
+      kutu.querySelector('.dolgu').style.width = yeni + '%';
+      kutu.querySelector('.cubuk').setAttribute('aria-valuenow', yeni);
+      kutu.classList.remove('artti', 'azaldi');
+      void kutu.offsetWidth;                       // animasyonu yeniden başlat
+      kutu.classList.add(fark >= 0 ? 'artti' : 'azaldi');
+    }
+    return yeni;
+  }
+
+  return { sifirla, ciz, degistir, secilebilir, isaretle, get degerler() { return { ...degerler }; } };
+})();
+
+/* =========================================================
+   F. EKRAN İÇERİKLERİ
+   ========================================================= */
+// Oyun içi geçici durum (kaydedilmez)
+const Durum = { gun: 0, durak: 0, vaka: 0, sonuclar: [], sonGostergeler: {}, sonYildiz: 0 };
+
+Sahne.tanimla('baslangic');
+
+// --- Hafta Haritası ---
+Sahne.tanimla('hafta', () => {
+  const izgara = document.getElementById('gun-izgara');
+  const v = Kayit.veri;
+  // İlerleme bandı: toplam yıldız; hafta bitince kutlama
+  const yildiz = v.gunler.reduce((t, g) => t + g.yildiz, 0);
+  const bitti = v.gunler.every(g => g.tamam);
+  const bant = document.getElementById('hafta-ilerleme');
+  bant.className = 'vaka-ilerleme' + (bitti ? ' usta' : '');
+  bant.innerHTML = `<span class="can-mini" aria-hidden="true">${canSVG(bitti ? 'zipla' : 'mutlu')}</span>` +
+    (bitti ? `<span>🎉 Haftayı tamamladın! ⭐ ${yildiz} / ${GUNLER.length * 3}</span>`
+           : `<span>⭐ ${yildiz} / ${GUNLER.length * 3} yıldız</span>`);
+  izgara.innerHTML = GUNLER.map((ad, i) => {
+    const g = v.gunler[i];
+    const acik = i === 0 || v.gunler[i - 1].tamam;
+    const sinif = !acik ? 'kilitli' : (g.tamam ? 'tamam' : '');
+    return `<button class="gun-kart ${sinif}" data-eylem="gun-ac" data-gun="${i}"
+              aria-label="${ad}${acik ? '' : ', kilitli'}, ${g.yildiz} yıldız">
+              ${acik ? '' : '<span class="kilit" aria-hidden="true">🔒</span>'}
+              <span class="gun-no">${i + 1}. gün</span>
+              <span class="gun-ad">${ad}</span>
+              <span class="yildizlar" aria-hidden="true">${[0, 1, 2].map(k =>
+                k < g.yildiz ? '<span class="dolu">★</span>' : '☆').join('')}</span>
+            </button>`;
+  }).join('');
+});
+
+// --- Gün Akışı ---
+Sahne.tanimla('gun', ({ gun }) => {
+  Durum.gun = Number(gun) || 0;
+  document.getElementById('gun-baslik').textContent = GUNLER[Durum.gun];
+  // Göstergeler her gün 50'den başlar
+  Gostergeler.sifirla();
+  Gostergeler.ciz();
+  GunAkisi.basla(Durum.gun);
+});
+
+// --- Gün Sonu ---
+Sahne.tanimla('gunsonu', () => GunSonu.basla());
+
+// --- Vaka Listesi ---
+Sahne.tanimla('vakalar', () => {
+  const cozulen = Kayit.veri.vakalar;
+  const sayi = VAKALAR.filter(v => cozulen.includes(v.id)).length;
+  const usta = sayi === VAKALAR.length;
+  const ilerleme = document.getElementById('vaka-ilerleme');
+  ilerleme.className = 'vaka-ilerleme' + (usta ? ' usta' : '');
+  ilerleme.innerHTML = `<span class="can-mini" aria-hidden="true">${canSVG('dusunen')}</span>` +
+    (usta ? '<span>🏅 Usta Dedektif! Bütün vakaları çözdün.</span>'
+          : `<span>🔍 ${sayi} / ${VAKALAR.length} vaka çözüldü</span>`);
+
+  document.getElementById('vaka-izgara').innerHTML = VAKALAR.map((v, i) => {
+    const c = cozulen.includes(v.id);
+    return `<button class="vaka-kart ${c ? 'cozuldu' : ''}" data-eylem="vaka-ac" data-vaka="${i}"
+              aria-label="Vaka ${i + 1}: ${v.baslik}${c ? ', çözüldü' : ''}">
+              ${c ? '<span class="rozet" aria-hidden="true">🔍</span>' : ''}
+              <span class="v-sorun" aria-hidden="true">${v.sorunIkon}</span>
+              <span class="v-ad">${v.baslik}</span>
+              <span class="v-no">Vaka ${i + 1}</span>
+            </button>`;
+  }).join('');
+});
+
+// --- Vaka ---
+Sahne.tanimla('vaka', ({ vaka }) => {
+  Durum.vaka = Number(vaka) || 0;
+  Dedektif.basla(Durum.vaka);
+});
+
+// --- Ayarlar ---
+Sahne.tanimla('ayarlar', sesAnahtariniGuncelle);
+function sesAnahtariniGuncelle() {
+  document.getElementById('ses-anahtar').setAttribute('aria-pressed', String(Kayit.veri.ayarlar.ses));
+}
+
+// --- Gelişim Defteri katmanı ---
+function defteriCiz() {
+  const v = Kayit.veri;
+  let html = '<span></span>' + GOSTERGELER.map(g =>
+    `<span class="d-bas" title="${g.ad}" aria-label="${g.ad}">${g.ikon}</span>`).join('');
+  GUNLER.forEach((ad, i) => {
+    html += `<span class="d-gun">${ad}</span>`;
+    GOSTERGELER.forEach(g => {
+      const dolu = v.defter.includes(`${i}-${g.id}`);
+      const etiket = `${ad}: ${dolu ? BECERILER[g.id] : g.ad + ', boş'}`;
+      html += `<span class="yuva ${dolu ? 'dolu' : ''}" title="${dolu ? BECERILER[g.id] : ''}" aria-label="${etiket}">${dolu ? g.ikon : ''}</span>`;
+    });
+  });
+  document.getElementById('defter-izgara').innerHTML = html;
+  document.getElementById('defter-sayac').textContent =
+    `${v.defter.length} / ${GUNLER.length * GOSTERGELER.length} çıkartma`;
+}
+
+/* =========================================================
+   F2. MOD A — DURAKLAR, SENARYOLAR, GÜN AKIŞI
+   ========================================================= */
+const DURAKLAR = [
+  { id: 'banyo',    ad: 'Sabah banyosu',    saatYazi: '07:00', saat: 'sabah', sahne: 'banyo'  },
+  { id: 'kahvalti', ad: 'Kahvaltı',         saatYazi: '07:30', saat: 'sabah', sahne: 'mutfak' },
+  { id: 'beslenme', ad: 'Beslenme çantası', saatYazi: '08:00', saat: 'sabah', sahne: 'mutfak' },
+  { id: 'teneffus', ad: 'Teneffüs',         saatYazi: '10:30', saat: 'ogle',  sahne: 'bahce'  },
+  { id: 'aksam',    ad: 'Eve dönüş',        saatYazi: '18:00', saat: 'aksam', sahne: 'mutfak' },
+  { id: 'yatma',    ad: 'Yatma vakti',      saatYazi: '21:00', saat: 'gece',  sahne: 'oda'    }
+];
+
+// Zorluk kademesi (gün: 0 = Pazartesi)
+// Gün 1: 2 kart, gösterge otomatik · Gün 2–3: 2 kart + gösterge seçimi · Gün 4–5: 3 kart + gösterge seçimi
+const gunAyari = gun => ({ kartSayisi: gun >= 3 ? 3 : 2, gostergeSecimi: gun >= 1 });
+
+// Sağlıklı seçimden sonra Can'ın ifadesi (artan ana göstergeye göre)
+const IFADE_GOSTERGE = { buyume: 'zipla', dis: 'parlak', enerji: 'zipla', kalkan: 'parlak' };
+
+/* =========================================================
+   F2a. İÇERİK — alışkanlık tablosu ve 30 senaryo
+   TASLAK: Sinan'ın gözden geçirmesine açık. Cümleleri değiştirmek için
+   yalnızca bu bölümü düzenlemek yeterli; mekanik buna dokunmaz.
+   ========================================================= */
+
+/* Eski cihazlarda (Windows 10, Android 9 tahtalar) görünmeyen emojiler yerine gömülü SVG */
+const IKON_FIRCA = '<svg class="ikon-svg" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-40 12 12)">' +
+  '<rect x="0.5" y="12" width="15" height="5" rx="2.5" fill="#4D9FFF"/>' +
+  '<rect x="13.5" y="11" width="10" height="7" rx="2.2" fill="#2F7FE0"/>' +
+  '<rect x="14.3" y="5" width="8.4" height="6.6" rx="1.2" fill="#fff" stroke="#7CC7FF" stroke-width="1.2"/>' +
+  '<path d="M16.5 5.6v5.4M18.5 5.6v5.4M20.5 5.6v5.4" stroke="#BFE6FF" stroke-width="1"/></g></svg>';
+const IKON_KUTU_ICECEK = '<svg class="ikon-svg" viewBox="0 0 24 24" aria-hidden="true">' +
+  '<path d="M14 7 L14 3 L18 1" stroke="#FF4D8D" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+  '<rect x="6" y="7" width="12" height="15" rx="1.6" fill="#FF9F43"/>' +
+  '<rect x="8" y="11" width="8" height="7" rx="1" fill="#FFE08A"/><circle cx="12" cy="14.5" r="2" fill="#FF6B35"/></svg>';
+
+/* Ana tablo (spec Bölüm 5): alışkanlık → gösterge (ikincil) → etki cümlesi.
+   Sağlıklı kartın etki cümlesi her zaman buradan gelir; aynı alışkanlık
+   hafta boyunca aynı cümleyle tekrar edilir (pekiştirme).
+   İkonlar bilerek gösterge ikonlarından farklı (cevabı ele vermesin). */
+const ALISKANLIK = {
+  kahvalti: { ikon: '🍳', kisaAd: 'Kahvaltı',         gosterge: 'enerji', cumle: 'Kahvaltı okulda enerji verir.' },
+  sut:      { ikon: '🥛', kisaAd: 'Süt, yoğurt, peynir', gosterge: 'buyume', ikincil: 'dis', cumle: 'Süt, yoğurt ve peynir kemiklerini ve dişlerini güçlendirir.' },
+  sebze:    { ikon: '🥦', kisaAd: 'Sebze ve meyve',   gosterge: 'kalkan', cumle: 'Sebze ve meyve hastalıklardan korunmana yardım eder.' },
+  su:       { ikon: '💧', kisaAd: 'Su içmek',         gosterge: 'enerji', cumle: 'Su içince vücudun dinç kalır.' },
+  hareket:  { ikon: '🏃', kisaAd: 'Koşup oynamak',    gosterge: 'buyume', cumle: 'Hareket kaslarını ve kemiklerini güçlendirir.' },
+  gunes:    { ikon: '☀️', kisaAd: 'Güneşte oynamak',  gosterge: 'buyume', cumle: 'Güneş ışığı kemiklerine yardım eder.' },
+  el:       { ikon: '🧼', kisaAd: 'El yıkamak',       gosterge: 'kalkan', cumle: 'El yıkamak mikropları uzaklaştırır.' },
+  banyo:    { ikon: '🛁', kisaAd: 'Banyo yapmak',     gosterge: 'kalkan', cumle: 'Temizlik seni mikroplardan korur.' },
+  dis:      { ikon: IKON_FIRCA, kisaAd: 'Diş fırçalamak',   gosterge: 'dis',    cumle: 'Fırçalamak dişleri çürümekten korur.' },
+  uyku:     { ikon: '😴', kisaAd: 'Erken uyumak',     gosterge: 'enerji', ikincil: 'buyume', cumle: 'Uyurken vücudun dinlenir ve büyür.' },
+  ekran:    { ikon: '📵', kisaAd: 'Ekranı kapatmak',  gosterge: 'enerji', cumle: 'Ekranı kapatınca kolay uyursun.' },
+  meyve:    { ikon: '🍎', kisaAd: 'Beslenmede meyve', gosterge: 'kalkan', cumle: 'Meyveler vücudunu mikroplara karşı güçlendirir.' }
+};
+const ALISKANLIKLAR = Object.values(ALISKANLIK);
+
+/* Senaryo biçimi
+   id:        "durak-gün"   gun: haftalık planda ilk oynanacağı gün (0 = Pazartesi)
+   durum:     durak cümlesi (en fazla 10 kelime)
+   saglikli:  { aliskanlik: ALISKANLIK anahtarı, metin, ikon? }  → ana +30, ikincil +15
+   sagliksiz: 2 seçenek { ikon, metin, gosterge, cumle }        → −10
+   Gün 1–3 sağlıksızlardan biri rastgele, Gün 4–5 ikisi birden çıkar.
+   Gün 4–5 (gun: 3, 4) senaryolarının sağlıksız seçenekleri bilerek daha az bariz.
+
+   Haftalık plan — her gün 4 göstergenin hepsine en az bir alışkanlık gider:
+            Banyo   Kahvaltı  Beslenme  Teneffüs  Eve dönüş  Yatma
+   Pzt      diş     kahvaltı  meyve     hareket   el         uyku
+   Salı     banyo   süt       su        güneş     sebze      diş
+   Çar      diş     kahvaltı  sebze     el        hareket    uyku
+   Per      diş     süt       meyve     su        el         ekran
+   Cuma     banyo   sebze     su        güneş     hareket    diş            */
+const sn = (durak, gun, durum, saglikli, sagliksiz) => ({ id: `${durak}-${gun}`, durak, gun, durum, saglikli, sagliksiz });
+const yanlis = (ikon, metin, gosterge, cumle) => ({ ikon, metin, gosterge, cumle });
+
+const SENARYOLAR = [
+  /* ---------- 1. Sabah banyosu ---------- */
+  sn('banyo', 0, 'Can uyandı. Banyoya girdi.',
+    { aliskanlik: 'dis', metin: 'Dişlerini fırçala' },
+    [ yanlis('😪', 'Fırçalamadan çık', 'dis', 'Fırçalamazsan dişlerinde mikrop kalır.'),
+      yanlis('🍬', 'Şeker ye, çık', 'dis', 'Şeker dişlerine zarar verir.') ]),
+  sn('banyo', 1, 'Can dün çok terledi.',
+    { aliskanlik: 'banyo', metin: 'Duş al, temiz giysiler giy', ikon: '🚿' },
+    [ yanlis('👕', 'Kirli tişörtü giy', 'kalkan', 'Kirli giysilerde mikrop çoğalır.'),
+      yanlis('🙈', 'Yıkanmadan çık', 'kalkan', 'Yıkanmazsan mikroplar üstünde kalır.') ]),
+  sn('banyo', 2, 'Günaydın! Can aynanın karşısında.',
+    { aliskanlik: 'dis', metin: 'Dişlerini fırçala' },
+    [ yanlis('🙅', 'Bugün fırçalama', 'dis', 'Fırçalamazsan dişlerinde mikrop kalır.'),
+      yanlis('🍭', 'Ağzına lolipop al', 'dis', 'Şeker dişlerine zarar verir.') ]),
+  sn('banyo', 3, "Can'ın aklı oyunda. Diş fırçası bekliyor.",
+    { aliskanlik: 'dis', metin: 'Sabırla iki dakika fırçala' },
+    [ yanlis('⏩', 'Üç saniyede bitir', 'dis', 'Çok kısa fırçalamak dişleri temizlemez.'),
+      yanlis('💦', 'Sadece ağzını çalkala', 'dis', 'Su tek başına dişleri temizlemez.') ]),
+  sn('banyo', 4, 'Can dün parkta oynadı. Her yeri toz içinde.',
+    { aliskanlik: 'banyo', metin: 'Duş al', ikon: '🚿' },
+    [ yanlis('🧽', 'Sadece yüzünü sil', 'kalkan', 'Silmek yetmez, mikroplar üstünde kalır.'),
+      yanlis('👕', 'Üstünü değiştir, yıkanma', 'kalkan', 'Yıkanmazsan mikroplar üstünde kalır.') ]),
+
+  /* ---------- 2. Kahvaltı ---------- */
+  sn('kahvalti', 0, 'Can uyandı. Karnı çok aç.',
+    { aliskanlik: 'kahvalti', metin: 'Kahvaltı yap' },
+    [ yanlis('🎒', 'Kahvaltı yapmadan çık', 'enerji', 'Aç kalınca derste çabuk yorulursun.'),
+      yanlis('🍫', 'Sadece çikolata ye', 'dis', 'Çok şeker dişlerine zarar verir.') ]),
+  sn('kahvalti', 1, 'Kahvaltı masası hazır. Ne olsun?',
+    { aliskanlik: 'sut', metin: 'Süt iç, peynir ye' },
+    [ yanlis('🥤', 'Gazlı içecek iç', 'dis', 'Gazlı içecekler dişlerine zarar verir.'),
+      yanlis('🍩', 'Sadece pasta ye', 'dis', 'Çok şeker dişlerine zarar verir.') ]),
+  sn('kahvalti', 2, 'Can geç kalktı. Servis gelmek üzere.',
+    { aliskanlik: 'kahvalti', metin: 'Hızlıca kahvaltı yap' },
+    [ yanlis('🎒', 'Kahvaltı yapmadan çık', 'enerji', 'Aç kalınca derste çabuk yorulursun.'),
+      yanlis('🍪', 'Yolda bisküvi ye', 'enerji', 'Bisküvi sana uzun süre güç vermez.') ]),
+  sn('kahvalti', 3, 'Kahvaltıda ne yiyelim, ne içelim?',
+    { aliskanlik: 'sut', metin: 'Bir kase yoğurt ye', ikon: '🥣' },
+    [ yanlis(IKON_KUTU_ICECEK, 'Hazır meyve suyu iç', 'dis', 'Hazır meyve sularında çok şeker var.'),
+      yanlis('🥤', 'Kola iç', 'dis', 'Kola dişlerine zarar verir.') ]),
+  sn('kahvalti', 4, 'Kahvaltı tabağına ne ekleyelim?',
+    { aliskanlik: 'sebze', metin: 'Domates, salatalık ekle', ikon: '🍅' },
+    [ yanlis('🍫', 'Çikolatalı krema ekle', 'dis', 'Çok şeker dişlerine zarar verir.'),
+      yanlis('🧁', 'Bir kek daha ekle', 'dis', 'Çok şekerli yiyecekler dişlere zarar verir.') ]),
+
+  /* ---------- 3. Beslenme çantası ---------- */
+  sn('beslenme', 0, 'Beslenme çantası boş. Ne koyalım?',
+    { aliskanlik: 'meyve', metin: 'Elma koy' },
+    [ yanlis('🍟', 'Cips koy', 'enerji', 'Cips sana uzun süre güç vermez.'),
+      yanlis('🍬', 'Şeker koy', 'dis', 'Çok şeker dişleri çürütür.') ]),
+  sn('beslenme', 1, 'Beslenme çantasına içecek lazım.',
+    { aliskanlik: 'su', metin: 'Su şişesi koy' },
+    [ yanlis('🥤', 'Gazlı içecek koy', 'dis', 'Gazlı içecekler dişlerine zarar verir.'),
+      yanlis('🍬', 'Şekerli içecek koy', 'dis', 'Şekerli içecekler dişlerine zarar verir.') ]),
+  sn('beslenme', 2, 'Bugün beslenmede ne olsun?',
+    { aliskanlik: 'sebze', metin: 'Havuç dilimleri koy', ikon: '🥕' },
+    [ yanlis('🍫', 'Çikolata koy', 'dis', 'Çok şeker dişleri çürütür.'),
+      yanlis('🍟', 'Cips koy', 'enerji', 'Cips sana uzun süre güç vermez.') ]),
+  sn('beslenme', 3, 'Beslenmeye tatlı bir şey koyalım.',
+    { aliskanlik: 'meyve', metin: 'Mandalina koy', ikon: '🍊' },
+    [ yanlis('🍪', 'Kremalı bisküvi koy', 'dis', 'Kremalı bisküvide çok şeker var.'),
+      yanlis(IKON_KUTU_ICECEK, 'Hazır meyve suyu koy', 'dis', 'Hazır meyve suyunda çok şeker var.') ]),
+  sn('beslenme', 4, 'Bugün beden eğitimi dersi var.',
+    { aliskanlik: 'su', metin: 'Büyük su şişesi koy' },
+    [ yanlis(IKON_KUTU_ICECEK, 'Hazır meyveli içecek koy', 'dis', 'Hazır içeceklerde çok şeker var.'),
+      yanlis('🚫', 'Hiç içecek koyma', 'enerji', 'Susuz kalınca halsiz olursun.') ]),
+
+  /* ---------- 4. Teneffüs ---------- */
+  sn('teneffus', 0, 'Teneffüs zili çaldı!',
+    { aliskanlik: 'hareket', metin: 'Bahçede koş, oyna' },
+    [ yanlis('💺', 'Sınıfta otur', 'buyume', 'Hareket etmezsen kasların güçlenmez.'),
+      yanlis('💺', 'Bankta oturup bekle', 'buyume', 'Hareket etmezsen kasların güçlenmez.') ]),
+  sn('teneffus', 1, 'Hava güneşli. Teneffüs başladı.',
+    { aliskanlik: 'gunes', metin: 'Güneşte top oyna' },
+    [ yanlis('🏠', 'İçeride kal', 'buyume', 'İçeride kalırsan güneşten faydalanamazsın.'),
+      yanlis('💺', 'Merdivende otur', 'buyume', 'Hareket etmezsen kasların güçlenmez.') ]),
+  sn('teneffus', 2, 'Teneffüste Can beslenmesini yiyecek.',
+    { aliskanlik: 'el', metin: 'Önce ellerini yıka' },
+    [ yanlis('🖐️', 'Yıkamadan ye', 'kalkan', 'Ellerindeki mikroplar ağzına geçebilir.'),
+      yanlis('👖', 'Ellerini pantolonuna sil', 'kalkan', 'Silmek mikropları temizlemez.') ]),
+  sn('teneffus', 3, 'Can çok koştu. Ağzı kurudu.',
+    { aliskanlik: 'su', metin: 'Su iç' },
+    [ yanlis('🥤', 'Gazoz iç', 'dis', 'Gazlı içecekler dişlerine zarar verir.'),
+      yanlis('⏳', 'Eve kadar bekle', 'enerji', 'Susuz kalınca halsiz olursun.') ]),
+  sn('teneffus', 4, 'Güzel bir gün. Bahçede ne yapalım?',
+    { aliskanlik: 'gunes', metin: 'Güneşte ip atla' },
+    [ yanlis('🚪', 'Koridorda oturup bekle', 'buyume', 'İçeride kalırsan güneşten faydalanamazsın.'),
+      yanlis('📚', 'Sınıfta oturup bekle', 'buyume', 'Hareket etmezsen kasların güçlenmez.') ]),
+
+  /* ---------- 5. Eve dönüş / akşam yemeği ---------- */
+  sn('aksam', 0, 'Can eve geldi. Yemek hazır.',
+    { aliskanlik: 'el', metin: 'Ellerini yıka' },
+    [ yanlis('🍽️', 'Hemen sofraya otur', 'kalkan', 'Yıkanmamış ellerde mikrop olur.'),
+      yanlis('🖐️', 'Ellerin temiz görünüyor, ye', 'kalkan', 'Mikroplar gözle görünmez.') ]),
+  sn('aksam', 1, 'Akşam yemeği hazır. Tabakta sebze var.',
+    { aliskanlik: 'sebze', metin: 'Sebzeni ye' },
+    [ yanlis('🙅', 'Sebzeyi kenara it', 'kalkan', 'Sebze yemezsen vücudun iyi korunmaz.'),
+      yanlis('🍰', 'Yemek yerine tatlı ye', 'dis', 'Çok şeker dişlerine zarar verir.') ]),
+  sn('aksam', 2, 'Akşam oldu. Hava çok güzel.',
+    { aliskanlik: 'hareket', metin: 'Ailece yürüyüşe çık', ikon: '🚶' },
+    [ yanlis('🛋️', 'Koltukta televizyon izle', 'buyume', 'Hep oturursan kasların güçlenmez.'),
+      yanlis('🎮', 'Bütün akşam oyun oyna', 'buyume', 'Hep oturursan kasların güçlenmez.') ]),
+  sn('aksam', 3, 'Can parktan döndü. Elma yiyecek.',
+    { aliskanlik: 'el', metin: 'Önce sabunla ellerini yıka' },
+    [ yanlis('🧻', 'Ellerini peçeteyle sil', 'kalkan', 'Peçete mikropları temizlemez.'),
+      yanlis('💦', 'Sadece suyla çalkala', 'kalkan', 'Sabun mikropları çok daha iyi temizler.') ]),
+  sn('aksam', 4, 'Ödev bitti. Yemeğe bir saat var.',
+    { aliskanlik: 'hareket', metin: 'Bisiklet sür', ikon: '🚲' },
+    [ yanlis('📺', 'Bir saat ekran başında otur', 'buyume', 'Hep oturursan kasların güçlenmez.'),
+      yanlis('🎮', 'Tablette oyun oyna', 'buyume', 'Hep oturursan kasların güçlenmez.') ]),
+
+  /* ---------- 6. Yatma vakti ---------- */
+  sn('yatma', 0, "Saat dokuz oldu. Can'ın gözleri kapanıyor.",
+    { aliskanlik: 'uyku', metin: 'Işığı kapat, uyu' },
+    [ yanlis('📱', 'Tabletle oyna', 'enerji', 'Gece ekran izlemek uykunu kaçırır.'),
+      yanlis('📺', 'Geç saate kadar televizyon izle', 'enerji', 'Geç yatınca sabah yorgun uyanırsın.') ]),
+  sn('yatma', 1, 'Yatma vakti. Can pijamalarını giydi.',
+    { aliskanlik: 'dis', metin: 'Dişlerini fırçala' },
+    [ yanlis('😴', 'Fırçalamadan uyu', 'dis', 'Gece dişlerde mikrop çoğalır.'),
+      yanlis('🍪', 'Yatakta bisküvi ye', 'dis', 'Gece yenen şeker dişleri çürütür.') ]),
+  sn('yatma', 2, 'Yarın okul var. Saat dokuz oldu.',
+    { aliskanlik: 'uyku', metin: 'Erken yat' },
+    [ yanlis('🎲', 'Gece yarısına kadar oyna', 'enerji', 'Geç yatınca sabah yorgun uyanırsın.'),
+      yanlis('📺', 'Geç saate kadar televizyon izle', 'enerji', 'Geç yatınca sabah yorgun uyanırsın.') ]),
+  sn('yatma', 3, 'Can yatakta. Tablet elinde.',
+    { aliskanlik: 'ekran', metin: 'Tableti kapat' },
+    [ yanlis('📱', 'Bir video daha izle', 'enerji', 'Ekran ışığı uykunu kaçırır.'),
+      yanlis('🔆', 'Tableti yastığın yanına koy', 'enerji', 'Yanan ekran uykunu bölebilir.') ]),
+  sn('yatma', 4, 'Can yatmadan önce süt içti.',
+    { aliskanlik: 'dis', metin: 'Sonra dişlerini fırçala' },
+    [ yanlis('😴', 'Hemen uyu', 'dis', 'Yatmadan önce dişler fırçalanmalı.'),
+      yanlis('💦', 'Sadece suyla çalkala', 'dis', 'Su tek başına dişleri temizlemez.') ])
+];
+
+/* Gösterge puanları. Göstergeler 50'den başlar, çıkartma eşiği 80'dir (F3).
+   İlk denemede doğru seçilen tek bir alışkanlık göstergeyi 80'e çıkarır;
+   önce sağlıksız seçilirse (50 − 10 + 30 = 70) o alışkanlık tek başına yetmez. */
+const PUAN = { ana: 30, ikincil: 15, sagliksiz: -10 };
+
+/* Gösterge seçiminde savunulabilir ikinci cevaplar: doğru sayılır (puan ana
+   göstergeye gider), çocuğa nazikçe ana gösterge gösterilir.
+   "Neden?" sorularında bu alışkanlıklar o göstergenin çeldiricisi olmaz. */
+const YAKIN_GOSTERGE = { kahvalti: ['buyume'], sebze: ['buyume'], meyve: ['buyume'] };
+
+/* Günün senaryo planını seç (spec Bölüm 7)
+   İlk oynayış: kendi planı (hafta içinde her senaryo bir kez çıkar).
+   Tekrar oynayış: o gün henüz oynanmamış başka bir günün planı; hepsi
+   oynandıysa en son oynanan dışındaki herhangi biri. Her gün planı 4
+   göstergenin hepsini kapsadığı için tekrar oynamada da her çıkartma alınabilir. */
+function planGunuSec(gun) {
+  const oynanan = Kayit.veri.gunler[gun].kullanilanVaryantlar || [];
+  if (!oynanan.length) return gun;
+  const planNo = id => Number(String(id).split('-').pop());
+  const kullanilan = new Set(oynanan.map(planNo));
+  const adaylar = [0, 1, 2, 3, 4].filter(j => !kullanilan.has(j));
+  if (adaylar.length) return rastgele(adaylar);
+  const son = planNo(oynanan[oynanan.length - 1]);
+  return rastgele([0, 1, 2, 3, 4].filter(j => j !== son));
+}
+
+/* Saglikli kartı ana tablodan tamamla */
+function saglikliKart(sen) {
+  const a = ALISKANLIK[sen.saglikli.aliskanlik];
+  return {
+    saglikli: true, id: sen.saglikli.aliskanlik, metin: sen.saglikli.metin, ikon: sen.saglikli.ikon || a.ikon,
+    kisaAd: a.kisaAd, gosterge: a.gosterge, ikincil: a.ikincil || null, cumle: a.cumle
+  };
+}
+
+function karistir(dizi) {
+  const a = [...dizi];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const rastgele = dizi => dizi[Math.floor(Math.random() * dizi.length)];
+
+/* Karttan göstergeye uçan ikon (Web Animations API). Promise döndürür. */
+function ikonUcur(ikon, kaynak, gostergeId) {
+  return new Promise(coz => {
+    const hedef = document.querySelector(`#gostergeler [data-gosterge="${gostergeId}"]`);
+    const azHareket = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!kaynak || !hedef || azHareket || !Element.prototype.animate) return coz();
+    const a = kaynak.getBoundingClientRect(), b = hedef.getBoundingClientRect();
+    const x0 = a.left + a.width / 2, y0 = a.top + a.height / 2;
+    const x1 = b.left + b.width / 2, y1 = b.top + b.height / 2;
+    const u = document.createElement('div');
+    u.className = 'ucan-ikon'; u.innerHTML = ikon; u.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(u);
+    const kon = (x, y, s) => `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${s})`;
+    const anim = u.animate([
+      { transform: kon(x0, y0, 1), opacity: 1 },
+      { transform: kon((x0 + x1) / 2, Math.min(y0, y1) - 60, 1.4), opacity: 1, offset: .5 },
+      { transform: kon(x1, y1, .6), opacity: .3 }
+    ], { duration: 750, easing: 'ease-in-out' });
+    anim.onfinish = () => { u.remove(); coz(); };
+  });
+}
+
+const GunAkisi = (() => {
+  const el = id => document.getElementById(id);
+  let plan = [], sira = 0, ayar = null, kartlar = [], senaryo = null;
+  let oturum = 0;          // her gün açılışında artar; eski animasyonların sonucu yok sayılır
+  let asama = 'kart';      // kart → (gosterge) → etki
+  let ilkDeneme = true, kilit = false;
+
+  function basla(gun) {
+    ayar = gunAyari(gun);
+    oturum++;
+    const planNo = planGunuSec(gun);
+    plan = DURAKLAR.map(d => ({ durak: d, senaryo: SENARYOLAR.find(x => x.durak === d.id && x.gun === planNo) }));
+    Durum.sonuclar = [];
+    sira = 0;
+    const ilk = plan[0].durak;
+    const kutu = el('gun-sahne');
+    sahneKur(kutu, ilk.sahne, ilk.saat, 'mutlu');
+    kutu.insertAdjacentHTML('beforeend', '<div class="durak-etiket" id="durak-etiket"></div>');
+    durakAc();
+  }
+
+  function noktalariCiz() {
+    const n = el('durak-noktalar');
+    n.innerHTML = plan.map((_, i) => `<i class="${i < sira ? 'gecti' : (i === sira ? 'simdi' : '')}"></i>`).join('');
+    n.setAttribute('aria-label', `Durak ${sira + 1} / ${plan.length}`);
+  }
+
+  // Geri bildirim kutusu: tur = bilgi | iyi | uyari | soru
+  function cumle(ana, tur, altSatirlar = []) {
+    const c = el('durum-cumlesi');
+    c.className = 'durum-cumlesi ' + tur;
+    c.innerHTML = `<span>${ana}</span>` +
+      altSatirlar.map(a => `<span class="alt-satir ${a.renk || ''}">${a.metin}</span>`).join('');
+  }
+
+  function durakAc() {
+    const { durak, senaryo: s } = plan[sira];
+    senaryo = s; asama = 'kart'; ilkDeneme = true; kilit = false;
+
+    const kutu = el('gun-sahne');
+    if (kutu.dataset.sahne !== durak.sahne) sahneDegistir(kutu, durak.sahne);
+    saatAyarla(kutu, durak.saat);
+    canIfade(kutu, 'mutlu');
+    const etiket = el('durak-etiket');
+    etiket.textContent = `⏰ ${durak.saatYazi} · ${durak.ad}`;
+    etiket.classList.remove('yeni'); void etiket.offsetWidth; etiket.classList.add('yeni');
+    noktalariCiz();
+    cumle(s.durum, 'bilgi', Durum.gun === 0 ? [{ metin: '👆 Can için sağlıklı olanı seç.' }] : []);
+
+    // 1 sağlıklı + (kartSayisi − 1) sağlıksız, sırası karışık
+    const yanlislar = karistir(s.sagliksiz).slice(0, ayar.kartSayisi - 1);
+    kartlar = karistir([
+      saglikliKart(s),
+      ...yanlislar.map(k => ({ ...k, saglikli: false }))
+    ]);
+    const kap = el('kartlar');
+    kap.hidden = false;
+    kap.innerHTML = kartlar.map((k, i) => `
+      <button class="secim-kart" data-eylem="kart-sec" data-i="${i}">
+        <span class="k-ikon" aria-hidden="true">${k.ikon}</span>
+        <span class="k-metin">${k.metin}</span>
+      </button>`).join('');
+    el('devam-btn').hidden = true;
+    Gostergeler.secilebilir(false);
+    el('ekran-gun').scrollTop = 0;
+  }
+
+  async function kartSec(btn) {
+    if (kilit || asama !== 'kart') return;
+    const k = kartlar[Number(btn.dataset.i)];
+
+    // Sağlıksız seçim: gösterge düşer, Can yorulur, neden açıklanır, yeniden seçilir
+    if (!k.saglikli) {
+      ilkDeneme = false;
+      btn.disabled = true;
+      btn.classList.remove('titre'); void btn.offsetWidth;
+      btn.classList.add('yanlis', 'titre');
+      Ses.sagliksiz();
+      Gostergeler.degistir(k.gosterge, PUAN.sagliksiz);
+      canIfade(el('gun-sahne'), 'yorgun');
+      cumle(k.cumle, 'uyari', [{ metin: 'Can için daha iyisini seç.' }]);
+      return;
+    }
+
+    // Sağlıklı seçim
+    kilit = true;
+    btn.disabled = true;
+    btn.classList.add('dogru');
+    Ses.saglikli();
+    el('kartlar').querySelectorAll('.secim-kart').forEach(b => { if (b !== btn) b.hidden = true; });
+    canIfade(el('gun-sahne'), 'mutlu');
+
+    if (ayar.gostergeSecimi) {
+      asama = 'gosterge';
+      cumle(`${k.kisaAd} en çok neye iyi gelir?`, 'soru',
+            [{ metin: '👆 Yukarıdaki göstergelerden birine dokun.' }]);
+      Gostergeler.secilebilir(true);
+      el('ekran-gun').scrollTo({ top: 0, behavior: 'smooth' });
+      kilit = false;
+      return;
+    }
+    await etkiyiGoster(k, null);      // Gün 1: gösterge otomatik
+  }
+
+  async function gostergeSec(btn) {
+    if (kilit || asama !== 'gosterge') return;
+    kilit = true;
+    const k = kartlar.find(x => x.saglikli);
+    const secilen = btn.dataset.gosterge;
+    const tam = secilen === k.gosterge || secilen === k.ikincil;
+    const yakin = !tam && (YAKIN_GOSTERGE[k.id] || []).includes(secilen);
+    const dogru = tam || yakin;
+    if (dogru) Ses.can(); else Ses.sagliksiz();
+    Gostergeler.secilebilir(false);
+    await etkiyiGoster(k, dogru, yakin ? secilen : null);
+  }
+
+  // gostergeDogru: null (Gün 1, sorulmadı) | true | false
+  // yakin: savunulabilir ama ana olmayan gösterge seçildiyse onun id'si
+  async function etkiyiGoster(k, gostergeDogru, yakin = null) {
+    asama = 'etki';
+    const benimOturum = oturum;
+    const ana = gostergeBilgi(k.gosterge);
+    if (gostergeDogru === false || yakin) Gostergeler.isaretle(k.gosterge);
+
+    await ikonUcur(k.ikon, el('kartlar').querySelector('.secim-kart.dogru'), k.gosterge);
+    if (benimOturum !== oturum || Sahne.aktif !== 'gun') return;   // bu arada günden çıkıldı
+    Ses.pop();
+    Gostergeler.degistir(k.gosterge, PUAN.ana);
+    if (k.ikincil) Gostergeler.degistir(k.ikincil, PUAN.ikincil);
+    canIfade(el('gun-sahne'), IFADE_GOSTERGE[k.gosterge]);
+
+    let artis = `${ana.ikon} ${ana.ad} arttı!`;
+    if (k.ikincil) { const ik = gostergeBilgi(k.ikincil); artis += ` ${ik.ikon} ${ik.ad} de arttı!`; }
+    const alt = [{ metin: artis }];
+    if (gostergeDogru === false) {
+      alt.push({ metin: `👉 ${k.kisaAd} en çok ${ana.ikon} ${ana.yonelme} iyi gelir.`, renk: 'turuncu' });
+    } else if (yakin) {
+      alt.push({ metin: `👍 Bu da olur! Ama ${k.kisaAd} en çok ${ana.ikon} ${ana.yonelme} iyi gelir.` });
+    }
+    cumle(`✅ ${k.cumle}`, 'iyi', alt);
+
+    // Aşama 4'te yıldız hesabı ve gün sonu özeti bunu kullanacak
+    Durum.sonuclar.push({
+      senaryo: senaryo.id, durak: plan[sira].durak.id,
+      ilkDeneme, gostergeDogru, aliskanlik: k.kisaAd, ikon: k.ikon,
+      gosterge: k.gosterge, ikincil: k.ikincil || null, cumle: k.cumle
+    });
+
+    el('kartlar').hidden = true;
+    const d = el('devam-btn');
+    d.textContent = sira === plan.length - 1 ? 'Günü bitir →' : 'Devam →';
+    d.hidden = false;
+    d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    kilit = false;
+  }
+
+  function devam() {
+    if (asama !== 'etki' || kilit) return;
+    sira++;
+    if (sira < plan.length) durakAc();
+    else gunuBitir();
+  }
+
+  function gunuBitir() {
+    // Yıldız ve kayıt, "Neden?" soruları bittikten sonra GunSonu'nda yapılır
+    Durum.sonGostergeler = Gostergeler.degerler;
+    Sahne.git('gunsonu');
+  }
+
+  return { basla, kartSec, gostergeSec, devam, get durum() { return { sira, asama, plan: plan.length, ayar }; } };
+})();
+
+/* =========================================================
+   F3. GÜN SONU — özet, "Neden?" soruları, yıldız, çıkartmalar
+   ========================================================= */
+// Gösterge 80 ve üstünde biterse o gün için çıkartma (kozmetik)
+const CIKARTMA_ESIGI = 80;
+const BECERILER = {
+  buyume: 'Daha yükseğe zıpladı',
+  dis:    'Pırıl pırıl gülümsedi',
+  enerji: 'Derste dinç ve dikkatliydi',
+  kalkan: 'Mikroplara karşı güçlüydü'
+};
+const NEDEN_SORULARI = {
+  buyume: "Can'ın kemikleri ve kasları neden güçlendi?",
+  dis:    "Can'ın dişleri neden sağlıklı?",
+  enerji: 'Can bugün neden dinç?',
+  kalkan: "Can'ın mikrop kalkanı neden güçlendi?"
+};
+
+/* "Neden?" çeldiricileri ALISKANLIKLAR'dan (F2a) gelir: çeldirici her zaman
+   BAŞKA göstergeye giden sağlıklı bir alışkanlıktır (iyi/kötü değil, ilişki ölçülür). */
+const gostergeyeGider = (a, g) => a.gosterge === g || a.ikincil === g;
+// Bir göstergenin sorusunda yanlış diye gösterilmesi tartışılabilecek alışkanlıklar
+const TARTISMALI = {
+  buyume: ['Kahvaltı', 'Sebze ve meyve', 'Beslenmede meyve'],   // beslenme büyümeyi de destekler
+  kalkan: ['Erken uyumak'],                                        // uyku bağışıklığı da destekler
+  enerji: ['Koşup oynamak', 'Güneşte oynamak'],
+  dis: []
+};
+const MEYVELI = ['Sebze ve meyve', 'Beslenmede meyve'];          // ikisi aynı soruda birlikte çıkmaz
+
+/* Yıldız (spec Bölüm 8)
+   1: günü bitirmek
+   +1: ilk denemede sağlıklı seçim ≥ 5/6 (durak sayısına oranlanır)
+   +1: doğru gösterge ≥ %80 VE "Neden?" ≥ yarısı (Pazartesi gösterge şartı yok) */
+function yildizHesapla(gun, sonuclar, nedenDogru, nedenSayisi) {
+  const n = sonuclar.length;
+  let y = 1;
+  if (sonuclar.filter(s => s.ilkDeneme).length >= Math.ceil(n * 5 / 6)) y++;
+  const nedenTamam = nedenSayisi === 0 || nedenDogru >= Math.ceil(nedenSayisi / 2);
+  const gostergeTamam = gun === 0 ||
+    sonuclar.filter(s => s.gostergeDogru).length >= Math.ceil(n * 0.8);
+  if (nedenTamam && gostergeTamam) y++;
+  return y;
+}
+
+/* Günün sonuçlarından en fazla 2 "Neden?" sorusu üret.
+   Tercih sırası: gösterge VE cevap farklı → yalnızca gösterge farklı →
+   yalnızca cevap farklı → tek soru. */
+function nedenSorulariUret(sonuclar) {
+  const adaylar = [];
+  sonuclar.forEach(s => {
+    adaylar.push({ gosterge: s.gosterge, s });
+    if (s.ikincil) adaylar.push({ gosterge: s.ikincil, s });
+  });
+  const karisik = karistir(adaylar);
+  const farkliG = (a, b) => a.gosterge !== b.gosterge;
+  const farkliC = (a, b) => a.s.aliskanlik !== b.s.aliskanlik;
+  const kurallar = [(a, b) => farkliG(a, b) && farkliC(a, b), farkliG, farkliC];
+  let secilen = karisik.slice(0, 1);
+  for (const uyar of kurallar) {
+    const cift = karisik.flatMap((a, i) => karisik.slice(i + 1).map(b => [a, b])).find(([a, b]) => uyar(a, b));
+    if (cift) { secilen = cift; break; }
+  }
+  return secilen.map(({ gosterge, s }) => {
+    const havuz = karistir(ALISKANLIKLAR.filter(a =>
+      !gostergeyeGider(a, gosterge) && a.kisaAd !== s.aliskanlik &&
+      !(TARTISMALI[gosterge] || []).includes(a.kisaAd)));
+    const celdiriciler = [];
+    for (const a of havuz) {
+      if (celdiriciler.length === 2) break;
+      const meyveCakisir = MEYVELI.includes(a.kisaAd) &&
+        (MEYVELI.includes(s.aliskanlik) || celdiriciler.some(c => MEYVELI.includes(c.kisaAd)));
+      if (!meyveCakisir) celdiriciler.push(a);
+    }
+    return {
+      gosterge,
+      soru: NEDEN_SORULARI[gosterge],
+      dogru: s.aliskanlik,
+      cumle: s.cumle,
+      secenekler: karistir([
+        { ikon: s.ikon, kisaAd: s.aliskanlik },
+        ...celdiriciler.map(c => ({ ikon: c.ikon, kisaAd: c.kisaAd }))
+      ])
+    };
+  });
+}
+
+const GunSonu = (() => {
+  const el = id => document.getElementById(id);
+  let sorular = [], sira = 0, dogruSayisi = 0, cevaplandi = false;
+
+  function basla() {
+    el('gunsonu-baslik').textContent = `${GUNLER[Durum.gun]} bitti!`;
+    el('gunsonu-don').hidden = true;
+    el('gunsonu-govde').classList.add('soru-asamasi');
+    ozetCiz();
+    sorular = nedenSorulariUret(Durum.sonuclar);
+    sira = 0; dogruSayisi = 0;
+    if (sorular.length) soruCiz(); else bitir();
+  }
+
+  function ozetCiz() {
+    el('ozet-liste').innerHTML = Durum.sonuclar.map(s => {
+      const g = gostergeBilgi(s.gosterge).ikon + (s.ikincil ? ' ' + gostergeBilgi(s.ikincil).ikon : '');
+      return `<li class="ozet-satir">
+        <span class="o-ikon" aria-hidden="true">${s.ikon}</span>
+        <span class="o-ok" aria-hidden="true">→</span>
+        <span class="o-g" aria-hidden="true">${g}</span>
+        <span class="o-metin">${s.cumle}</span>
+      </li>`;
+    }).join('');
+  }
+
+  function soruCiz() {
+    const q = sorular[sira];
+    cevaplandi = false;
+    el('neden-kutu').innerHTML = `
+      <h3>Neden? 🤔</h3>
+      <p class="neden-sayac">${sira + 1} / ${sorular.length}</p>
+      <p class="neden-soru">${q.soru}</p>
+      <div class="neden-secenekler">
+        ${q.secenekler.map((o, i) => `
+          <button class="neden-btn" data-eylem="neden-cevap" data-i="${i}">
+            <span class="n-ikon" aria-hidden="true">${o.ikon}</span><span>${o.kisaAd}</span>
+          </button>`).join('')}
+      </div>
+      <div class="neden-geri" id="neden-geri" hidden></div>
+      <button class="btn btn-mor ortala" id="neden-sonraki" data-eylem="neden-sonraki" hidden>
+        ${sira === sorular.length - 1 ? 'Yıldızlarımı gör ⭐' : 'Sonraki →'}
+      </button>`;
+  }
+
+  function cevap(btn) {
+    if (cevaplandi) return;
+    cevaplandi = true;
+    const q = sorular[sira];
+    const secilen = q.secenekler[Number(btn.dataset.i)];
+    const dogru = secilen.kisaAd === q.dogru;
+    if (dogru) { dogruSayisi++; Ses.can(); } else Ses.sagliksiz();
+
+    el('neden-kutu').querySelectorAll('.neden-btn').forEach((b, i) => {
+      b.disabled = true;
+      if (q.secenekler[i].kisaAd === q.dogru) b.classList.add('dogru');
+    });
+    if (!dogru) btn.classList.add('yanlis');
+
+    const geri = el('neden-geri');
+    geri.className = 'neden-geri ' + (dogru ? 'iyi' : 'uyari');
+    geri.textContent = dogru
+      ? `✅ Evet! ${q.cumle}`
+      : `Doğrusu: ${q.dogru}. ${q.cumle}`;
+    geri.hidden = false;
+    const s = el('neden-sonraki');
+    s.hidden = false;
+    s.focus({ preventScroll: true });
+    s.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function sonraki() {
+    if (!cevaplandi) return;
+    sira++;
+    if (sira < sorular.length) soruCiz(); else bitir();
+  }
+
+  function bitir() {
+    const gun = Durum.gun;
+    const yildiz = yildizHesapla(gun, Durum.sonuclar, dogruSayisi, sorular.length);
+
+    // Çıkartmalar: gün sonunda eşiği geçen göstergeler
+    const degerler = Durum.sonGostergeler || {};
+    const kazanilan = GOSTERGELER.filter(g => (degerler[g.id] || 0) >= CIKARTMA_ESIGI);
+
+    // Kayıt: gün tamam, yıldız en yüksek olan kalır, çıkartmalar eklenir
+    const v = Kayit.veri;
+    const kayit = v.gunler[gun];
+    const yeniRekor = yildiz > kayit.yildiz;
+    kayit.tamam = true;
+    kayit.yildiz = Math.max(kayit.yildiz, yildiz);
+    // Oynanan varyantları sırayla sakla (en sondaki = en son oynanan)
+    const oynanan = (kayit.kullanilanVaryantlar || []).filter(id => !Durum.sonuclar.some(r => r.senaryo === id));
+    kayit.kullanilanVaryantlar = [...oynanan, ...Durum.sonuclar.map(r => r.senaryo)];
+    const yeniCikartmalar = kazanilan.filter(g => !v.defter.includes(`${gun}-${g.id}`));
+    yeniCikartmalar.forEach(g => v.defter.push(`${gun}-${g.id}`));
+    Kayit.kaydet();
+
+    const ifade = yildiz === 3 ? 'zipla' : (yildiz === 2 ? 'parlak' : 'mutlu');
+    const baslik = ['', 'Günü bitirdin!', 'Çok iyi!', 'Harika bir gün!'][yildiz];
+    const yildizHtml = [0, 1, 2].map(i =>
+      `<span class="${i < yildiz ? 'dolu' : ''}" style="animation-delay:${.25 + i * .3}s">★</span>`).join('');
+
+    let cikartmaHtml;
+    if (kazanilan.length) {
+      cikartmaHtml = `<div class="cikartmalar">${kazanilan.map((g, i) => `
+        <div class="cikartma" style="animation-delay:${1.2 + i * .25}s">
+          <span class="c-ikon" aria-hidden="true">${g.ikon}</span><span>${BECERILER[g.id]}</span>
+        </div>`).join('')}</div>
+        <p class="sonuc-not">${yeniCikartmalar.length ? '📖 Çıkartmalar Gelişim Defteri\'ne eklendi.' : 'Bu çıkartmalar defterinde zaten var.'}</p>`;
+    } else {
+      cikartmaHtml = '<p class="sonuc-not">Bir göstergeyi neredeyse doldurursan çıkartma kazanırsın!</p>';
+    }
+
+    el('neden-kutu').innerHTML = `
+      <div class="sonuc">
+        <h3>${baslik}</h3>
+        <div class="sonuc-can">${canSVG(ifade)}</div>
+        <div class="yildiz-satir" role="img" aria-label="${yildiz} yıldız">${yildizHtml}</div>
+        ${!yeniRekor && kayit.yildiz > yildiz ? `<p class="sonuc-not">En iyi sonucun: ${kayit.yildiz} yıldız</p>` : ''}
+        ${cikartmaHtml}
+      </div>`;
+    el('gunsonu-govde').classList.remove('soru-asamasi');
+    Ses.fanfar();
+    if (kazanilan.length) Ses.pirilti(1.2);
+    el('gunsonu-don').hidden = false;
+    Durum.sonYildiz = yildiz;
+  }
+
+  return { basla, cevap, sonraki };
+})();
+
+/* =========================================================
+   F4. MOD B — SAĞLIK DEDEKTİFİ
+   TASLAK içerik (spec Bölüm 5, Mod B). Bir vaka:
+   sorun → sahnede 3 ipucu (1 sebep, 2 masum) → 3 öneri (1 doğru) → ilişki cümlesi.
+   İpucu konumları sahne kutusunun yüzdesi; sağdaki ~%32'lik alan Can'ındır.
+   ========================================================= */
+const ipucuNok = (ikon, ad, x, y, cumle) => ({ ikon, ad, x, y, sebep: !!cumle, cumle });
+const oneriSec = (ikon, metin, aciklama) => ({ ikon, metin, dogru: !aciklama, aciklama });
+
+const VAKALAR = [
+  { id: 0, baslik: "Ali'nin Uykusuz Sabahları", sorunIkon: '😴', sahne: 'oda', saat: 'gece',
+    sorun: 'Ali sabahları çok yorgun uyanıyor.', kisiYe: "Ali'ye",
+    ipuclari: [ ipucuNok('🧸', 'Oyuncak ayı', 14, 72),
+                ipucuNok('📚', 'Kitaplar', 20, 40),
+                ipucuNok('📱', 'Tablet', 46, 66, 'Buldun! Ali gece geç saate kadar tablet izliyor.') ],
+    oneriler: [ oneriSec('📵', 'Tableti kapat, erken yat'),
+                oneriSec('⏰', 'Sabah daha geç kalk', 'Okul saati değişmez, erken yatmak gerekir.'),
+                oneriSec('🎮', 'Gece bir oyun daha oyna', 'Ekran ışığı uykuyu kaçırır.') ],
+    yanlisBas: "Bu, Ali'nin yorgunluğunu geçirmez.",
+    gosterge: 'enerji', iliski: 'Ekranı erken kapatıp uyuyunca sabah dinç uyanırsın.' },
+
+  { id: 1, baslik: "Elif'in Diş Ağrısı", sorunIkon: '😖', sahne: 'banyo', saat: 'sabah',
+    sorun: "Elif'in dişi ağrıyor.", kisiYe: "Elif'e",
+    ipuclari: [ ipucuNok('🦆', 'Lastik ördek', 12, 70),
+                ipucuNok('🍬', 'Şeker paketleri', 58, 64, 'Buldun! Elif çok şeker yiyor, fırçası hep kuru.'),
+                ipucuNok('🧴', 'Şampuan', 40, 38) ],
+    oneriler: [ oneriSec('🦷', 'Diş hekimine git, dişlerini fırçala'),
+                oneriSec('🍭', 'Şeker yemeye devam et', 'Şeker dişlerine daha çok zarar verir.'),
+                oneriSec('💦', 'Sadece suyla çalkala', 'Su tek başına dişleri temizlemez.') ],
+    yanlisBas: "Bu, Elif'in dişlerine yardım etmez.",
+    gosterge: 'dis', iliski: 'Diş hekimi ağrıyı tedavi eder. Fırçalamak ve şekeri azaltmak dişleri korur.' },
+
+  { id: 2, baslik: "Mert'in Mikrop Savaşı", sorunIkon: '🤧', sahne: 'mutfak', saat: 'ogle',
+    sorun: 'Sınıfta herkes hapşırıyor. Mert korunmak istiyor.', kisiYe: "Mert'e",
+    ipuclari: [ ipucuNok('🧼', 'Sabun', 20, 52, 'Buldun! Sabun hiç açılmamış. Mert ellerini yıkamıyor.'),
+                ipucuNok('🍯', 'Bal kavanozu', 44, 40),
+                ipucuNok('🌵', 'Kaktüs', 58, 74) ],
+    oneriler: [ oneriSec('🧼', 'Yemekten önce sabunla ellerini yıka'),
+                oneriSec('👖', 'Elini pantolonuna sil', 'Silmek mikropları temizlemez.'),
+                oneriSec('💦', 'Sadece suyla çalkala', 'Sabun mikropları çok daha iyi temizler.') ],
+    yanlisBas: "Bu, Mert'i mikroplardan korumaz.",
+    gosterge: 'kalkan', iliski: 'El yıkamak mikropları uzaklaştırır, korunmana yardım eder.' },
+
+  { id: 3, baslik: "Zeynep'in Okul Sabahı", sorunIkon: '😪', sahne: 'mutfak', saat: 'sabah',
+    sorun: 'Zeynep derste çabuk yoruluyor, dikkati dağılıyor.', kisiYe: "Zeynep'e",
+    ipuclari: [ ipucuNok('🕰️', 'Duvar saati', 22, 32),
+                ipucuNok('🧺', 'Sepet', 14, 72),
+                ipucuNok('🍳', 'Kahvaltı tabağı', 56, 62, 'Buldun! Zeynep kahvaltısına hiç dokunmamış.') ],
+    oneriler: [ oneriSec('🍳', 'Her sabah kahvaltı yap'),
+                oneriSec('🎒', 'Kahvaltı yapmadan okula git', 'Aç kalınca derste çabuk yorulursun.'),
+                oneriSec('🍬', 'Kahvaltıda sadece şeker ye', 'Şeker sana uzun süre güç vermez.') ],
+    yanlisBas: "Bu, Zeynep'in yorgunluğunu geçirmez.",
+    gosterge: 'enerji', iliski: 'Kahvaltı okulda enerji verir, dikkatini toplarsın.' },
+
+  { id: 4, baslik: "Ege'nin Teneffüsü", sorunIkon: '🏃', sahne: 'oda', saat: 'ogle',
+    sorun: 'Ege teneffüste koşarken çabuk yoruluyor.', kisiYe: "Ege'ye",
+    ipuclari: [ ipucuNok('🎮', 'Oyun konsolu', 16, 70, 'Buldun! Ege bütün gün oturup oyun oynuyor.'),
+                ipucuNok('🖍️', 'Boya kalemleri', 38, 44),
+                ipucuNok('🌵', 'Kaktüs', 58, 74) ],
+    oneriler: [ oneriSec('🏃', 'Her gün dışarıda koşup oyna'),
+                oneriSec('🎮', 'Daha çok oyun oyna', 'Oturarak oynamak kasları güçlendirmez.'),
+                oneriSec('💺', 'Teneffüste sınıfta otur', 'Hareket etmezsen kasların güçlenmez.') ],
+    yanlisBas: "Bu, Ege'nin kaslarını güçlendirmez.",
+    gosterge: 'buyume', iliski: 'Hareket kaslarını ve kemiklerini güçlendirir.' },
+
+  { id: 5, baslik: "Kerem'in Kış Hazırlığı", sorunIkon: '❄️', sahne: 'mutfak', saat: 'aksam',
+    sorun: 'Kış geldi. Kerem güçlü kalmak istiyor.', kisiYe: "Kerem'e",
+    ipuclari: [ ipucuNok('🍞', 'Ekmek', 18, 60),
+                ipucuNok('🥦', 'Tabaktaki sebzeler', 44, 68, 'Buldun! Kerem sebzelerini hiç yemiyor.'),
+                ipucuNok('🧂', 'Tuzluk', 60, 40) ],
+    oneriler: [ oneriSec('🥦', 'Her gün sebze ve meyve ye'),
+                oneriSec('🙅', 'Sebzeyi kenara it', 'Sebze yemezsen vücudun iyi korunmaz.'),
+                oneriSec('🍰', 'Sadece tatlı ye', 'Tatlı seni hastalıklardan korumaz.') ],
+    yanlisBas: "Bu, Kerem'in mikrop kalkanını güçlendirmez.",
+    gosterge: 'kalkan', iliski: 'Sebze ve meyve hastalıklardan korunmana yardım eder.' }
+];
+
+const Dedektif = (() => {
+  const el = id => document.getElementById(id);
+  let vaka = null, asama = 'ara', oneriler = [];   // ara → oneri → bitti
+
+  function cumle(ana, tur, alt = []) {
+    const c = el('vaka-cumle');
+    c.className = 'durum-cumlesi ' + tur;
+    c.innerHTML = `<span>${ana}</span>` +
+      alt.map(a => `<span class="alt-satir ${a.renk || ''}">${a.metin}</span>`).join('');
+  }
+
+  function basla(i) {
+    vaka = VAKALAR[i];
+    asama = 'ara';
+    el('vaka-baslik').textContent = `Vaka ${i + 1}: ${vaka.baslik}`;
+    const kutu = el('vaka-sahne');
+    sahneKur(kutu, vaka.sahne, vaka.saat, 'dusunen');
+    kutu.insertAdjacentHTML('beforeend', vaka.ipuclari.map((p, j) => `
+      <button class="ipucu" data-eylem="ipucu" data-i="${j}" style="left:${p.x}%;top:${p.y}%" aria-label="${p.ad}">
+        <span aria-hidden="true">${p.ikon}</span>
+      </button>`).join(''));
+    cumle(vaka.sorun, 'bilgi', [{ metin: '🔍 Sahnede ipucu ara! Bir eşyaya dokun.' }]);
+    el('vaka-oneriler').hidden = true;
+    el('vaka-don').hidden = true;
+    el('ekran-vaka').scrollTop = 0;
+  }
+
+  function ipucu(btn) {
+    if (asama !== 'ara') return;
+    const p = vaka.ipuclari[Number(btn.dataset.i)];
+    if (!p.sebep) {
+      btn.disabled = true;
+      btn.classList.add('masum');
+      Ses.tikHafif();
+      cumle(`${p.ad} sorun değil. Başka yere bak.`, 'uyari');
+      return;
+    }
+    asama = 'oneri';
+    btn.classList.add('bulundu');
+    el('vaka-sahne').querySelectorAll('.ipucu').forEach(b => { b.disabled = true; });
+    Ses.ding();
+    cumle(`✅ ${p.cumle}`, 'iyi');
+
+    oneriler = karistir(vaka.oneriler);
+    const kap = el('vaka-oneriler');
+    kap.innerHTML = `
+      <p class="oneri-soru">${vaka.kisiYe} ne önerirsin?</p>
+      <div class="neden-secenekler">${oneriler.map((o, j) => `
+        <button class="neden-btn" data-eylem="oneri" data-i="${j}">
+          <span class="n-ikon" aria-hidden="true">${o.ikon}</span><span>${o.metin}</span>
+        </button>`).join('')}</div>`;
+    kap.hidden = false;
+    kap.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function oneri(btn) {
+    if (asama !== 'oneri') return;
+    const o = oneriler[Number(btn.dataset.i)];
+    if (!o.dogru) {
+      btn.disabled = true;
+      btn.classList.add('yanlis');
+      Ses.sagliksiz();
+      cumle(vaka.yanlisBas, 'uyari', [{ metin: o.aciklama, renk: 'turuncu' }, { metin: 'Başka bir öneri seç.' }]);
+      return;
+    }
+    asama = 'bitti';
+    btn.classList.add('dogru');
+    el('vaka-oneriler').querySelectorAll('.neden-btn').forEach(b => { b.disabled = true; });
+    canIfade(el('vaka-sahne'), 'parlak');
+
+    const v = Kayit.veri;
+    const yeni = !v.vakalar.includes(vaka.id);
+    if (yeni) { v.vakalar.push(vaka.id); Kayit.kaydet(); }
+    Ses.can();
+    if (yeni) Ses.pirilti(0.5);
+    const usta = VAKALAR.every(x => v.vakalar.includes(x.id));
+    const alt = [{ metin: yeni ? '🔍 Dedektif rozeti kazandın!' : '🔍 Bu vakayı daha önce de çözmüştün.' }];
+    if (yeni && usta) alt.push({ metin: '🏅 Bütün vakaları çözdün: Usta Dedektif!' });
+    cumle(`${gostergeBilgi(vaka.gosterge).ikon} ${vaka.iliski}`, 'iyi', alt);
+
+    const d = el('vaka-don');
+    d.hidden = false;
+    d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  return { basla, ipucu, oneri, get asama() { return asama; } };
+})();
+
+/* =========================================================
+   G. EYLEMLER (data-eylem="..." düğmeleri)
+   ========================================================= */
+const Eylemler = {
+  'gun-ac'(btn) {
+    if (btn.classList.contains('kilitli')) {
+      btn.classList.remove('titre'); void btn.offsetWidth; btn.classList.add('titre');
+      Bildirim.goster('Önce bir önceki günü bitir.');
+      return;
+    }
+    Sahne.git('gun', { gun: btn.dataset.gun });
+  },
+
+  async 'gunden-cik'() {
+    const evet = await Onay.sor('Gün yarıda kalacak. Çıkmak istiyor musun?', 'Çık');
+    if (!evet) return;
+    document.querySelectorAll('.ucan-ikon').forEach(u => u.remove());
+    Sahne.git('hafta');
+  },
+
+  // Mod A: durak akışı
+  'kart-sec'(btn)     { GunAkisi.kartSec(btn); },
+  'gosterge-sec'(btn) { GunAkisi.gostergeSec(btn); },
+  'durak-devam'()     { GunAkisi.devam(); },
+
+  // Gün sonu: "Neden?" soruları
+  'neden-cevap'(btn)  { GunSonu.cevap(btn); },
+  'neden-sonraki'()   { GunSonu.sonraki(); },
+
+  'vaka-ac'(btn) { Sahne.git('vaka', { vaka: btn.dataset.vaka }); },
+
+  // Mod B: Sağlık Dedektifi
+  'ipucu'(btn) { Dedektif.ipucu(btn); },
+  'oneri'(btn) { Dedektif.oneri(btn); },
+
+  'ses-degistir'() {
+    const a = Kayit.veri.ayarlar;
+    a.ses = !a.ses;
+    Kayit.kaydet();
+    sesAnahtariniGuncelle();
+    if (a.ses) Ses.onay();
+  },
+
+  async 'sifirla'() {
+    const evet = await Onay.sor('Tüm yıldızlar, çıkartmalar ve rozetler silinecek. Emin misin?', 'Evet, sil');
+    if (!evet) return;
+    Kayit.sifirla();
+    sesAnahtariniGuncelle();
+    Bildirim.goster('İlerleme silindi.');
+  },
+
+  'defter-ac'() {
+    defteriCiz();
+    document.getElementById('katman-defter').classList.add('acik');
+  },
+  'defter-kapat'() { document.getElementById('katman-defter').classList.remove('acik'); },
+
+  'onay-evet'()  { Onay.kapat(true); },
+  'onay-hayir'() { Onay.kapat(false); }
+};
+
+/* =========================================================
+   H. OLAY BAĞLAMA
+   ========================================================= */
+const KENDI_SESI_OLAN = new Set(['kart-sec', 'gosterge-sec', 'neden-cevap', 'ipucu', 'oneri', 'ses-degistir']);
+document.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn || btn.disabled) return;
+  // Kendi sesi olan eylemlerde genel "tık" çalmaz (sesler üst üste binmesin)
+  if (!KENDI_SESI_OLAN.has(btn.dataset.eylem)) Ses.tik();
+  if (btn.dataset.git) { Sahne.git(btn.dataset.git); return; }
+  const eylem = Eylemler[btn.dataset.eylem];
+  if (eylem) eylem(btn);
+});
+
+// Katman dışına dokununca ve Esc ile kapatma
+document.querySelectorAll('.katman').forEach(k => {
+  k.addEventListener('click', e => {
+    if (e.target !== k) return;
+    if (k.id === 'katman-onay') Onay.kapat(false); else k.classList.remove('acik');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (Onay.acik) Onay.kapat(false);
+  else document.getElementById('katman-defter').classList.remove('acik');
+});
+
+/* =========================================================
+   I. BAŞLAT
+   ========================================================= */
+Kayit.yukle();
+document.getElementById('gostergeler').addEventListener('animationend', e => {
+  const g = e.target.closest('.gosterge');
+  if (g && ['gostergeArtti', 'titre', 'isaret'].includes(e.animationName)) g.classList.remove('artti', 'azaldi', 'isaret');
+});
+document.getElementById('baslangic-can').innerHTML = canSVG('mutlu');
+
+Sahne.git('baslangic');
+</script>
+</body>
+</html>
