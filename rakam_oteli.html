@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rakam Oteli</title>
+<meta name="description" content="2. sınıf: İki basamaklı sayıları çözümleme, basamak ve basamak değeri oyunu.">
+<style>
+/* ==========================================================
+   1. TEMEL DEĞİŞKENLER, GÖKYÜZÜ VE ÇİMEN ZEMİN
+   ========================================================== */
+:root{
+  --or:#FF6B35;--ye:#FFD600;--pk:#FF4D8D;--gr:#00C9A7;--bl:#4D9FFF;--pu:#A855F7;
+  --bg:#FFF8F0;--ink:#2B2340;--tens:#4D9FFF;--tens-d:#2F7FE0;--ones:#FF6B35;--ones-d:#E0501E;
+  --u:clamp(8px,min(2.3vh,2.6vw),22px);
+  --card:0 6px 0 rgba(43,35,64,.08),0 14px 30px rgba(43,35,64,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;color:var(--ink);
+  font-family:'Nunito','Varela Round','Segoe UI Rounded','Arial Rounded MT Bold',system-ui,sans-serif;
+  overflow:hidden;user-select:none;-webkit-user-select:none}
+body{background:linear-gradient(180deg,#B8E2FF 0%,#DDF1FF 48%,#FFF4E4 100%)}
+/* Bulutlar */
+body::before{content:"";position:fixed;inset:-5% -10%;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(70px 26px at 10% 13%,#fff 96%,transparent 100%),
+    radial-gradient(44px 24px at 13% 9.5%,#fff 96%,transparent 100%),
+    radial-gradient(84px 28px at 86% 19%,#fff 96%,transparent 100%),
+    radial-gradient(50px 26px at 83% 15%,#fff 96%,transparent 100%),
+    radial-gradient(60px 20px at 52% 6%,rgba(255,255,255,.8) 96%,transparent 100%),
+    radial-gradient(52px 18px at 32% 30%,rgba(255,255,255,.6) 96%,transparent 100%);
+  animation:drift 45s ease-in-out infinite alternate}
+/* Çimen */
+body::after{content:"";position:fixed;left:-5%;right:-5%;bottom:0;height:7vh;pointer-events:none;z-index:0;
+  background:linear-gradient(#A6DE91,#7CC46A);border-top:6px solid #8FD07B;border-radius:50% 50% 0 0/36px 36px 0 0}
+@keyframes drift{to{transform:translateX(4vw)}}
+button{font-family:inherit;cursor:pointer;border:none;touch-action:manipulation}
+.scene{position:fixed;inset:0;z-index:1;display:none;flex-direction:column;align-items:center;
+  padding:clamp(8px,1.5vh,16px) 16px;overflow-y:auto;overflow-x:hidden;gap:clamp(6px,1.2vh,14px)}
+.scene.active{display:flex;animation:fadeIn .3s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Düğmeler — parlak, kabarık */
+.btn{background-color:var(--or);background-image:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,0) 55%);
+  color:#fff;font-weight:900;font-size:clamp(18px,2.6vh,26px);padding:.55em 1.3em;border-radius:22px;
+  box-shadow:0 6px 0 rgba(0,0,0,.2),0 10px 18px rgba(0,0,0,.1);text-shadow:0 2px 0 rgba(0,0,0,.15);
+  transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.btn.blue{background-color:var(--bl)}.btn.green{background-color:var(--gr)}.btn.pink{background-color:var(--pk)}.btn.purple{background-color:var(--pu)}
+.btn.ghost{background-color:#fff;color:var(--ink);text-shadow:none}
+.btn[disabled]{opacity:.45}
+.topbar{width:100%;max-width:1100px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+.topbar h2{background:rgba(255,255,255,.9);padding:.1em .9em;border-radius:999px;box-shadow:var(--card)}
+.starbox{background:#fff;border-radius:999px;padding:.25em .9em;font-weight:900;font-size:clamp(18px,2.6vh,26px);
+  box-shadow:var(--card);white-space:nowrap;border:3px solid #FFE58A}
+.starbox .s{color:#F5B700;text-shadow:0 2px 0 #E0A800}
+.iconbtn{background:#fff;color:var(--ink);font-size:clamp(18px,2.6vh,26px);font-weight:900;border-radius:16px;
+  padding:.3em .7em;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.iconbtn:active{transform:translateY(3px)}
+h1,h2{margin:0;font-weight:900;text-align:center}
+footer{margin-top:auto;padding:8px;font-size:14px;color:#2E5E25;font-weight:800;flex-shrink:0;position:relative}
+
+/* ==========================================================
+   2. GİRİŞ EKRANI
+   ========================================================== */
+#sc-intro{justify-content:center}
+.title{font-size:clamp(44px,9vh,96px);color:var(--or);letter-spacing:.02em;line-height:1;
+  text-shadow:3px 3px 0 #fff,-3px -3px 0 #fff,3px -3px 0 #fff,-3px 3px 0 #fff,0 4px 0 #fff,0 10px 0 #E0501E,0 16px 24px rgba(0,0,0,.15)}
+.subtitle{font-size:clamp(18px,2.8vh,28px);font-weight:800;color:var(--ink);text-align:center;
+  background:rgba(255,255,255,.9);padding:.2em 1em;border-radius:999px;box-shadow:var(--card)}
+.facade{width:min(92vw,640px);max-height:38vh;filter:drop-shadow(0 10px 14px rgba(43,35,64,.12))}
+.introGuests{display:flex;gap:14px;height:clamp(80px,14vh,140px);margin-bottom:-2vh;position:relative;z-index:2}
+.introGuests svg{height:100%;width:auto;animation:hop 1.6s ease-in-out infinite}
+.introGuests svg:nth-child(2){animation-delay:.3s}
+#btnStart{font-size:clamp(24px,4vh,40px);padding:.45em 2em;animation:pulse 1.6s ease-in-out infinite}
+
+/* ==========================================================
+   3. LOBİ — mod kartları, anahtar etiketi kademeler
+   ========================================================== */
+#sc-lobby .facade{max-height:28vh}
+.modes{width:100%;max-width:1000px;display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(8px,1.4vw,16px)}
+@media (max-width:640px){.modes{grid-template-columns:1fr}}
+.mode{background:#fff;border-radius:24px;padding:12px 14px;display:flex;gap:12px;align-items:center;
+  box-shadow:var(--card);border:4px solid #fff;border-left-width:12px}
+.mode .mic{height:clamp(56px,9vh,88px);display:flex;flex-shrink:0}
+.mode .mic svg{height:100%;width:auto}
+.mode .info{flex:1;min-width:0}
+.mode .name{font-weight:900;font-size:clamp(18px,2.7vh,27px)}
+.mode .desc{font-weight:700;color:#6b6280;font-size:clamp(14px,1.9vh,18px);margin:2px 0 8px}
+.levels{display:flex;gap:8px;flex-wrap:wrap}
+.lvl{position:relative;border-radius:10px 18px 18px 10px;padding:.35em .75em .35em 1.55em;font-weight:900;
+  font-size:clamp(14px,1.9vh,18px);color:var(--ink);border:3px solid;display:flex;flex-direction:column;align-items:center;
+  line-height:1.1;box-shadow:0 4px 0 rgba(0,0,0,.1)}
+.lvl::before{content:"";position:absolute;left:.5em;top:50%;width:.6em;height:.6em;border-radius:50%;background:#fff;
+  transform:translateY(-50%);box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.lvl small{font-size:.75em;color:#C99400}
+.lvl:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.1)}
+.lvl[data-k="1"]{background:#DDF8F1;border-color:#00C9A7}
+.lvl[data-k="2"]{background:#FFF5C8;border-color:#F5C400}
+.lvl[data-k="3"]{background:#FFE2EE;border-color:#FF4D8D}
+.m1{border-color:#F1E6FF;border-left-color:#A855F7}.m1 .name{color:#8B3FE0}
+.m2{border-color:#E3EFFF;border-left-color:#4D9FFF}.m2 .name{color:#2F7FE0}
+.m3{border-color:#FFE9DC;border-left-color:#FF6B35}.m3 .name{color:#E0501E}
+.m4{border-color:#DDF8F1;border-left-color:#00C9A7}.m4 .name{color:#00977D}
+@media (max-width:640px){
+  .mode{padding:10px;gap:8px}
+  .mode .mic{height:48px}
+  .levels{gap:6px}
+  .lvl{font-size:14px;padding:.3em .5em .3em 1.35em}
+}
+.lobbyBtns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* ==========================================================
+   4. OYUN EKRANI — SORU, OTEL, ODALAR, BLOKLAR
+   ========================================================== */
+.dots{display:flex;gap:6px}
+.dots i{width:clamp(10px,1.6vh,16px);height:clamp(10px,1.6vh,16px);border-radius:50%;background:#fff;display:block;
+  box-shadow:inset 0 0 0 2px #E2D6C8;transition:transform .2s}
+.dots i.ok{background:var(--gr);box-shadow:none}.dots i.miss{background:var(--pk);box-shadow:none}
+.dots i.now{background:var(--ye);box-shadow:0 0 0 3px #fff;transform:scale(1.3)}
+.mtitle{font-weight:900;font-size:clamp(16px,2.4vh,24px);background:rgba(255,255,255,.9);padding:.05em .9em;border-radius:999px}
+.prompt{background:#fff;border-radius:24px;padding:.45em 1em;font-size:clamp(20px,3.2vh,34px);font-weight:800;
+  text-align:center;max-width:1000px;width:100%;box-shadow:var(--card);min-height:2.3em;
+  display:block;line-height:1.35;flex-shrink:0;border-bottom:5px solid #EBDDFC}
+.promptWrap{position:relative;width:100%;max-width:1000px;flex-shrink:0}
+.canSpeak .prompt{padding-left:2.6em;padding-right:2.6em}
+.speak{display:none;position:absolute;left:10px;top:50%;transform:translateY(-55%);width:clamp(40px,6vh,56px);height:clamp(40px,6vh,56px);
+  border-radius:50%;background:var(--pu);color:#fff;box-shadow:0 4px 0 #7C3AED;padding:clamp(7px,1.2vh,11px)}
+.speak svg{width:100%;height:100%}
+.speak:active{transform:translateY(-45%)}
+.speak.talking{animation:pulse .8s ease-in-out infinite}
+.canSpeak .speak{display:block}
+.speak.mini{top:12px;transform:none;width:clamp(36px,5vh,48px);height:clamp(36px,5vh,48px)}
+.speak.mini:active{transform:translateY(2px)}
+.canSpeak #bubble .card{padding-left:3.2em;padding-right:3.2em}
+@media (max-width:640px){
+  .canSpeak .prompt{padding:.45em .8em .45em 2.4em}
+  .speak{left:6px;width:38px;height:38px;padding:7px}
+  .canSpeak #bubble .card{padding:3em .9em .9em}
+}
+.hintTag{display:inline-block;background:var(--ye);color:var(--ink);font-size:.75em;padding:.05em .7em;border-radius:999px;margin-bottom:.2em}
+.prompt b{color:var(--pu);font-size:1.15em}
+.prompt small{display:block;font-size:.62em;font-weight:700;color:#6b6280}
+
+/* Otel binası: siding duvar, ışıklı tabela, çizgili tente, yıldızlar */
+.hotel{position:relative;width:100%;max-width:860px;margin-top:clamp(16px,2.6vh,28px);flex-shrink:0;
+  background-color:#FFE3C7;
+  background-image:repeating-linear-gradient(0deg,transparent 0 20px,rgba(233,185,140,.45) 20px 22px);
+  border-radius:24px 24px 14px 14px;padding:0 clamp(8px,1.5vw,18px) clamp(10px,1.6vh,16px);
+  border:4px solid #EDBF93;box-shadow:0 8px 0 #E2B285,0 18px 30px rgba(43,35,64,.12)}
+.hotel::before{content:"★ ★ ★";position:absolute;left:50%;top:0;transform:translate(-50%,-100%);
+  color:var(--ye);font-size:clamp(16px,2.4vh,24px);letter-spacing:.1em;text-shadow:0 2px 0 #E0A800;line-height:1.1}
+.roof{position:relative;margin:0 calc(-1 * clamp(8px,1.5vw,18px));padding:.45em 0 .35em;
+  background:#2B2340;color:var(--ye);border-radius:20px 20px 0 0;font-weight:900;text-align:center;
+  letter-spacing:.24em;font-size:clamp(15px,2.3vh,24px);text-shadow:0 0 12px rgba(255,214,0,.75)}
+.roof::before{content:"";position:absolute;left:18px;right:18px;top:5px;height:7px;
+  background:radial-gradient(circle,#FFD600 0 2.5px,transparent 3.2px) 0 0/24px 7px repeat-x;opacity:.9}
+.roof::after{content:"";position:absolute;left:0;right:0;top:100%;height:20px;z-index:1;
+  background:repeating-linear-gradient(90deg,var(--or) 0 40px,#fff 40px 80px);
+  -webkit-mask:radial-gradient(circle at 20px 0,#000 19.5px,transparent 20.5px) 0 0/40px 100% repeat-x;
+          mask:radial-gradient(circle at 20px 0,#000 19.5px,transparent 20.5px) 0 0/40px 100% repeat-x}
+.floors{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.5vw,18px);margin-top:22px}
+.col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.col .room{flex:1}
+.gslot{height:clamp(62px,12vh,130px);display:flex;align-items:flex-end;justify-content:center}
+.gslot svg{height:100%;width:auto}
+
+/* Odalar: duvar kâğıdı, ahşap zemin, çerçeve */
+.room{position:relative;width:100%;border-radius:16px;border:5px solid;
+  min-height:calc(var(--u) * 10 + 86px);display:flex;flex-direction:column;align-items:center;padding:6px 6px 8px;overflow:hidden;
+  box-shadow:inset 0 0 0 3px #fff,inset 0 -20px 0 0 #E9D2B8,0 5px 0 rgba(0,0,0,.08)}
+.room.tens{border-color:var(--tens);background-color:#EEF5FF;background-image:repeating-linear-gradient(90deg,#EEF5FF 0 16px,#E2EDFF 16px 32px)}
+.room.ones{border-color:var(--ones);background-color:#FFF3EC;background-image:repeating-linear-gradient(90deg,#FFF3EC 0 16px,#FFE7DA 16px 32px)}
+.rlabel{font-weight:900;font-size:clamp(14px,2vh,20px);padding:.05em .9em;border-radius:10px;color:#fff;
+  box-shadow:0 3px 0 rgba(0,0,0,.18);letter-spacing:.06em;position:relative;z-index:1}
+.tens .rlabel{background:var(--tens)}.ones .rlabel{background:var(--ones)}
+.blocks{flex:1;display:flex;flex-wrap:wrap;gap:3px;align-content:center;justify-content:center;padding:6px 0;width:100%}
+.ones .blocks{display:grid;grid-template-columns:repeat(5,var(--u));gap:4px;justify-content:center;align-content:center}
+/* Üç boyutlu onluk çubuğu ve birlik küpü */
+.rod{display:grid;grid-template-rows:repeat(10,1fr);width:calc(var(--u) + 2px);height:calc(var(--u) * 10 + 11px);gap:1px;
+  background:var(--tens-d);border-radius:4px;padding:1px;box-shadow:2px 3px 0 rgba(0,0,0,.15)}
+.rod i{display:block;border-radius:2px;background:linear-gradient(90deg,#9CCAFF 0 28%,var(--tens) 28% 74%,#3D8CF0 74%)}
+.cube{width:var(--u);height:var(--u);border-radius:4px;
+  background:linear-gradient(135deg,#FFAA85 0 34%,var(--ones) 34%);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.22),inset -2px 0 0 rgba(0,0,0,.08),2px 3px 0 rgba(0,0,0,.12)}
+.rod.added,.cube.added{outline:3px solid var(--ye);outline-offset:1px}
+.cube.going{animation:goUp .55s ease-in forwards;background:var(--ye)}
+.pop{animation:pop .45s ease-out}
+/* Pirinç plaket */
+.plaque{font-weight:900;font-size:clamp(14px,2.2vh,22px);min-height:1.4em;border-radius:10px;padding:0 .6em;position:relative;z-index:1}
+.plaque:not(:empty){background:linear-gradient(#FFE867,#F5C400);border:2px solid #D9A800;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+/* Ahşap kapı: paneller ve tokmak */
+.door{position:absolute;left:6px;right:6px;bottom:6px;top:clamp(30px,4vh,40px);border-radius:10px 10px 6px 6px;
+  background:linear-gradient(90deg,#A85A2C,#C77440 50%,#A85A2C);
+  box-shadow:inset 0 0 0 5px #8C4A22,inset 0 0 0 9px #B8693A;
+  display:flex;align-items:center;justify-content:center;color:var(--ye);font-size:clamp(40px,7vh,72px);font-weight:900;
+  text-shadow:0 3px 0 #8C4A22;transition:opacity .45s,transform .45s;transform-origin:left center}
+.door::before{content:"";position:absolute;left:18%;right:18%;top:12%;height:26%;border:4px solid rgba(0,0,0,.16);border-radius:8px}
+.door::after{content:"";position:absolute;right:13%;top:55%;width:clamp(10px,1.6vh,16px);height:clamp(10px,1.6vh,16px);
+  border-radius:50%;background:var(--ye);box-shadow:0 2px 0 #B38F00}
+.room:not(.closed) .door{opacity:0;pointer-events:none;transform:perspective(600px) rotateY(-80deg)}
+
+/* Kontroller */
+.controls{width:100%;max-width:1000px;display:flex;flex-wrap:wrap;gap:clamp(8px,1.5vw,16px);justify-content:center;
+  align-items:center;flex-shrink:0;padding:4px 0 8px}
+.choice{background:#fff;background-image:linear-gradient(#fff 55%,#F6EEFF);color:var(--ink);font-size:clamp(22px,4vh,40px);font-weight:900;
+  min-width:clamp(110px,18vw,220px);padding:.35em .8em;border-radius:20px;border:4px solid var(--pu);
+  box-shadow:0 6px 0 #D6BDF6,0 10px 18px rgba(43,35,64,.08);transition:transform .1s}
+.choice:active{transform:translateY(4px);box-shadow:0 2px 0 #D6BDF6}
+.choice.right{background:var(--gr);border-color:var(--gr);color:#fff;box-shadow:0 6px 0 #00977D;animation:pop .4s ease-out}
+.choice.wrong{background:#EFEAF3;border-color:#D5CDDC;color:#A79FB0;box-shadow:none;animation:shake .35s}
+.choice.hint{animation:pulse 1s ease-in-out infinite;border-color:var(--gr)}
+.bgroup{display:flex;align-items:center;gap:8px;background:#fff;border-radius:22px;padding:6px 10px;border:4px solid;box-shadow:var(--card)}
+.bgroup.tens{border-color:var(--tens)}.bgroup.ones{border-color:var(--ones)}
+.bgroup span{font-weight:900;font-size:clamp(18px,2.8vh,28px);min-width:3.2em;text-align:center}
+.bb{width:clamp(48px,7vh,68px);height:clamp(48px,7vh,68px);border-radius:16px;color:#fff;font-size:clamp(28px,4.5vh,44px);font-weight:900;line-height:1;
+  background-image:linear-gradient(rgba(255,255,255,.3),rgba(255,255,255,0) 55%);box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.bb:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.bgroup.tens .bb{background-color:var(--tens)}.bgroup.ones .bb{background-color:var(--ones)}
+.machine{background-color:var(--pu);animation:pulse 1.2s ease-in-out infinite}
+
+/* ==========================================================
+   5. BALON, BİLDİRİM, YILDIZ ANİMASYONU
+   ========================================================== */
+#bubble{position:fixed;inset:0;background:rgba(43,35,64,.3);display:none;align-items:flex-end;justify-content:center;padding:16px;z-index:50}
+#bubble.show{display:flex}
+#bubble .card{position:relative;background:#fff;border-radius:26px;padding:.9em 1.2em;max-width:720px;width:100%;font-size:clamp(18px,2.8vh,28px);
+  font-weight:800;text-align:center;border:5px solid var(--ye);margin-bottom:2vh;animation:pop .3s ease-out;box-shadow:0 10px 0 #E0C200,0 20px 40px rgba(0,0,0,.2)}
+#bubble .card b{color:var(--pu)}
+#bubble .card .btn{margin-top:.6em}
+#toast{position:fixed;left:50%;top:12px;transform:translate(-50%,-160%);background:var(--ink);color:#fff;padding:.5em 1.1em;
+  border-radius:999px;font-weight:800;font-size:clamp(16px,2.4vh,24px);transition:transform .3s;z-index:60;max-width:92vw;text-align:center;
+  box-shadow:0 6px 16px rgba(0,0,0,.2)}
+#toast.show{transform:translate(-50%,0)}
+.flystar{position:fixed;left:50%;top:45%;font-size:72px;color:#F5B700;z-index:70;pointer-events:none;animation:fly 1s ease-in forwards;text-shadow:0 4px 0 #E0A800}
+.gslot svg.hopping,.hopping{animation:hop .5s ease-out 2}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-12%)}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes goUp{to{transform:translateY(-60px) scale(.5);opacity:0}}
+@keyframes fly{0%{transform:translate(-50%,0) scale(.5);opacity:0}25%{transform:translate(-50%,-30px) scale(1.3);opacity:1}100%{transform:translate(40vw,-42vh) scale(.4);opacity:0}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.eyes{animation:blink 4s infinite;transform-box:fill-box;transform-origin:center}
+
+/* ==========================================================
+   6. TUR SONU (konfeti), DÜKKÂN, AYARLAR
+   ========================================================== */
+#sc-summary{justify-content:center}
+#sc-summary::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(circle,#FF4D8D 0 5px,transparent 6px),radial-gradient(circle,#4D9FFF 0 5px,transparent 6px),
+    radial-gradient(circle,#FFD600 0 6px,transparent 7px),radial-gradient(circle,#00C9A7 0 4px,transparent 5px);
+  background-size:140px 160px,180px 120px,220px 200px,110px 150px;
+  background-position:0 0,40px 60px,90px 20px,20px 90px;animation:confetti 7s linear infinite}
+@keyframes confetti{to{background-position:0 160px,40px 180px,90px 220px,20px 240px}}
+.sumcard{position:relative;z-index:1;background:#fff;border-radius:30px;padding:clamp(56px,9vh,84px) 20px 20px;max-width:640px;width:100%;
+  text-align:center;box-shadow:var(--card);border:5px solid var(--ye);margin-top:clamp(50px,9vh,80px)}
+#sumGuests{position:absolute;left:50%;top:0;transform:translate(-50%,-55%);display:flex;gap:8px;height:clamp(90px,15vh,140px)}
+#sumGuests svg{height:100%;width:auto;animation:hop 1.1s ease-in-out infinite}
+#sumGuests svg:nth-child(2){animation-delay:.2s}#sumGuests svg:nth-child(3){animation-delay:.4s}
+.sumcard h2{font-size:clamp(26px,4.4vh,44px);color:var(--or)}
+.bigstars{font-size:clamp(44px,9vh,80px);font-weight:900;color:#F5B700;text-shadow:0 5px 0 #E0A800}
+.sumline{font-size:clamp(18px,2.8vh,28px);font-weight:800;margin:6px 0}
+.misslist{list-style:none;text-align:left;margin:10px auto 6px;max-width:480px;font-size:clamp(16px,2.3vh,22px);font-weight:800;padding:0}
+.misslist li{margin:6px 0;background:#FFF0F6;border-left:6px solid var(--pk);border-radius:10px;padding:.3em .7em}
+.shopwrap{width:100%;max-width:1000px}
+.shopwrap h2{display:inline-block;font-size:clamp(20px,3vh,30px);margin:12px 0 10px;background:#fff;padding:.1em .9em;border-radius:999px;box-shadow:var(--card)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.item{background:#fff;border-radius:22px;padding:12px 10px;text-align:center;box-shadow:var(--card);display:flex;flex-direction:column;gap:6px;align-items:center;border:3px solid #fff}
+.item .pv{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#FFFFFF,#FFEFD9);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -4px 0 rgba(0,0,0,.05)}
+.item .pv svg{height:72%;width:auto}
+.item .nm{font-weight:900;font-size:17px}
+.item .btn{font-size:16px;padding:.4em .8em;width:100%}
+.item .btn[disabled]{opacity:1;background-color:#DDF8F1;background-image:none;color:#00977D;text-shadow:none;box-shadow:none}
+.item .btn[disabled]::before{content:"✓ "}
+.shopTop{display:flex;gap:16px;align-items:flex-end;justify-content:center;flex-wrap:wrap}
+.shopTop .facade{max-height:24vh;width:min(70vw,440px)}
+.shopTop .g{height:clamp(80px,14vh,130px)}
+.shopTop .g svg{height:100%;width:auto;animation:hop 2s ease-in-out infinite}
+.setcard{background:#fff;border-radius:30px;padding:24px;max-width:520px;width:100%;display:flex;flex-direction:column;gap:14px;align-items:stretch;box-shadow:var(--card);border:5px solid #E9D7FE}
+#sc-settings{justify-content:center}
+</style>
+</head>
+<body>
+
+<!-- ==========================================================
+     EKRAN 1 — GİRİŞ
+     ========================================================== -->
+<section class="scene active" id="sc-intro">
+  <h1 class="title">Rakam Oteli</h1>
+  <div class="subtitle">Onlar ve birler odasındaki misafirleri tanı!</div>
+  <div class="introGuests" id="introGuests"></div>
+  <div id="introFacade"></div>
+  <button class="btn" id="btnStart">Başla</button>
+  <footer>Sinan İnce 2026</footer>
+</section>
+
+<!-- ==========================================================
+     EKRAN 2 — LOBİ
+     ========================================================== -->
+<section class="scene" id="sc-lobby">
+  <div class="topbar">
+    <button class="iconbtn" data-go="intro" aria-label="Giriş">⌂</button>
+    <h2 style="font-size:clamp(22px,3.4vh,34px)">Otel Lobisi</h2>
+    <div class="starbox"><span class="s">★</span> <span class="starcount">0</span></div>
+  </div>
+  <div id="lobbyFacade"></div>
+  <div class="modes" id="modes"></div>
+  <div class="lobbyBtns">
+    <button class="btn pink" data-go="shop">Hediye Dükkânı</button>
+    <button class="btn ghost" data-go="settings">Ayarlar</button>
+  </div>
+  <footer>Sinan İnce 2026</footer>
+</section>
+
+<!-- ==========================================================
+     EKRAN 3 — OYUN
+     ========================================================== -->
+<section class="scene" id="sc-game">
+  <div class="topbar">
+    <button class="iconbtn" id="btnQuit" aria-label="Lobiye dön">⌂</button>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="mtitle" id="mTitle"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="starbox"><span class="s">★</span> <span class="starcount">0</span></div>
+  </div>
+  <div class="promptWrap">
+    <div class="prompt" id="prompt"></div>
+    <button class="speak" id="btnSpeak" aria-label="Soruyu dinle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="hotel">
+    <div class="roof">RAKAM OTELİ</div>
+    <div class="floors">
+      <div class="col">
+        <div class="gslot" id="gT"></div>
+        <div class="room tens closed" id="roomT">
+          <div class="rlabel">ONLAR</div>
+          <div class="blocks" id="blkT"></div>
+          <div class="plaque" id="plT"></div>
+          <div class="door">?</div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="gslot" id="gO"></div>
+        <div class="room ones closed" id="roomO">
+          <div class="rlabel">BİRLER</div>
+          <div class="blocks" id="blkO"></div>
+          <div class="plaque" id="plO"></div>
+          <div class="door">?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="controls" id="controls"></div>
+</section>
+
+<!-- ==========================================================
+     EKRAN 4 — TUR ÖZETİ
+     ========================================================== -->
+<section class="scene" id="sc-summary">
+  <div class="sumcard">
+    <div id="sumGuests"></div>
+    <h2 id="sumTitle">Tur bitti!</h2>
+    <div class="bigstars" id="sumStars"></div>
+    <div class="sumline" id="sumLine"></div>
+    <div class="sumline" id="sumBonus"></div>
+    <div id="sumMiss"></div>
+    <div class="lobbyBtns" style="margin-top:14px">
+      <button class="btn green" id="btnAgain">Tekrar Oyna</button>
+      <button class="btn ghost" data-go="lobby">Lobi</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================================
+     EKRAN 5 — HEDİYE DÜKKÂNI
+     ========================================================== -->
+<section class="scene" id="sc-shop">
+  <div class="topbar">
+    <button class="iconbtn" data-go="lobby" aria-label="Lobiye dön">⌂</button>
+    <h2 style="font-size:clamp(22px,3.4vh,34px)">Hediye Dükkânı</h2>
+    <div class="starbox"><span class="s">★</span> <span class="starcount">0</span></div>
+  </div>
+  <div class="shopTop"><div id="shopFacade"></div><div class="g" id="shopGuest"></div></div>
+  <div class="shopwrap">
+    <h2>Otel Süsleri</h2>
+    <div class="items" id="decoItems"></div>
+    <h2>Misafir Kostümleri</h2>
+    <div class="items" id="cosItems"></div>
+  </div>
+  <footer>Süsler ve kostümler sadece görünüşü değiştirir.</footer>
+</section>
+
+<!-- ==========================================================
+     EKRAN 6 — AYARLAR
+     ========================================================== -->
+<section class="scene" id="sc-settings">
+  <div class="setcard">
+    <h2>Ayarlar</h2>
+    <button class="btn blue" id="btnSound"></button>
+    <button class="btn pink" id="btnReset">İlerlemeyi Sıfırla</button>
+    <button class="btn ghost" data-go="lobby">Lobiye Dön</button>
+  </div>
+</section>
+
+<div id="bubble"><div class="card"><button class="speak mini" id="bubbleSpeak" aria-label="Dinle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button><div id="bubbleText"></div><button class="btn green" id="bubbleBtn"></button></div></div>
+<div id="toast"></div>
+
+<script>
+/* ==========================================================
+   1. YARDIMCILAR
+   ========================================================== */
+const $ = s => document.querySelector(s);
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const T = n => Math.floor(n/10);      // onlar basamağındaki rakam
+const O = n => n % 10;                // birler basamağındaki rakam
+const REV = n => O(n)*10 + T(n);      // rakamları yer değiştir
+function pickW(list){ const tot=list.reduce((s,x)=>s+x[1],0); let r=Math.random()*tot; for(const [v,w] of list){ if((r-=w)<0) return v; } return list[0][0]; }
+
+/* ==========================================================
+   2. KALICILIK (localStorage)
+   ========================================================== */
+const KEY = 'rakamOteli_v1';
+const DEF = () => ({ stars:0, best:{}, owned:[], costume:null, sound:true });
+let S = load();
+function load(){ try { const d = JSON.parse(localStorage.getItem(KEY)); return Object.assign(DEF(), d || {}); } catch(e){ return DEF(); } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+/* ==========================================================
+   3. SES (Web Audio API)
+   ========================================================== */
+let AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC && AC.state==='suspended') AC.resume(); return AC; }
+function tone(f,d,type='sine',vol=.18,delay=0){
+  if(!S.sound) return; const c = ac(); if(!c) return;
+  const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+.05);
+}
+const SFX = {
+  tap(){ tone(660,.08,'triangle',.12); },
+  ok(){ tone(784,.15); tone(1046,.25,'sine',.18,.12); tone(1318,.3,'sine',.12,.24); },
+  bad(){ tone(190,.25,'triangle',.2); tone(140,.28,'triangle',.15,.1); },
+  clack(){ tone(300,.05,'square',.1); tone(520,.09,'square',.09,.07); },
+  coin(){ tone(988,.08,'square',.07); tone(1318,.16,'square',.07,.08); },
+  fanfare(){ [523,659,784,1046].forEach((f,i)=>tone(f,.28,'triangle',.15,i*.13)); }
+};
+
+/* ==========================================================
+   3b. SESLİ OKUMA (tarayıcının Türkçe sesi; yoksa düğme gizli)
+   ========================================================== */
+let trVoice = null;
+function loadVoices(){
+  try { trVoice = speechSynthesis.getVoices().find(v => /^tr/i.test(v.lang)) || null; } catch(e){ trVoice = null; }
+  document.body.classList.toggle('canSpeak', !!trVoice);
+}
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function stopSpeak(){ try { if(window.speechSynthesis) speechSynthesis.cancel(); } catch(e){} $('#btnSpeak') && $('#btnSpeak').classList.remove('talking'); }
+function speakHTML(html){
+  if(!trVoice) return;
+  const t = html.replace(/<[^>]+>/g,' ').replace(/☐/g,' kaç ').replace(/=/g,' eşittir ').replace(/\+/g,' artı ').replace(/\s+/g,' ').trim();
+  stopSpeak();
+  const u = new SpeechSynthesisUtterance(t); u.voice = trVoice; u.lang = trVoice.lang; u.rate = .9;
+  u.onend = u.onerror = () => $('#btnSpeak').classList.remove('talking');
+  $('#btnSpeak').classList.add('talking'); speechSynthesis.speak(u);
+}
+
+/* ==========================================================
+   4. ÇİZİMLER — MİSAFİR RAKAM, KOSTÜM, OTEL CEPHESİ
+   ========================================================== */
+const COL = { tens:'#4D9FFF', ones:'#FF6B35', neutral:'#A855F7', unknown:'#B8B0C8' };
+function costumeSVG(c){
+  switch(c){
+    case 'sapka': return '<rect x="33" y="0" width="34" height="22" rx="3" fill="#2B2340"/><rect x="33" y="14" width="34" height="5" fill="#FF4D8D"/><rect x="22" y="20" width="56" height="7" rx="3" fill="#2B2340"/><rect x="37" y="3" width="6" height="10" rx="3" fill="#fff" opacity=".25"/>';
+    case 'tac': return '<polygon points="27,26 31,4 41,16 50,1 59,16 69,4 73,26" fill="#FFD600" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/><circle cx="50" cy="18" r="3" fill="#FF4D8D"/><circle cx="36" cy="21" r="2" fill="#4D9FFF"/><circle cx="64" cy="21" r="2" fill="#4D9FFF"/>';
+    case 'kasket': return '<path d="M26 26 Q26 6 50 6 Q74 6 74 26 Z" fill="#FF4D8D"/><rect x="26" y="20" width="48" height="6" fill="#C2185B"/><rect x="58" y="22" width="30" height="7" rx="3" fill="#C2185B"/><circle cx="50" cy="6" r="3" fill="#FFD600"/>';
+    case 'gozluk': return '<g fill="rgba(255,255,255,.15)" stroke="#2B2340" stroke-width="4"><circle cx="35" cy="44" r="13"/><circle cx="65" cy="44" r="13"/></g><line x1="48" y1="43" x2="52" y2="43" stroke="#2B2340" stroke-width="4"/>';
+    case 'papyon': return '<polygon points="50,27 39,21 39,33" fill="#FF4D8D" stroke="#C2185B" stroke-width="1.5" stroke-linejoin="round"/><polygon points="50,27 61,21 61,33" fill="#FF4D8D" stroke="#C2185B" stroke-width="1.5" stroke-linejoin="round"/><circle cx="50" cy="27" r="3.5" fill="#C2185B"/>';
+    default: return '';
+  }
+}
+// Misafir rakam: gölge, kollar, parlak gövde, gözler, yanaklar, gülümseme
+function guestSVG(d, color, cos){
+  const c = (cos === undefined) ? S.costume : cos;
+  const txt = String(d), fs = txt.length > 1 ? 38 : 50;
+  return `<svg viewBox="0 0 100 132" xmlns="http://www.w3.org/2000/svg" aria-label="${txt}">
+    <ellipse cx="50" cy="127" rx="34" ry="4.5" fill="rgba(43,35,64,.18)"/>
+    <ellipse cx="32" cy="120" rx="13" ry="7" fill="#2B2340"/><ellipse cx="68" cy="120" rx="13" ry="7" fill="#2B2340"/>
+    <ellipse cx="10" cy="78" rx="7" ry="11" fill="${color}" stroke="rgba(0,0,0,.18)" stroke-width="2.5"/>
+    <ellipse cx="90" cy="78" rx="7" ry="11" fill="${color}" stroke="rgba(0,0,0,.18)" stroke-width="2.5"/>
+    <rect x="12" y="22" width="76" height="92" rx="28" fill="${color}"/>
+    <rect x="12" y="22" width="76" height="92" rx="28" fill="rgba(0,0,0,.16)"/>
+    <rect x="12" y="22" width="76" height="86" rx="28" fill="${color}"/>
+    <rect x="12" y="22" width="76" height="92" rx="28" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="3"/>
+    <ellipse cx="30" cy="34" rx="11" ry="5" fill="#fff" opacity=".35" transform="rotate(-22 30 34)"/>
+    <g class="eyes"><circle cx="35" cy="44" r="9.5" fill="#fff"/><circle cx="65" cy="44" r="9.5" fill="#fff"/>
+    <circle cx="37" cy="46" r="4.6" fill="#2B2340"/><circle cx="67" cy="46" r="4.6" fill="#2B2340"/>
+    <circle cx="38.6" cy="44.4" r="1.6" fill="#fff"/><circle cx="68.6" cy="44.4" r="1.6" fill="#fff"/></g>
+    <ellipse cx="22" cy="57" rx="6" ry="3.8" fill="#FF8FB1" opacity=".75"/><ellipse cx="78" cy="57" rx="6" ry="3.8" fill="#FF8FB1" opacity=".75"/>
+    <path d="M44 55 Q50 61 56 55" stroke="#2B2340" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <text x="50" y="103" text-anchor="middle" font-size="${fs}" font-weight="900" fill="#fff" stroke="rgba(0,0,0,.3)" stroke-width="2.5" paint-order="stroke" font-family="Nunito,Arial Rounded MT Bold,sans-serif">${txt}</text>
+    ${costumeSVG(c)}
+  </svg>`;
+}
+function starPts(cx, cy, r){
+  const p = []; for(let i=0;i<10;i++){ const a = -Math.PI/2 + i*Math.PI/5, rr = i%2 ? r*.45 : r; p.push((cx+rr*Math.cos(a)).toFixed(1)+','+(cy+rr*Math.sin(a)).toFixed(1)); } return p.join(' ');
+}
+function treeSVG(x){
+  return `<rect x="${x-6}" y="232" width="12" height="60" rx="3" fill="#8B5A2B"/><circle cx="${x-18}" cy="232" r="22" fill="#2FA05E"/><circle cx="${x+18}" cy="230" r="22" fill="#45C07A"/><circle cx="${x}" cy="212" r="32" fill="#38B26B"/><circle cx="${x-10}" cy="202" r="8" fill="#fff" opacity=".18"/>`;
+}
+// Otel cephesi: tabela, yıldızlar, üst kat pencereleri, ONLAR/BİRLER pencereleri, tente, kapı, süsler
+function facadeSVG(){
+  const has = id => S.owned.includes(id);
+  const F = 'font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-weight="900"';
+  const smallWin = x => `<rect x="${x}" y="108" width="32" height="26" rx="6" fill="#CBE8FF" stroke="#fff" stroke-width="3"/><path d="M${x+2} 110 Q${x+9} 118 ${x+3} 132 Z M${x+30} 110 Q${x+23} 118 ${x+29} 132 Z" fill="#FF8FB1"/>`;
+  const rods = [0,1,2,3].map(i => `<rect x="${196+i*13}" y="174" width="9" height="44" rx="2" fill="#4D9FFF" stroke="#2F7FE0" stroke-width="1.5"/>`).join('');
+  const cubes = [0,1,2,3,4,5,6].map(i => `<rect x="${372+(i%4)*14}" y="${188+Math.floor(i/4)*14}" width="10" height="10" rx="2" fill="#FF6B35" stroke="#E0501E" stroke-width="1.2"/>`).join('');
+  const awning = [0,1,2,3,4,5].map(i => `<rect x="${276+i*15}" y="232" width="15" height="14" fill="${i%2?'#fff':'#FF6B35'}"/><circle cx="${283.5+i*15}" cy="246" r="7.5" fill="${i%2?'#fff':'#FF6B35'}"/>`).join('');
+  return `<svg class="facade" viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rakam Oteli">
+    <ellipse cx="320" cy="302" rx="316" ry="22" fill="#8FD07B"/><ellipse cx="320" cy="296" rx="300" ry="13" fill="#A6DE91"/>
+    ${has('agac') ? treeSVG(60) + treeSVG(580) : ''}
+    <rect x="150" y="96" width="340" height="196" rx="6" fill="#FFE3C7"/>
+    ${[118,140,162,184,206,228,250,272].map(y => `<line x1="152" y1="${y}" x2="488" y2="${y}" stroke="#F3CFAA" stroke-width="2"/>`).join('')}
+    <rect x="150" y="96" width="340" height="196" rx="6" fill="none" stroke="#E9B98C" stroke-width="4"/>
+    <rect x="140" y="84" width="360" height="18" rx="6" fill="#FF6B35"/><rect x="140" y="84" width="360" height="6" rx="3" fill="#fff" opacity=".25"/>
+    ${has('bayrak') ? '<line x1="158" y1="84" x2="158" y2="34" stroke="#2B2340" stroke-width="3"/><polygon points="158,34 190,43 158,52" fill="#FF4D8D"/><line x1="482" y1="84" x2="482" y2="34" stroke="#2B2340" stroke-width="3"/><polygon points="482,34 514,43 482,52" fill="#00C9A7"/>' : ''}
+    <line x1="250" y1="76" x2="250" y2="86" stroke="#2B2340" stroke-width="5"/><line x1="390" y1="76" x2="390" y2="86" stroke="#2B2340" stroke-width="5"/>
+    <rect x="208" y="34" width="224" height="46" rx="15" fill="#2B2340"/>
+    <rect x="215" y="41" width="210" height="32" rx="10" fill="${has('tabela') ? '#FFD600' : '#fff'}"/>
+    ${has('tabela') ? [222,242,262,282,302,322,342,362,382,402,422].map((x,i) => `<circle cx="${x}" cy="37.5" r="3.5" fill="${i%2?'#fff':'#FF4D8D'}"/><circle cx="${x}" cy="76.5" r="3.5" fill="${i%2?'#FF4D8D':'#fff'}"/>`).join('') : ''}
+    <text x="320" y="64" text-anchor="middle" font-size="22" fill="#2B2340" ${F} letter-spacing="2">RAKAM OTELİ</text>
+    <polygon points="${starPts(290,20,10)}" fill="#FFD600" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="${starPts(320,16,12)}" fill="#FFD600" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="${starPts(350,20,10)}" fill="#FFD600" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+    ${smallWin(176)}${smallWin(238)}${smallWin(370)}${smallWin(432)}
+    <circle cx="320" cy="121" r="15" fill="#fff" stroke="#2B2340" stroke-width="3"/><line x1="320" y1="121" x2="320" y2="111" stroke="#2B2340" stroke-width="3" stroke-linecap="round"/><line x1="320" y1="121" x2="327" y2="125" stroke="#2B2340" stroke-width="3" stroke-linecap="round"/>
+    <rect x="170" y="146" width="130" height="78" rx="12" fill="#EAF3FF" stroke="#4D9FFF" stroke-width="6"/>
+    <path d="M170 158 Q170 146 182 146 H288 Q300 146 300 158 V168 H170 Z" fill="#4D9FFF"/>
+    <text x="235" y="163" text-anchor="middle" font-size="15" fill="#fff" ${F} letter-spacing="1">ONLAR</text>${rods}
+    <rect x="340" y="146" width="130" height="78" rx="12" fill="#FFF1E8" stroke="#FF6B35" stroke-width="6"/>
+    <path d="M340 158 Q340 146 352 146 H458 Q470 146 470 158 V168 H340 Z" fill="#FF6B35"/>
+    <text x="405" y="163" text-anchor="middle" font-size="15" fill="#fff" ${F} letter-spacing="1">BİRLER</text>${cubes}
+    ${awning}
+    <rect x="290" y="250" width="60" height="42" rx="4" fill="#A855F7"/>
+    <rect x="295" y="255" width="22" height="22" rx="3" fill="#E4CCFF"/><rect x="323" y="255" width="22" height="22" rx="3" fill="#E4CCFF"/>
+    <line x1="320" y1="250" x2="320" y2="292" stroke="#7C3AED" stroke-width="3"/>
+    <circle cx="314" cy="284" r="2.5" fill="#FFD600"/><circle cx="326" cy="284" r="2.5" fill="#FFD600"/>
+    <rect x="268" y="258" width="6" height="16" rx="2" fill="#2B2340"/><circle cx="271" cy="255" r="6" fill="#FFD600"/>
+    <rect x="366" y="258" width="6" height="16" rx="2" fill="#2B2340"/><circle cx="369" cy="255" r="6" fill="#FFD600"/>
+    <rect x="280" y="290" width="80" height="7" rx="3" fill="#E9D3BC"/>
+    ${has('hali') ? '<polygon points="294,296 346,296 372,320 268,320" fill="#E53935"/><polygon points="300,296 340,296 346,302 294,302" fill="#FF6F61"/>' : ''}
+    ${has('cicek') ? [236,404].map(x => `<path d="M${x-13} 272 H${x+13} L${x+10} 292 H${x-10} Z" fill="#B8693A"/><rect x="${x-14}" y="270" width="28" height="5" rx="2" fill="#9C5426"/><circle cx="${x-7}" cy="263" r="8" fill="#FF4D8D"/><circle cx="${x+7}" cy="263" r="8" fill="#FFD600"/><circle cx="${x}" cy="253" r="8" fill="#A855F7"/>`).join('') : ''}
+    ${has('fiskiye') ? '<ellipse cx="518" cy="290" rx="26" ry="8" fill="#4D9FFF"/><ellipse cx="518" cy="287" rx="20" ry="5" fill="#9FD3FF"/><rect x="514" y="258" width="8" height="28" fill="#B9C6D0"/><path d="M518 258 Q498 236 494 286 M518 258 Q538 236 542 286" stroke="#7EC8FF" stroke-width="4" fill="none" stroke-linecap="round"/>' : ''}
+  </svg>`;
+}
+function rodsSVG(t,o){ // dükkân/lobi için küçük blok resmi
+  let s = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">';
+  for(let i=0;i<t;i++) s += `<rect x="${8+i*14}" y="8" width="10" height="84" rx="2" fill="#4D9FFF"/>`;
+  for(let i=0;i<o;i++) s += `<rect x="${8+t*14+(i%2)*14}" y="${64+Math.floor(i/2)*14}" width="10" height="10" rx="2" fill="#FF6B35"/>`;
+  return s + '</svg>';
+}
+
+/* ==========================================================
+   5. MODLAR VE DÜKKÂN VERİSİ
+   ========================================================== */
+const MODES = {
+  1:{ name:'Oda Kartı',     desc:'Rakam hangi basamakta? Değeri kaç?', icon:[4,7], cls:'m1' },
+  2:{ name:'Kur',           desc:'Onluk ve birliklerle sayıyı kur.',  icon:[3,5], cls:'m2' },
+  3:{ name:'Değiş Tokuş',   desc:'10 birlik = 1 onluk!',              icon:[1,0], cls:'m3' },
+  4:{ name:'İkiz Rakamlar', desc:'Aynı rakam, farklı değer.',         icon:[5,5], cls:'m4' }
+};
+const LEVELS = { 1:'Kolay', 2:'Orta', 3:'Zor' };
+const ROUND_LEN = 8;
+const DECOR = [
+  { id:'cicek',  name:'Çiçek Saksıları', price:10 },
+  { id:'hali',   name:'Kırmızı Halı',    price:15 },
+  { id:'tabela', name:'Işıklı Tabela',   price:20 },
+  { id:'bayrak', name:'Bayraklar',       price:25 },
+  { id:'agac',   name:'Ağaçlar',         price:30 },
+  { id:'fiskiye',name:'Fıskiye',         price:40 }
+];
+const COSTUMES = [
+  { id:'papyon', name:'Papyon',         price:10 },
+  { id:'sapka',  name:'Silindir Şapka', price:15 },
+  { id:'gozluk', name:'Gözlük',         price:20 },
+  { id:'kasket', name:'Otel Kasketi',   price:25 },
+  { id:'tac',    name:'Taç',            price:35 }
+];
+
+/* ==========================================================
+   6. SORU ÜRETİCİLERİ (sayılar rastgele, kalıplar sabit)
+   ========================================================== */
+let R = null;                                  // aktif tur
+const review = {1:[],2:[],3:[],4:[]};          // yanlış yapılan sorular (bir sonraki turda tekrar)
+const recent = {1:[],2:[],3:[],4:[]};          // son turlarda kullanılan sayılar
+
+// Tekrar önleyen sayı seçici: aynı turda tekrar yok, son kullanılanlara düşük öncelik
+function pick(gen, ok = () => true){
+  let best = null;
+  for(let t=0;t<80;t++){
+    const n = gen(); if(!ok(n)) continue;
+    if(best === null) best = n;
+    if(R.used.has(n)) continue;
+    if(t < 50 && recent[R.mode].includes(n)) continue;
+    best = n; break;
+  }
+  if(best === null) best = gen();
+  R.used.add(best); recent[R.mode].push(best); if(recent[R.mode].length > 24) recent[R.mode].shift();
+  return best;
+}
+// Kademe aralıkları: K1 10–50, K2 10–99, K3 birleri 0 olan sayılar ağırlıklı
+function numGen(k){ if(k===1) return rnd(10,50); if(k===2) return rnd(10,99); return Math.random()<.35 ? rnd(1,9)*10 : rnd(10,99); }
+// 3 farklı şık üret (doğru + çeldiriciler)
+function mk(correct, cands){
+  const out = [correct];
+  for(const c of cands){ if(out.length>=3) break; if(c===null||c===undefined||c<0) continue; if(!out.includes(c)) out.push(c); }
+  let g = 0; while(out.length<3 && g<60){ g++; const c = Math.max(0, correct + rnd(-11,11)); if(!out.includes(c)) out.push(c); }
+  return shuffle(out);
+}
+function fin(q){ q.init = { tens:q.tens, ones:q.ones }; q.tries=0; q.pt=0; q.phase=1; q.missed=false; q.colored=false; return q; }
+
+/* --- Mod 1: Oda Kartı (basamak ve basamak değeri) --- */
+function gen1(k){
+  const type = pickW([['place',2],['value',3],['compose',2],['digit',2]]);
+  if(type==='place'){
+    const n = pick(()=>numGen(k), n=>T(n)!==O(n)); const a=T(n), b=O(n);
+    const pos = (b===0 || Math.random()<.5) ? 't' : 'o'; const d = pos==='t'?a:b;
+    const ans = pos==='t' ? 'Onlar basamağı' : 'Birler basamağı';
+    return fin({ kind:'choice', n, g:[a,b], tens:0, ones:0, open:false, reveal:{tens:a,ones:b},
+      text:`<b>${n}</b> sayısında <b>${d}</b> rakamı hangi basamakta?`,
+      choices:['Onlar basamağı','Birler basamağı'], answer:ans,
+      hintOpen:true, hint:`Soldaki rakam onlar basamağında, sağdaki rakam birler basamağında oturur.`, fb:`${n} = ${a} onluk ${b} birlik. ${d} rakamı ${pos==='t'?'soldaki onlar':'sağdaki birler'} basamağında.`,
+      review:`${n} sayısında ${d} → ${pos==='t'?'onlar':'birler'} basamağı` });
+  }
+  if(type==='value'){
+    const n = pick(()=>numGen(k), n=>T(n)!==O(n)); const a=T(n), b=O(n);
+    const pos = (b===0 || Math.random()<.55) ? 't' : 'o';
+    if(pos==='t') return fin({ kind:'choice', n, g:[a,b], tens:0, ones:0, open:false, reveal:{tens:a,ones:b},
+      text:`<b>${n}</b> sayısında <b>${a}</b> rakamının basamak değeri kaç?`,
+      choices:mk(a*10,[a,n,a+b]), answer:a*10,
+      hintOpen:true, hint:`Onlar odasındaki çubukları say. Her çubuk 10 eder.`, fb:`${a} onlar basamağında. ${a} onluk = ${a*10}. Basamak değeri ${a*10}.`,
+      review:`${n} sayısında ${a} → değeri ${a*10}` });
+    return fin({ kind:'choice', n, g:[a,b], tens:0, ones:0, open:false, reveal:{tens:a,ones:b},
+      text:`<b>${n}</b> sayısında <b>${b}</b> rakamının basamak değeri kaç?`,
+      choices:mk(b,[b*10,n,a]), answer:b,
+      hintOpen:true, hint:`Birler odasındaki küpleri say. Her küp 1 eder.`, fb:`${b} birler basamağında. ${b} birlik = ${b}. Basamak değeri ${b}.`,
+      review:`${n} sayısında ${b} → değeri ${b}` });
+  }
+  if(type==='compose'){
+    const n = pick(()=>numGen(k)); const a=T(n), b=O(n);
+    return fin({ kind:'choice', n, g:['?','?'], tens:0, ones:0, open:false, reveal:{tens:a,ones:b,g:[a,b]},
+      text:`Onlar basamağında <b>${a}</b>, birler basamağında <b>${b}</b> olan sayı hangisi?`,
+      choices:mk(n,[b>0?b*10+a:null, a+b, a*10]), answer:n,
+      hint:`Önce onlar basamağındaki rakam, sonra birler basamağındaki rakam yazılır.`, fb:`Önce onlar, sonra birler yazılır: ${a} onluk ${b} birlik = ${n}.`,
+      review:`${a} onluk ${b} birlik = ${n}` });
+  }
+  // digit: basamaktaki rakamı bul
+  const n = pick(()=>numGen(k)); const a=T(n), b=O(n);
+  const pos = Math.random()<.5 ? 't' : 'o'; const d = pos==='t'?a:b;
+  return fin({ kind:'choice', n, g:[a,b], tens:0, ones:0, open:false, reveal:{tens:a,ones:b},
+    text:`<b>${n}</b> sayısının <b>${pos==='t'?'onlar':'birler'}</b> basamağındaki rakam hangisi?`,
+    choices:mk(d,[pos==='t'?b:a, pos==='t'?a*10:b*10, (d+1)%10]), answer:d,
+    hintOpen:true, hint:`Soldaki rakam onlar basamağında, sağdaki rakam birler basamağında oturur.`, fb:`${n} sayısında soldaki rakam onlar basamağında (${a}), sağdaki rakam birler basamağında (${b}).`,
+    review:`${n}: onlar basamağı ${a}, birler basamağı ${b}` });
+}
+
+/* --- Mod 2: Kur (onluk/birlik ile kurma + çözümleme boşluğu) --- */
+function gen2(k){
+  const n = pick(()=>numGen(k)); const a=T(n), b=O(n);
+  const p2 = Math.random()<.5
+    ? { text:`${n} = ${a*10} + ☐`, answer:b, choices:mk(b,[b>0?b*10:null, a, b+1]),
+        hint:`Birler odasındaki küpleri say.`, fb:`${n} sayısında ${b} birler basamağında. Değeri ${b}.` }
+    : { text:`${n} = ☐ + ${b}`, answer:a*10, choices:mk(a*10,[a, a*10+10, a>1?a*10-10:null]),
+        hint:`Onlar odasındaki çubukları say. Her çubuk 10 eder.`, fb:`${a} onlar basamağında. ${a} onluk = ${a*10}.` };
+  return fin({ kind:'build', n, a, b, g:[a,b], tens:0, ones:0, open:true, plaque:true, reveal:{tens:a,ones:b},
+    text:`<b>${n}</b> sayısını kur!<small>Onluk ve birlik ekle, sonra Kontrol Et'e dokun.</small>`,
+    p2, review:`${n} = ${a*10} + ${b}` });
+}
+
+/* --- Mod 3: Değiş Tokuş (10 birlik = 1 onluk; birler hiçbir soruda 9'u geçmez) --- */
+function gen3(k){
+  const w = { 1:[['fact',2],['add',3]], 2:[['fact',1],['add',4]], 3:[['fact',1],['add',4]] }[k];
+  const type = pickW(w);
+  if(type==='fact'){
+    if(!R.asked10 && Math.random()<.35){
+      R.asked10 = true;
+      return fin({ kind:'choice', n:null, g:['?','?'], tens:1, ones:0, open:true, plaque:false, reveal:{tens:1,ones:0,g:[1,0]},
+        text:`Kaç birlik <b>1 onluk</b> eder?`, choices:shuffle([10,1,100]), answer:10,
+        hint:`Onluk çubuğundaki küpleri tek tek say.`, fb:`Onluk çubuğundaki küpleri say: 10 tane. 10 birlik = 1 onluk.`, review:`10 birlik = 1 onluk` });
+    }
+    const n = pick(()=>rnd(2, k===1?5:9)*10); const a = T(n);
+    return fin({ kind:'choice', n, g:['?','?'], tens:a, ones:0, open:true, plaque:false, reveal:{tens:a,ones:0,g:[a,0]},
+      text:`<b>${a} onluk</b> kaç birliğe eşittir?`, choices:mk(a*10,[a, a+10, a*10+10]), answer:a*10,
+      hint:`Her onluk 10 birlik eder. Çubukları 10'ar 10'ar say.`, fb:`1 onluk = 10 birlik. ${a} onluk = ${a} tane 10 = ${a*10} birlik.`, review:`${a} onluk = ${a*10} birlik` });
+  }
+  // add: odada hazır duran onlukların üzerine ekleyerek sayıyı tamamla
+  const n = pick(()=>rnd(20, k===1?50:99)); const a=T(n), b=O(n);
+  const base = rnd(1, a-1), addT = a-base;
+  const ans = `${addT} onluk ${b} birlik`;
+  const cands = [`${a} onluk ${b} birlik`, `${b} onluk ${addT} birlik`, `${addT+1} onluk ${b} birlik`, `${addT} onluk ${b===9?8:b+1} birlik`];
+  const choices = [ans]; cands.forEach(c => { if(choices.length<3 && !choices.includes(c)) choices.push(c); });
+  return fin({ kind:'build', n, a, b, base, g:['?','?'], tens:base, ones:0, open:true, plaque:true, reveal:{tens:a,ones:b,g:[a,b]},
+    text:`Odada <b>${base} onluk</b> var. Üzerine kaç onluk, kaç birlik eklersek <b>${n}</b> olur?<small>Ekle, sonra Kontrol Et'e dokun.</small>`,
+    p2:{ text:`${base} onluğun üzerine ne ekledik?`, answer:ans, choices:shuffle(choices),
+         hint:`Sarı çerçeveli çubukları ve küpleri say. Onları sen ekledin.`, fb:`${n} = ${a} onluk ${b} birlik. Odada ${base} onluk vardı. ${addT} onluk ${b} birlik ekledik.` },
+    review:`${base} onluk + ${addT} onluk ${b} birlik = ${n}` });
+}
+
+/* --- Mod 4: İkiz Rakamlar (aynı rakam, farklı basamak değeri) --- */
+function gen4(k){
+  const type = pickW([['twinWhich',3],['twinValue',2],['reverseBig',2],['whichHas',2]]);
+  const maxD = k===1 ? 4 : 9;
+  if(type==='twinWhich' || type==='twinValue'){
+    const n = pick(()=>rnd(1,maxD)*11); const d = T(n);
+    if(type==='twinWhich') return fin({ kind:'choice', n, g:[d,d], tens:0, ones:0, open:false, reveal:{tens:d,ones:d},
+      text:`<b>${n}</b> sayısında iki tane <b>${d}</b> var. Hangisinin değeri daha büyük?`,
+      choices:[`Soldaki ${d}`,`Sağdaki ${d}`,'İkisi eşit'], answer:`Soldaki ${d}`,
+      hintOpen:true, hint:`Soldaki rakam onlar basamağında, sağdaki birler basamağında. Odalardaki bloklara bak.`, fb:`Soldaki ${d} onlar basamağında, değeri ${d*10}. Sağdaki ${d} birler basamağında, değeri ${d}.`,
+      review:`${n}: soldaki ${d} = ${d*10}, sağdaki ${d} = ${d}` });
+    const pos = Math.random()<.5 ? 't' : 'o'; const ans = pos==='t' ? d*10 : d;
+    return fin({ kind:'choice', n, g:[d,d], tens:0, ones:0, open:false, reveal:{tens:d,ones:d},
+      text:`<b>${n}</b> sayısında <b>${pos==='t'?'soldaki':'sağdaki'}</b> ${d} rakamının değeri kaç?`,
+      choices:mk(ans,[pos==='t'?d:d*10, n, d+10]), answer:ans,
+      hintOpen:true, hint:`Soldaki rakam onlar basamağında, sağdaki birler basamağında. Odalardaki bloklara bak.`, fb:`Soldaki ${d} onlar basamağında, değeri ${d*10}. Sağdaki ${d} birler basamağında, değeri ${d}.`,
+      review:`${n}: ${pos==='t'?'soldaki':'sağdaki'} ${d} = ${ans}` });
+  }
+  if(type==='reverseBig'){
+    const n = pick(()=>rnd(12,98), n=>O(n)>0 && T(n)!==O(n) && (k>1 || (T(n)<=4 && O(n)<=4)));
+    const m = REV(n), big = Math.max(n,m), small = Math.min(n,m);
+    return fin({ kind:'choice', n, g:['?','?'], tens:0, ones:0, open:false, reveal:{tens:T(big),ones:O(big),g:[T(big),O(big)]},
+      text:`<b>${n}</b> ve <b>${m}</b> sayılarında aynı rakamlar var. Hangisi daha büyük?`,
+      choices:shuffle([n,m]), answer:big,
+      hint:`İki sayının da onlar basamağına bak. Hangisinde daha çok onluk var?`, fb:`Onlar basamağına bak! ${big} sayısında ${T(big)} onluk, ${small} sayısında ${T(small)} onluk var.`,
+      review:`${big} > ${small}` });
+  }
+  // whichHas: hangi sayıda rakamın değeri d*10 (ya da d)
+  const d = rnd(1,maxD);
+  const others = shuffle([1,2,3,4,5,6,7,8,9].filter(y=>y!==d && (k>1 || y<=4)));
+  if(Math.random()<.6){
+    const n = pick(()=>d*10 + rnd(1,9), n=>O(n)!==d);
+    return fin({ kind:'choice', n, g:['?','?'], tens:0, ones:0, open:false, reveal:{tens:T(n),ones:O(n),g:[T(n),O(n)]},
+      text:`Hangi sayıda <b>${d}</b> rakamının basamak değeri <b>${d*10}</b>?`,
+      choices:shuffle([n, others[0]*10+d, others[1]*10+d]), answer:n,
+      hint:`${d} onluk = ${d*10}. Yani ${d} rakamı onlar basamağında, solda olmalı.`, fb:`${n} sayısında ${d} onlar basamağında, değeri ${d*10}. Diğerlerinde ${d} birler basamağında, değeri ${d}.`,
+      review:`${n} sayısında ${d} → ${d*10}` });
+  }
+  const n = pick(()=>others[rnd(0,others.length-1)]*10 + d);
+  const xs = shuffle([0,1,2,3,4,5,6,7,8,9].filter(x=>x!==d));
+  const c1 = d*10 + xs[0], c2 = d*10 + xs[1];
+  return fin({ kind:'choice', n, g:['?','?'], tens:0, ones:0, open:false, reveal:{tens:T(n),ones:O(n),g:[T(n),O(n)]},
+    text:`Hangi sayıda <b>${d}</b> rakamının basamak değeri <b>${d}</b>?`,
+    choices:shuffle([...new Set([n, c1, c2])]), answer:n,
+    hint:`${d} birlik = ${d}. Yani ${d} rakamı birler basamağında, sağda olmalı.`, fb:`${n} sayısında ${d} birler basamağında, değeri ${d}. Diğerlerinde ${d} onlar basamağında, değeri ${d*10}.`,
+    review:`${n} sayısında ${d} → ${d}` });
+}
+const GEN = {1:gen1, 2:gen2, 3:gen3, 4:gen4};
+
+/* ==========================================================
+   7. SAHNE YÖNETİCİSİ
+   ========================================================== */
+function show(id){
+  document.querySelectorAll('.scene').forEach(s => s.classList.toggle('active', s.id === 'sc-'+id));
+  if(id==='intro') renderIntro();
+  if(id==='lobby') renderLobby();
+  if(id==='shop') renderShop();
+  if(id==='settings') renderSettings();
+  updateStars();
+}
+document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if(g){ SFX.tap(); show(g.dataset.go); } });
+function updateStars(){ document.querySelectorAll('.starcount').forEach(el => el.textContent = S.stars); }
+let toastT = null;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+function bubble(html, btnText, cb){
+  $('#bubbleText').innerHTML = html; const b = $('#bubbleBtn'); b.textContent = btnText;
+  $('#bubble').classList.add('show');
+  b.onclick = () => { SFX.tap(); stopSpeak(); $('#bubble').classList.remove('show'); cb && cb(); };
+}
+
+/* ==========================================================
+   8. GİRİŞ VE LOBİ
+   ========================================================== */
+function renderIntro(){
+  $('#introGuests').innerHTML = guestSVG(4,COL.tens) + guestSVG(7,COL.ones);
+  $('#introFacade').innerHTML = facadeSVG();
+}
+$('#btnStart').onclick = () => { ac(); SFX.tap(); show('lobby'); };
+function renderLobby(){
+  $('#lobbyFacade').innerHTML = facadeSVG();
+  $('#modes').innerHTML = Object.entries(MODES).map(([m,M]) => `
+    <div class="mode ${M.cls}">
+      <div class="mic">${guestSVG(M.icon[0],COL.tens)}${guestSVG(M.icon[1],COL.ones)}</div>
+      <div class="info">
+        <div class="name">${M.name}</div>
+        <div class="desc">${M.desc}</div>
+        <div class="levels">${[1,2,3].map(k => {
+          const b = S.best['m'+m+'k'+k];
+          return `<button class="lvl" data-m="${m}" data-k="${k}">${LEVELS[k]}<small>${b!==undefined ? '★ '+b+'/'+ROUND_LEN : '&nbsp;'}</small></button>`;
+        }).join('')}</div>
+      </div>
+    </div>`).join('');
+}
+$('#modes').addEventListener('click', e => {
+  const b = e.target.closest('.lvl'); if(!b) return; SFX.tap(); startRound(+b.dataset.m, +b.dataset.k);
+});
+
+/* ==========================================================
+   9. TUR AKIŞI
+   ========================================================== */
+let accepting = false;
+const cur = () => R.qs[R.i];
+function startRound(mode, k){
+  R = { mode, k, i:0, qs:[], first:0, stars:0, missed:[], used:new Set(), results:[], asked10:false };
+  // Önceki turda yanlış yapılan sorular bir kez başa eklenir
+  const carry = review[mode].splice(0,3);
+  carry.forEach(q => { q.tries=0; q.pt=0; q.phase=1; q.missed=false; q.colored=false; q.tens=q.init.tens; q.ones=q.init.ones; q.isReview=true; if(q.n!==null) R.used.add(q.n); });
+  R.qs = carry;
+  while(R.qs.length < ROUND_LEN) R.qs.push(GEN[mode](k));
+  $('#mTitle').textContent = `${MODES[mode].name} · ${LEVELS[k]}`;
+  show('game'); nextQ();
+}
+function renderDots(){
+  $('#dots').innerHTML = R.qs.map((q,i) => `<i class="${i<R.i ? (R.results[i]?'ok':'miss') : (i===R.i?'now':'')}"></i>`).join('');
+}
+function nextQ(){
+  stopSpeak();
+  if(R.i >= R.qs.length){ endRound(); return; }
+  const q = cur();
+  $('#prompt').innerHTML = q.text;
+  renderDots(); renderHotel(q,false); renderControls();
+  accepting = true;
+}
+// Oteli çiz: misafirler, bloklar, plaketler, kapılar
+function renderHotel(q, revealed, noPlaque){
+  const g = (revealed || q.colored) ? (q.reveal.g || q.g) : q.g;
+  const tens = revealed ? q.reveal.tens : q.tens;
+  const ones = revealed ? q.reveal.ones : q.ones;
+  const open = revealed || q.open;
+  const colored = revealed || q.colored;
+  const gc = (d, c) => d==='?' ? COL.unknown : (colored ? c : COL.neutral);
+  $('#gT').innerHTML = guestSVG(g[0], gc(g[0], COL.tens));
+  $('#gO').innerHTML = guestSVG(g[1], gc(g[1], COL.ones));
+  const nb = q.base || 0;   // Değiş Tokuş "ekle" sorusu: sonradan eklenenler sarı çerçeveli
+  $('#blkT').innerHTML = Array.from({length:tens}, (_,i) => `<div class="rod${nb && i>=nb ? ' added' : ''}" data-i="${i}">${'<i></i>'.repeat(10)}</div>`).join('');
+  $('#blkO').innerHTML = Array.from({length:ones}, (_,i) => `<div class="cube${nb ? ' added' : ''}" data-i="${i}"></div>`).join('');
+  $('#roomT').classList.toggle('closed', !open);
+  $('#roomO').classList.toggle('closed', !open);
+  const showPl = (revealed && !noPlaque) || q.plaque;
+  $('#plT').textContent = (open && showPl) ? `${tens} onluk = ${tens*10}` : '';
+  $('#plO').textContent = (open && showPl) ? `${ones} birlik = ${ones}` : '';
+}
+function hopGuests(){ ['#gT svg','#gO svg'].forEach(s => { const el=$(s); if(el){ el.classList.remove('hopping'); el.getBoundingClientRect(); el.classList.add('hopping'); } }); }
+// Kontroller: şıklar, kurma düğmeleri veya makine
+function renderControls(){
+  const q = cur(), c = $('#controls');
+  if(q.kind==='build' && q.phase===1){
+    c.innerHTML = `
+      <div class="bgroup tens"><button class="bb" data-a="t-" aria-label="Onluk çıkar">−</button><span>Onluk</span><button class="bb" data-a="t+" aria-label="Onluk ekle">+</button></div>
+      <div class="bgroup ones"><button class="bb" data-a="o-" aria-label="Birlik çıkar">−</button><span>Birlik</span><button class="bb" data-a="o+" aria-label="Birlik ekle">+</button></div>
+      <button class="btn green" data-a="check">Kontrol Et</button>`;
+    return;
+  }
+  if(q.kind==='machine' && q.ones>=10){
+    c.innerHTML = `<button class="btn machine" data-a="machine">⚙ Değiş Tokuş Makinesi</button>`;
+    return;
+  }
+  const target = q.kind==='build' ? q.p2 : q;
+  c.innerHTML = target.choices.map((v,i) => `<button class="choice" data-i="${i}">${v}</button>`).join('');
+}
+$('#controls').addEventListener('click', e => {
+  if(!accepting) return;
+  const q = cur(); const btn = e.target.closest('button'); if(!btn) return;
+  const a = btn.dataset.a;
+  if(a){ action(q, a); return; }
+  if(btn.classList.contains('choice') && !btn.disabled){
+    const target = q.kind==='build' ? q.p2 : q;
+    const val = target.choices[+btn.dataset.i];
+    if(val === target.answer) rightAnswer(btn); else wrongAnswer(btn, target);
+  }
+});
+// Kurma modunda odadaki bloğa dokununca çıkar
+$('#blkT').addEventListener('click', e => { const q=R&&cur(); if(accepting && q && q.kind==='build' && q.phase===1 && e.target.closest('.rod')) action(q,'t-'); });
+$('#blkO').addEventListener('click', e => { const q=R&&cur(); if(accepting && q && q.kind==='build' && q.phase===1 && e.target.closest('.cube')) action(q,'o-'); });
+
+function action(q, a){
+  if(a==='t+'){ if(q.tens>=9){ toast('Onlar odası dolu!'); return; } q.tens++; SFX.tap(); renderHotel(q,false); const r=$('#blkT').lastElementChild; r&&r.classList.add('pop'); }
+  if(a==='t-'){ if(q.tens>(q.base||0)){ q.tens--; SFX.tap(); renderHotel(q,false); } else if(q.base){ toast(`Odadaki ${q.base} onluk yerinde kalsın.`); } }
+  if(a==='o+'){ if(q.ones>=9){ toast('Birler odası dolu! 10 birlik = 1 onluk. Onluk ekle.'); return; } q.ones++; SFX.tap(); renderHotel(q,false); const r=$('#blkO').lastElementChild; r&&r.classList.add('pop'); }
+  if(a==='o-'){ if(q.ones>0){ q.ones--; SFX.tap(); renderHotel(q,false); } }
+  if(a==='check') checkBuild(q);
+  if(a==='machine') runMachine(q);
+}
+// Değiş Tokuş Makinesi: 10 birlik → 1 onluk
+function runMachine(q){
+  if(q.ones < 10) return;
+  accepting = false;
+  const cubes = [...$('#blkO').children].slice(0,10);
+  cubes.forEach((c,i) => setTimeout(() => c.classList.add('going'), i*30));
+  setTimeout(() => {
+    q.ones -= 10; q.tens += 1; SFX.clack();
+    renderHotel(q,false);
+    const r = $('#blkT').lastElementChild; r && r.classList.add('pop');
+    toast('10 birlik = 1 onluk!');
+    renderControls(); accepting = true;
+    if(q.ones < 10) $('#prompt').innerHTML = `Şimdi bu sayı kaç?<small>${q.tens} onluk ${q.ones} birlik</small>`;
+  }, 750);
+}
+function checkBuild(q){
+  if(q.tens===q.a && q.ones===q.b){ rightAnswer(null); return; }
+  accepting = false; q.tries++; q.pt++; SFX.bad(); markMissed(q);
+  const msgs = [];
+  if(q.tens!==q.a) msgs.push(`Onlar odasında <b>${q.a} onluk</b> olmalı. Sende ${q.tens} var.`);
+  if(q.ones!==q.b) msgs.push(`Birler odasında <b>${q.b} birlik</b> olmalı. Sende ${q.ones} var.`);
+  if(q.pt===1){ bubble(`${q.n} = ${q.a} onluk ${q.b} birlik.<br>${msgs.join('<br>')}`, 'Tekrar dene', () => accepting = true); return; }
+  q.tens = q.a; q.ones = q.b; renderHotel(q,false);
+  bubble(`Doğrusu bu: <b>${q.n} = ${q.a} onluk ${q.b} birlik</b>.`, 'Devam', () => toPhase2(q));
+}
+function toPhase2(q){
+  q.phase = 2; q.pt = 0; q.colored = true; renderHotel(q,false);
+  $('#prompt').innerHTML = `${q.p2.text}<small>${q.base ? 'Doğru olanı seç.' : 'Boşluğa hangi sayı gelmeli?'}</small>`;
+  renderControls(); accepting = true;
+}
+function markMissed(q){
+  if(q.missed) return; q.missed = true; R.missed.push(q.review);
+  if(!q.isReview && review[R.mode].length < 6) review[R.mode].push(q);
+}
+function rightAnswer(btn){
+  const q = cur(); accepting = false; SFX.ok();
+  if(btn) btn.classList.add('right');
+  if(q.kind==='build' && q.phase===1){
+    q.colored = true; renderHotel(q,false); hopGuests(); toast(q.base ? 'Harika! Şimdi ne eklediğini seç.' : 'Harika! Şimdi boşluğu doldur.');
+    setTimeout(() => toPhase2(q), 900); return;
+  }
+  if(q.kind==='build') $('#prompt').innerHTML = q.p2.text.includes('☐') ? q.p2.text.replace('☐', `<b>${q.p2.answer}</b>`) : `${q.base} onluk + <b>${q.p2.answer}</b> = ${q.n}`;
+  renderHotel(q,true); hopGuests();
+  if(q.kind!=='build') toast('✓ ' + q.review);
+  const first = q.tries===0; R.results[R.i] = first;
+  if(first){ R.first++; R.stars++; S.stars++; save(); starPop(); updateStars(); }
+  setTimeout(() => { R.i++; nextQ(); }, 2000);
+}
+function wrongAnswer(btn, target){
+  const q = cur(); accepting = false; q.tries++; q.pt++; SFX.bad(); markMissed(q);
+  btn.classList.add('wrong'); btn.disabled = true;
+  if(q.pt===1){
+    // 1. yanlış: cevabı söylemeyen ipucu; uygunsa odalar plaketsiz açılır
+    if(q.hintOpen) renderHotel(q,true,true);
+    bubble(`<span class="hintTag">İpucu</span><br>${target.hint || target.fb}`, 'Tekrar dene', () => accepting = true); return;
+  }
+  // 2. yanlış: odalar plaketleriyle açılır, doğru cevap ve açıklama gösterilir
+  if(q.kind!=='build') renderHotel(q,true);
+  [...$('#controls').children].forEach((b,i) => { if(target.choices[i]===target.answer) b.classList.add('hint'); b.disabled = true; });
+  R.results[R.i] = false;
+  bubble(`Doğru cevap: <b>${target.answer}</b><br>${target.fb}`, 'Devam', () => { R.i++; nextQ(); });
+}
+function starPop(){ const s=document.createElement('div'); s.className='flystar'; s.textContent='★'; document.body.appendChild(s); setTimeout(()=>s.remove(),1100); }
+$('#btnQuit').onclick = () => { SFX.tap(); stopSpeak(); accepting=false; $('#bubble').classList.remove('show'); show('lobby'); };
+
+/* ==========================================================
+   10. TUR SONU
+   ========================================================== */
+function endRound(){
+  const total = R.qs.length, perfect = R.first===total;
+  if(perfect){ R.stars += 3; S.stars += 3; }
+  const key = 'm'+R.mode+'k'+R.k;
+  S.best[key] = Math.max(S.best[key]||0, R.first); save();
+  $('#sumTitle').textContent = perfect ? 'Hatasız tur!' : (R.first>=total-2 ? 'Çok iyi!' : 'Tur bitti!');
+  $('#sumStars').textContent = '★ +' + R.stars;
+  $('#sumLine').textContent = `${total} sorudan ${R.first} tanesini ilk denemede bildin.`;
+  $('#sumBonus').textContent = perfect ? 'Hatasız tur ödülü: +3 yıldız!' : '';
+  $('#sumMiss').innerHTML = R.missed.length
+    ? `<div class="sumline" style="font-size:clamp(16px,2.3vh,22px)">Bunları birlikte hatırlayalım:</div><ul class="misslist">${R.missed.map(m=>`<li>${m}</li>`).join('')}</ul>
+       <div style="color:#6b6280;font-weight:700;font-size:15px">Bu sorular bir sonraki turda tekrar gelecek.</div>` : '';
+  $('#sumGuests').innerHTML = guestSVG('★',COL.tens) + guestSVG('★',COL.neutral) + guestSVG('★',COL.ones);
+  SFX.fanfare(); show('summary');
+}
+$('#btnSpeak').onclick = () => speakHTML($('#prompt').innerHTML);
+$('#bubbleSpeak').onclick = () => speakHTML($('#bubbleText').innerHTML);
+$('#btnAgain').onclick = () => { SFX.tap(); startRound(R.mode, R.k); };
+
+/* ==========================================================
+   11. HEDİYE DÜKKÂNI (sadece kozmetik)
+   ========================================================== */
+function renderShop(){
+  $('#shopFacade').innerHTML = facadeSVG();
+  $('#shopGuest').innerHTML = guestSVG(7, COL.tens);
+  $('#decoItems').innerHTML = DECOR.map(it => {
+    const own = S.owned.includes(it.id);
+    return `<div class="item"><div class="pv">${miniDecor(it.id)}</div>
+      <div class="nm">${it.name}</div>
+      ${own ? '<button class="btn ghost" disabled>Otelde</button>' : `<button class="btn" data-buy="${it.id}">★ ${it.price}</button>`}</div>`;
+  }).join('');
+  $('#cosItems').innerHTML = COSTUMES.map(it => {
+    const own = S.owned.includes(it.id), on = S.costume===it.id;
+    let b = `<button class="btn" data-buy="${it.id}">★ ${it.price}</button>`;
+    if(own) b = on ? `<button class="btn ghost" data-wear="">Çıkar</button>` : `<button class="btn green" data-wear="${it.id}">Tak</button>`;
+    return `<div class="item"><div class="pv">${guestSVG(5, COL.ones, it.id)}</div><div class="nm">${it.name}</div>${b}</div>`;
+  }).join('');
+}
+function miniDecor(id){
+  const m = {
+    cicek:'<svg viewBox="0 0 60 60"><rect x="17" y="34" width="26" height="22" rx="4" fill="#B8693A"/><circle cx="22" cy="28" r="9" fill="#FF4D8D"/><circle cx="38" cy="28" r="9" fill="#FFD600"/><circle cx="30" cy="17" r="9" fill="#A855F7"/></svg>',
+    hali:'<svg viewBox="0 0 60 60"><polygon points="20,10 40,10 54,54 6,54" fill="#E53935"/></svg>',
+    tabela:'<svg viewBox="0 0 60 60"><rect x="4" y="18" width="52" height="24" rx="8" fill="#FFD600"/><circle cx="12" cy="18" r="3" fill="#FF4D8D"/><circle cx="30" cy="18" r="3" fill="#FF4D8D"/><circle cx="48" cy="18" r="3" fill="#FF4D8D"/></svg>',
+    bayrak:'<svg viewBox="0 0 60 60"><line x1="18" y1="56" x2="18" y2="6" stroke="#2B2340" stroke-width="3"/><polygon points="18,6 50,16 18,26" fill="#FF4D8D"/></svg>',
+    agac:'<svg viewBox="0 0 60 60"><rect x="26" y="34" width="8" height="24" fill="#8B5A2B"/><circle cx="30" cy="26" r="20" fill="#38B26B"/></svg>',
+    fiskiye:'<svg viewBox="0 0 60 60"><ellipse cx="30" cy="50" rx="24" ry="7" fill="#4D9FFF"/><rect x="26" y="24" width="8" height="24" fill="#9BB"/><path d="M30 24 Q12 6 8 46 M30 24 Q48 6 52 46" stroke="#7EC8FF" stroke-width="4" fill="none"/></svg>'
+  };
+  return m[id] || '';
+}
+$('#sc-shop').addEventListener('click', e => {
+  const buy = e.target.closest('[data-buy]'), wear = e.target.closest('[data-wear]');
+  if(buy){
+    const id = buy.dataset.buy, it = [...DECOR,...COSTUMES].find(x=>x.id===id);
+    if(S.stars < it.price){ SFX.bad(); toast(`${it.price - S.stars} yıldız daha gerekli.`); return; }
+    S.stars -= it.price; S.owned.push(id);
+    if(COSTUMES.some(c=>c.id===id)) S.costume = id;
+    save(); SFX.coin(); toast(`${it.name} senin!`); renderShop(); updateStars();
+  }
+  if(wear){ S.costume = wear.dataset.wear || null; save(); SFX.tap(); renderShop(); }
+});
+
+/* ==========================================================
+   12. AYARLAR
+   ========================================================== */
+let resetArmed = false, resetT = null;
+function renderSettings(){
+  $('#btnSound').textContent = 'Ses: ' + (S.sound ? 'Açık' : 'Kapalı');
+  $('#btnReset').textContent = 'İlerlemeyi Sıfırla'; resetArmed = false;
+}
+$('#btnSound').onclick = () => { S.sound = !S.sound; save(); renderSettings(); SFX.tap(); };
+$('#btnReset').onclick = () => {
+  if(!resetArmed){ resetArmed = true; $('#btnReset').textContent = 'Emin misin? Tekrar dokun'; clearTimeout(resetT); resetT = setTimeout(renderSettings, 3500); return; }
+  const snd = S.sound; S = DEF(); S.sound = snd; save();
+  [1,2,3,4].forEach(m => { review[m] = []; recent[m] = []; });
+  renderSettings(); updateStars(); toast('İlerleme sıfırlandı.');
+};
+
+/* ==========================================================
+   13. BAŞLANGIÇ
+   ========================================================== */
+renderIntro(); updateStars();
+</script>
+</body>
+</html>
