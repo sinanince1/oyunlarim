@@ -781,6 +781,16 @@
       .sm-bek { transform: translate(40px,126px); fill: #2B2340; }
       .sm-makas { opacity: 0; }
     }
+    /* ---- Panayır Tahmincisi kart animasyonu: perde iner, "?" zıplar, dolap döner ---- */
+    .panayir-thumb { position: absolute; inset: 0; overflow: hidden; }
+    .pt-sahne { width: 100%; height: 100%; }
+    .pt-dolap { transform-box: fill-box; transform-origin: center; animation: ptdon 12s linear infinite; }
+    @keyframes ptdon { to { transform: rotate(360deg); } }
+    .pt-perde { animation: ptperde 6s ease-in-out infinite; }
+    @keyframes ptperde { 0%, 40% { transform: translateY(-90px); } 55%, 85% { transform: translateY(0); } 100% { transform: translateY(-90px); } }
+    .pt-soru { transform-box: fill-box; transform-origin: center; animation: ptsoru 1.4s ease-in-out infinite alternate; }
+    @keyframes ptsoru { from { transform: scale(1); } to { transform: scale(1.18); } }
+    @media (prefers-reduced-motion: reduce) { .pt-dolap, .pt-perde, .pt-soru { animation: none; } .pt-perde { transform: translateY(0); } }
     /* ---- Rakam Oteli kart animasyonu: 4 onluk + 7 birlik = 47 ---- */
     .rakam-oteli-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .ro-sahne { width: 100%; height: 100%; }
@@ -1253,6 +1263,33 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Panayır Tahmincisi",
+        file: "panayir_tahmincisi.html",
+        desc: "Saymadan tahmin et! Soldaki kavanozda kaç şeker varsa sağdakini kıyasla, perde inmeden tahminini ver, bilet kazan, panayırını kur!",
+        sinif: "2. Sınıf — Miktar ve ölçü tahmini",
+        isNew: true,
+        thumbBg: "linear-gradient(170deg, #6D4FC2 0%, #9A6FE0 45%, #FFD27A 46%, #FFB84D 100%)",
+        customThumb: `
+<div class="panayir-thumb">
+<svg class="pt-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- dönme dolap (arka) -->
+  <polygon points="196,150 234,150 215,96" fill="#C9803A"/>
+  <g class="pt-dolap"><circle cx="215" cy="92" r="34" fill="none" stroke="#FFD600" stroke-width="4"/><line x1="215" y1="92" x2="215" y2="58" stroke="#FFD600" stroke-width="2"/><line x1="215" y1="92" x2="249" y2="92" stroke="#FFD600" stroke-width="2"/><line x1="215" y1="92" x2="215" y2="126" stroke="#FFD600" stroke-width="2"/><line x1="215" y1="92" x2="181" y2="92" stroke="#FFD600" stroke-width="2"/><rect x="209" y="52" width="12" height="10" rx="3" fill="#FF4D8D"/><rect x="243" y="86" width="12" height="10" rx="3" fill="#4D9FFF"/><rect x="209" y="122" width="12" height="10" rx="3" fill="#00C9A7"/><rect x="175" y="86" width="12" height="10" rx="3" fill="#FF6B35"/></g>
+  <!-- tente -->
+  <rect x="0" y="0" width="240" height="14" fill="#FF6B35"/><g><rect x="0" y="0" width="12" height="14" fill="#fff"/><rect x="24" y="0" width="12" height="14" fill="#fff"/><rect x="48" y="0" width="12" height="14" fill="#fff"/><rect x="72" y="0" width="12" height="14" fill="#fff"/><rect x="96" y="0" width="12" height="14" fill="#fff"/><rect x="120" y="0" width="12" height="14" fill="#fff"/><rect x="144" y="0" width="12" height="14" fill="#fff"/><rect x="168" y="0" width="12" height="14" fill="#fff"/><rect x="192" y="0" width="12" height="14" fill="#fff"/><rect x="216" y="0" width="12" height="14" fill="#fff"/></g>
+  <!-- sol kavanoz: 14 şeker -->
+  <rect x="30" y="64" width="66" height="76" rx="10" fill="#EAF4FF" stroke="#7AA6C9" stroke-width="3"/><rect x="46" y="56" width="34" height="12" rx="4" fill="#C9803A"/>
+  <circle cx="44" cy="78" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="58" cy="74" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="72" cy="80" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="50" cy="92" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="64" cy="90" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="78" cy="94" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="46" cy="106" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="60" cy="104" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="74" cy="108" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="54" cy="118" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="68" cy="120" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="82" cy="116" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="40" cy="120" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="86" cy="80" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/>
+  <rect x="34" y="30" width="58" height="22" rx="8" fill="#6D4FC2" stroke="#fff" stroke-width="2"/><text x="63" y="46" text-anchor="middle" font-size="13" font-weight="900" fill="#fff" font-family="Nunito,Arial Rounded MT Bold,sans-serif">14 adet</text>
+  <!-- sağ kavanoz: ? -->
+  <rect x="136" y="64" width="66" height="76" rx="10" fill="#EAF4FF" stroke="#7AA6C9" stroke-width="3"/><rect x="152" y="56" width="34" height="12" rx="4" fill="#C9803A"/>
+  <circle cx="150" cy="76" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="166" cy="72" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="182" cy="80" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="158" cy="90" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="174" cy="88" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="190" cy="96" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="152" cy="104" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="168" cy="102" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="184" cy="108" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="160" cy="118" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="176" cy="120" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="194" cy="116" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="146" cy="118" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="196" cy="74" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="142" cy="92" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="188" cy="124" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="170" cy="110" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="154" cy="130" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="180" cy="132" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/><circle cx="144" cy="106" r="4" fill="#FF4D8D" stroke="#B2114A" stroke-width="1"/>
+  <g class="pt-perde"><rect x="130" y="52" width="78" height="92" rx="8" fill="#FF4D4D" stroke="#B22"/><rect x="130" y="52" width="78" height="8" rx="4" fill="#FFD600"/><text x="169" y="118" text-anchor="middle" font-size="46" font-weight="900" fill="#fff" font-family="Nunito,Arial Rounded MT Bold,sans-serif">?</text></g>
+  <g class="pt-soru"><rect x="138" y="30" width="62" height="22" rx="8" fill="#00C9A7" stroke="#fff" stroke-width="2"/><text x="169" y="46" text-anchor="middle" font-size="13" font-weight="900" fill="#fff" font-family="Nunito,Arial Rounded MT Bold,sans-serif">Kaç adet?</text></g>
+</svg>
+</div>`,
+      },
       {
         name: "Rakam Oteli",
         file: "rakam_oteli.html",
