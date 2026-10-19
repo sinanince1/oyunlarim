@@ -791,6 +791,13 @@
     .pt-soru { transform-box: fill-box; transform-origin: center; animation: ptsoru 1.4s ease-in-out infinite alternate; }
     @keyframes ptsoru { from { transform: scale(1); } to { transform: scale(1.18); } }
     @media (prefers-reduced-motion: reduce) { .pt-dolap, .pt-perde, .pt-soru { animation: none; } .pt-perde { transform: translateY(0); } }
+    .pota-duello-thumb { position: absolute; inset: 0; overflow: hidden; }
+    .pd-sahne { width: 100%; height: 100%; }
+    .pd-top { animation: pdsut 2.6s ease-in-out infinite; }
+    @keyframes pdsut { 0% { transform: translate(104px,112px); } 15% { transform: translate(104px,100px); } 55% { transform: translate(158px,22px); } 78% { transform: translate(203px,56px); } 100% { transform: translate(203px,134px); } }
+    .pd-file { transform-box: fill-box; transform-origin: 50% 0; animation: pdfile 2.6s ease-in-out infinite; }
+    @keyframes pdfile { 0%, 76%, 100% { transform: scaleY(1); } 84% { transform: scaleY(1.35); } }
+    @media (prefers-reduced-motion: reduce) { .pd-top, .pd-file { animation: none; } .pd-top { transform: translate(158px,22px); } }
     /* ---- Rakam Oteli kart animasyonu: 4 onluk + 7 birlik = 47 ---- */
     .rakam-oteli-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .ro-sahne { width: 100%; height: 100%; }
@@ -1263,6 +1270,72 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Pota Düellosu",
+        file: "pota_duellosu.html",
+        desc: "İki oyuncu karşı karşıya! Onluk ve birlikle sayıyı kur, rakibinden önce bil, topu çal ve basket at!",
+        sinif: "2. Sınıf — Onluk ve birlik (2 oyunculu)",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #150f28 0%, #3d3159 64%, #E9B676 64%, #C08043 100%)",
+        customThumb: `
+<div class="pota-duello-thumb">
+<svg class="pd-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- tribün -->
+  <rect x="0" y="0" width="240" height="44" fill="#2a2145"/>
+  <g>
+    <circle cx="8" cy="14" r="4" fill="#FFDBAC"/><circle cx="24" cy="14" r="4" fill="#C68642"/><circle cx="40" cy="14" r="4" fill="#F1C27D"/><circle cx="56" cy="14" r="4" fill="#8D5524"/><circle cx="72" cy="14" r="4" fill="#E0AC69"/><circle cx="88" cy="14" r="4" fill="#FFDBAC"/><circle cx="104" cy="14" r="4" fill="#F1C27D"/><circle cx="120" cy="14" r="4" fill="#C68642"/><circle cx="136" cy="14" r="4" fill="#E0AC69"/><circle cx="152" cy="14" r="4" fill="#FFDBAC"/><circle cx="168" cy="14" r="4" fill="#8D5524"/><circle cx="184" cy="14" r="4" fill="#F1C27D"/><circle cx="200" cy="14" r="4" fill="#E0AC69"/><circle cx="216" cy="14" r="4" fill="#C68642"/><circle cx="232" cy="14" r="4" fill="#FFDBAC"/>
+    <rect x="3" y="18" width="10" height="9" rx="4" fill="#FF6B35"/><rect x="19" y="18" width="10" height="9" rx="4" fill="#4D9FFF"/><rect x="35" y="18" width="10" height="9" rx="4" fill="#FFD600"/><rect x="51" y="18" width="10" height="9" rx="4" fill="#FF4D8D"/><rect x="67" y="18" width="10" height="9" rx="4" fill="#00C9A7"/><rect x="83" y="18" width="10" height="9" rx="4" fill="#A855F7"/><rect x="99" y="18" width="10" height="9" rx="4" fill="#FF6B35"/><rect x="115" y="18" width="10" height="9" rx="4" fill="#4D9FFF"/><rect x="131" y="18" width="10" height="9" rx="4" fill="#FFD600"/><rect x="147" y="18" width="10" height="9" rx="4" fill="#FF4D8D"/><rect x="163" y="18" width="10" height="9" rx="4" fill="#00C9A7"/><rect x="179" y="18" width="10" height="9" rx="4" fill="#A855F7"/><rect x="195" y="18" width="10" height="9" rx="4" fill="#FF6B35"/><rect x="211" y="18" width="10" height="9" rx="4" fill="#4D9FFF"/><rect x="227" y="18" width="10" height="9" rx="4" fill="#FFD600"/>
+    <circle cx="16" cy="32" r="4" fill="#E0AC69"/><circle cx="32" cy="32" r="4" fill="#FFDBAC"/><circle cx="48" cy="32" r="4" fill="#C68642"/><circle cx="64" cy="32" r="4" fill="#F1C27D"/><circle cx="80" cy="32" r="4" fill="#8D5524"/><circle cx="96" cy="32" r="4" fill="#E0AC69"/><circle cx="144" cy="32" r="4" fill="#FFDBAC"/><circle cx="160" cy="32" r="4" fill="#C68642"/><circle cx="176" cy="32" r="4" fill="#F1C27D"/><circle cx="192" cy="32" r="4" fill="#E0AC69"/><circle cx="208" cy="32" r="4" fill="#8D5524"/><circle cx="224" cy="32" r="4" fill="#FFDBAC"/>
+  </g>
+  <rect x="0" y="0" width="240" height="44" fill="#150f28" opacity=".3"/>
+  <!-- skor tabelası -->
+  <rect x="84" y="26" width="72" height="22" rx="7" fill="#07050e" stroke="#FFD600" stroke-opacity=".5" stroke-width="1.5"/>
+  <text x="102" y="42" text-anchor="middle" font-size="13" font-weight="900" fill="#FF6B35" font-family="Nunito,Arial Rounded MT Bold,sans-serif">2</text>
+  <text x="120" y="42" text-anchor="middle" font-size="11" font-weight="900" fill="#FFD600" font-family="Nunito,Arial Rounded MT Bold,sans-serif">VS</text>
+  <text x="138" y="42" text-anchor="middle" font-size="13" font-weight="900" fill="#4D9FFF" font-family="Nunito,Arial Rounded MT Bold,sans-serif">1</text>
+  <!-- LED pano -->
+  <rect x="0" y="86" width="240" height="11" fill="#0e0a1c"/><rect x="0" y="86" width="240" height="1.5" fill="#FF6B35"/>
+  <text x="120" y="95" text-anchor="middle" font-size="7" font-weight="900" fill="#FFD600" letter-spacing="1.5" font-family="Nunito,Arial Rounded MT Bold,sans-serif">POTA DÜELLOSU ★ ONLUK ★ BİRLİK</text>
+  <!-- parke ve boyalı alanlar -->
+  <path d="M0 99 H58 L66 150 H0 Z" fill="#FF6B35" opacity=".5"/>
+  <path d="M240 99 H182 L174 150 H240 Z" fill="#4D9FFF" opacity=".5"/>
+  <ellipse cx="120" cy="128" rx="30" ry="6" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>
+  <!-- sol pota -->
+  <rect x="6" y="128" width="20" height="14" rx="4" fill="#2B2140"/><rect x="13" y="40" width="5" height="90" fill="#5b5470"/>
+  <rect x="19" y="36" width="4" height="36" rx="1" fill="#eef7ff" stroke="#120e22" stroke-width="1"/>
+  <ellipse cx="37" cy="60" rx="13" ry="2.6" fill="none" stroke="#FF6B35" stroke-width="2.5"/>
+  <path d="M24 61 L29 76 L45 76 L50 61 M24 61 L37 76 M50 61 L37 76" fill="none" stroke="#fff" stroke-width="1.2"/>
+  <!-- sağ pota -->
+  <rect x="214" y="128" width="20" height="14" rx="4" fill="#2B2140"/><rect x="222" y="40" width="5" height="90" fill="#5b5470"/>
+  <rect x="217" y="36" width="4" height="36" rx="1" fill="#eef7ff" stroke="#120e22" stroke-width="1"/>
+  <ellipse cx="203" cy="60" rx="13" ry="2.6" fill="none" stroke="#FF6B35" stroke-width="2.5"/>
+  <path class="pd-file" d="M190 61 L195 76 L211 76 L216 61 M190 61 L203 76 M216 61 L203 76" fill="none" stroke="#fff" stroke-width="1.2"/>
+  <!-- sol oyuncu (erkek) -->
+  <ellipse cx="92" cy="141" rx="14" ry="3" fill="#000" opacity=".25"/>
+  <rect x="85" y="118" width="5" height="21" rx="2" fill="#E8B27A"/><rect x="94" y="118" width="5" height="21" rx="2" fill="#E8B27A"/>
+  <rect x="83" y="137" width="9" height="5" rx="2" fill="#a63a10"/><rect x="93" y="137" width="9" height="5" rx="2" fill="#a63a10"/>
+  <rect x="82" y="108" width="20" height="14" rx="4" fill="#a63a10"/>
+  <rect x="82" y="88" width="20" height="24" rx="6" fill="#FF6B35"/>
+  <text x="92" y="105" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" font-family="Nunito,Arial Rounded MT Bold,sans-serif">7</text>
+  <path d="M100 92 L110 104" stroke="#E8B27A" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="92" cy="78" r="9.5" fill="#F1C27D"/><path d="M82.5 77 Q82 67 92 68 Q102 67 101.5 76 Q97 71 92 72 Q87 71 82.5 77Z" fill="#3b2412"/>
+  <rect x="82.5" y="71" width="19" height="3" rx="1.5" fill="#FF6B35"/><circle cx="96" cy="78" r="1.4" fill="#222"/>
+  <!-- sağ oyuncu (kadın) -->
+  <ellipse cx="150" cy="141" rx="14" ry="3" fill="#000" opacity=".25"/>
+  <rect x="143" y="118" width="5" height="21" rx="2" fill="#E8B27A"/><rect x="152" y="118" width="5" height="21" rx="2" fill="#E8B27A"/>
+  <rect x="140" y="137" width="9" height="5" rx="2" fill="#1d4f9a"/><rect x="151" y="137" width="9" height="5" rx="2" fill="#1d4f9a"/>
+  <rect x="140" y="108" width="20" height="14" rx="4" fill="#1d4f9a"/>
+  <rect x="140" y="88" width="20" height="24" rx="6" fill="#4D9FFF"/>
+  <text x="150" y="105" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" font-family="Nunito,Arial Rounded MT Bold,sans-serif">11</text>
+  <path d="M142 92 L134 104" stroke="#E8B27A" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M157 70 Q169 72 167 86 Q166 92 161 94 Q164 86 158 79Z" fill="#4a2a14"/>
+  <circle cx="150" cy="78" r="9.5" fill="#F1C27D"/><path d="M140.5 79 Q139 67 150 68 Q160 67 159.5 77 Q157 72 152 72 Q150 75 147 73 Q143 73 140.5 79Z" fill="#4a2a14"/>
+  <rect x="140.5" y="71" width="19" height="3" rx="1.5" fill="#4D9FFF"/><circle cx="146" cy="78" r="1.4" fill="#222"/>
+  <!-- top -->
+  <g class="pd-top"><circle r="6" fill="#F0621F" stroke="#6e2a0c" stroke-width="1.3"/><path d="M-6 0 H6 M0 -6 V6" stroke="#6e2a0c" stroke-width="1"/></g>
+</svg>
+</div>`,
+      },
       {
         name: "Panayır Tahmincisi",
         file: "panayir_tahmincisi.html",
