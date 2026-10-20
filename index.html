@@ -630,6 +630,37 @@
       100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
     }
 
+    /* ---- Gizli kategori: şifre penceresi ---- */
+    .category-icon { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+    .gizli-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(20,20,40,.55); align-items: center; justify-content: center; padding: 16px; }
+    .gizli-overlay.active { display: flex; animation: fadeIn .2s ease; }
+    .gizli-kutu { background: #fff; border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,.15); }
+    .gizli-kutu.salla { animation: gizliSalla .4s; }
+    @keyframes gizliSalla { 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+    .gizli-ikon { font-size: 2.6rem; }
+    .gizli-kutu h3 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.5rem; color: #2D2D2D; margin: 6px 0 14px; }
+    .gizli-kutu input { width: 100%; font-family: 'Nunito', sans-serif; font-size: 1.6rem; font-weight: 900; text-align: center; letter-spacing: 4px; padding: 12px; border-radius: 14px; border: 3px solid #E8DFF5; outline: none; }
+    .gizli-kutu input:focus { border-color: #A855F7; }
+    .gizli-hata { color: #FF4D8D; font-weight: 800; min-height: 1.3em; margin: 8px 0; }
+    .gizli-butonlar { display: flex; gap: 10px; }
+    .gizli-btn { flex: 1; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.1rem; padding: 12px; border-radius: 99px; border: none; cursor: pointer; }
+    .gizli-iptal { background: #F0ECF7; color: #2D2D2D; }
+    .gizli-tamam { background: linear-gradient(135deg, #4D9FFF, #A855F7); color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.15); }
+    /* ---- Kasa Ustası kart animasyonu: rakamlar çözümlenir, çark döner, kasa açılır ---- */
+    .kasa-ustasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .ku-sahne { width: 100%; height: 100%; }
+    .ku-teker { transform-box: fill-box; transform-origin: center; animation: kuTeker 6s ease-in-out infinite; }
+    @keyframes kuTeker { 0%, 30% { transform: rotate(0deg); } 42%, 100% { transform: rotate(270deg); } }
+    .ku-kapi { transform-box: view-box; transform-origin: 24px 75px; animation: kuKapi 6s ease-in-out infinite; }
+    @keyframes kuKapi { 0%, 44% { transform: scaleX(1); } 54%, 76% { transform: scaleX(.12); } 86%, 100% { transform: scaleX(1); } }
+    .ku-p1 { opacity: 0; animation: kuP1 6s linear infinite; }
+    .ku-p2 { opacity: 0; animation: kuP2 6s linear infinite; }
+    @keyframes kuP1 { 0%, 8% { opacity: 0; } 12%, 88% { opacity: 1; } 94%, 100% { opacity: 0; } }
+    @keyframes kuP2 { 0%, 20% { opacity: 0; } 24%, 88% { opacity: 1; } 94%, 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .ku-teker, .ku-kapi, .ku-p1, .ku-p2 { animation: none; }
+      .ku-p1, .ku-p2 { opacity: 1; }
+    }
     /* ---- Hece Smaçı kart animasyonu ---- */
     .hece-smaci-thumb {
       position: absolute; inset: 0;
@@ -970,6 +1001,20 @@
   </div>
 </div>
 
+<!-- GİZLİ KATEGORİ ŞİFRE PENCERESİ (Matematik ikonuna 3 kez dokununca açılır) -->
+<div class="gizli-overlay" id="gizli-overlay" role="dialog" aria-modal="true" aria-labelledby="gizli-baslik">
+  <div class="gizli-kutu" id="gizli-kutu">
+    <div class="gizli-ikon">🔐</div>
+    <h3 id="gizli-baslik">Öğretmen Şifresi</h3>
+    <input id="gizli-sifre" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="••••••">
+    <p class="gizli-hata" id="gizli-hata"></p>
+    <div class="gizli-butonlar">
+      <button class="gizli-btn gizli-iptal" onclick="gizliKapat()">Vazgeç</button>
+      <button class="gizli-btn gizli-tamam" onclick="gizliKontrol()">Aç</button>
+    </div>
+  </div>
+</div>
+
 <footer>Tüm oyunlar <span>❤️</span> ile yapıldı</footer>
 
 <script>
@@ -1275,6 +1320,7 @@ const categories = [
   },
   {
     name: "➕ Matematik",
+    gizliTetik: true, // ikona 3 kez dokununca gizli kategori şifresi sorulur
     color: "#FF6B35",
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
@@ -1923,6 +1969,64 @@ const categories = [
 ];
 
 // ============================================================
+// GİZLİ KATEGORİLER — normal sitede görünmez.
+// Matematik başlığındaki ikona üst üste 3 kez dokun, şifreyi gir.
+// Açık kalma süresi: tarayıcı sekmesi kapanana kadar (sessionStorage).
+// ============================================================
+const hiddenCategories = [
+  {
+    name: "🔐 4. Sınıflar",
+    color: "#4D9FFF",
+    iconBg: "linear-gradient(135deg, #4D9FFF, #A855F7)",
+    lineColor: "linear-gradient(90deg, #4D9FFF, #A855F7)",
+    games: [
+      {
+        name: "Kasa Ustası",
+        file: "kasa_ustasi.html",
+        desc: "6 basamaklı sayıları çözümle, şifreyi bul, kasaları aç!",
+        sinif: "4. Sınıf — 6 basamaklı sayıların çözümlenmesi",
+        isNew: true,
+        thumbBg: "linear-gradient(135deg, #0B1533, #1C2F66)",
+        customThumb: `
+<div class="kasa-ustasi-thumb">
+<svg class="ku-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="kuAltin" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFE27A"/><stop offset=".65" stop-color="#D9A514"/><stop offset="1" stop-color="#7A5A08"/></radialGradient>
+  </defs>
+  <rect width="240" height="150" fill="#0B1533"/>
+  <g fill="#FFD34D" opacity=".5"><circle cx="210" cy="18" r="1.6"/><circle cx="140" cy="128" r="1.3"/><circle cx="226" cy="132" r="1.6"/><circle cx="120" cy="16" r="1.2"/></g>
+  <!-- kasa gövdesi ve içi -->
+  <circle cx="70" cy="75" r="52" fill="#7A5A08"/>
+  <circle cx="70" cy="75" r="45" fill="#2A1D05"/>
+  <g stroke="#A87B06" stroke-width="1.5">
+    <polygon points="44,100 66,100 62,90 48,90" fill="#FFD34D"/><polygon points="74,100 96,100 92,90 78,90" fill="#FFD34D"/>
+    <polygon points="59,88 81,88 77,78 63,78" fill="#FFE27A"/><circle cx="56" cy="66" r="6" fill="#FFD34D"/><circle cx="86" cy="62" r="5" fill="#FFD34D"/>
+  </g>
+  <!-- kapı -->
+  <g class="ku-kapi">
+    <circle cx="70" cy="75" r="47" fill="url(#kuAltin)"/>
+    <circle cx="70" cy="75" r="38" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+    <g fill="rgba(0,0,0,.3)"><circle cx="112" cy="75" r="2.6"/><circle cx="28" cy="75" r="2.6"/><circle cx="70" cy="33" r="2.6"/><circle cx="70" cy="117" r="2.6"/><circle cx="99.7" cy="45.3" r="2.6"/><circle cx="40.3" cy="45.3" r="2.6"/><circle cx="99.7" cy="104.7" r="2.6"/><circle cx="40.3" cy="104.7" r="2.6"/></g>
+    <g class="ku-teker" stroke="#2B2B2B" stroke-opacity=".6" stroke-width="3" stroke-linecap="round" fill="none">
+      <circle cx="70" cy="75" r="16"/><line x1="70" y1="75" x2="70" y2="51"/><line x1="70" y1="75" x2="94" y2="75"/><line x1="70" y1="75" x2="70" y2="99"/><line x1="70" y1="75" x2="46" y2="75"/>
+    </g>
+  </g>
+  <!-- şifre ekranı ve çözümleme -->
+  <rect x="132" y="56" width="96" height="34" rx="8" fill="#16234A" stroke="#FFD34D" stroke-width="2"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <text x="180" y="80" font-size="20" fill="#FFD34D">482 316</text>
+    <text class="ku-p1" x="180" y="108" font-size="9.5" fill="#fff">400 000 + 80 000 +</text>
+    <text class="ku-p2" x="180" y="122" font-size="9.5" fill="#fff">2 000 + 300 + 10 + 6</text>
+  </g>
+</svg>
+</div>
+`
+      }
+    ]
+  }
+];
+
+// ============================================================
 // SAYFA OLUŞTURMA
 // ============================================================
 function buildPage() {
@@ -1930,6 +2034,18 @@ function buildPage() {
   main.innerHTML = '';
 
   categories.forEach((cat, ci) => {
+    main.appendChild(makeSection(cat, ci));
+    // Gizli kategoriler tetik kategorisinin hemen altında açılır
+    if (cat.gizliTetik) {
+      const alan = document.createElement('div');
+      alan.id = 'gizli-alan';
+      main.appendChild(alan);
+    }
+  });
+  gizliCiz();
+}
+
+function makeSection(cat, ci) {
     const section = document.createElement('section');
     section.className = 'category-section';
     section.style.animationDelay = `${ci * 0.12}s`;
@@ -1973,11 +2089,71 @@ function buildPage() {
       grid.appendChild(card);
     });
 
+    if (cat.gizliTetik) header.querySelector('.category-icon').addEventListener('click', gizliDokunus);
+
     section.appendChild(header);
     section.appendChild(grid);
-    main.appendChild(section);
-  });
+    return section;
 }
+
+// ============================================================
+// GİZLİ KATEGORİ — 3 dokunuş + şifre
+// ============================================================
+const GIZLI_OZET = '2d3f9867'; // şifrenin özeti; şifrenin kendisi kodda yazmaz
+function gizliOzet(s) {
+  let h = 0x811c9dc5; s = 'sinanince:' + s;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16);
+}
+function gizliAcikMi() { try { return sessionStorage.getItem('gizliKategori') === '1'; } catch (e) { return false; } }
+function gizliCiz() {
+  const alan = document.getElementById('gizli-alan');
+  if (!alan) return;
+  alan.innerHTML = '';
+  if (!gizliAcikMi()) return;
+  hiddenCategories.forEach((cat, i) => alan.appendChild(makeSection(cat, i)));
+}
+let gizliSayac = 0, gizliZaman = 0;
+function gizliDokunus() {
+  const simdi = Date.now();
+  if (simdi - gizliZaman > 800) gizliSayac = 0;
+  gizliZaman = simdi;
+  if (++gizliSayac < 3) return;
+  gizliSayac = 0;
+  if (gizliAcikMi()) { // açıkken yine 3 dokunuş → gizle
+    try { sessionStorage.removeItem('gizliKategori'); } catch (e) {}
+    gizliCiz();
+  } else {
+    gizliAc();
+  }
+}
+function gizliAc() {
+  const inp = document.getElementById('gizli-sifre');
+  inp.value = '';
+  document.getElementById('gizli-hata').textContent = '';
+  document.getElementById('gizli-overlay').classList.add('active');
+  setTimeout(() => inp.focus(), 50);
+}
+function gizliKapat() { document.getElementById('gizli-overlay').classList.remove('active'); }
+function gizliKontrol() {
+  const inp = document.getElementById('gizli-sifre');
+  if (gizliOzet(inp.value.trim()) === GIZLI_OZET) {
+    try { sessionStorage.setItem('gizliKategori', '1'); } catch (e) {}
+    gizliKapat();
+    gizliCiz();
+    const alan = document.getElementById('gizli-alan');
+    if (alan && alan.firstChild) alan.firstChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    document.getElementById('gizli-hata').textContent = 'Şifre yanlış.';
+    inp.value = '';
+    const k = document.getElementById('gizli-kutu');
+    k.classList.remove('salla'); void k.offsetWidth; k.classList.add('salla');
+    inp.focus();
+  }
+}
+document.getElementById('gizli-sifre').addEventListener('keydown', e => { if (e.key === 'Enter') gizliKontrol(); });
+document.getElementById('gizli-overlay').addEventListener('click', function(e) { if (e.target === this) gizliKapat(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') gizliKapat(); });
 
 // ============================================================
 // MODAL
