@@ -798,6 +798,19 @@
     .pd-file { transform-box: fill-box; transform-origin: 50% 0; animation: pdfile 2.6s ease-in-out infinite; }
     @keyframes pdfile { 0%, 76%, 100% { transform: scaleY(1); } 84% { transform: scaleY(1.35); } }
     @media (prefers-reduced-motion: reduce) { .pd-top, .pd-file { animation: none; } .pd-top { transform: translate(158px,22px); } }
+    /* ---- Aç Timsah kart animasyonu: timsah büyük sayıyı (45) yer, "<" işareti belirir ---- */
+    .ac-timsah-thumb { position: absolute; inset: 0; overflow: hidden; }
+    .at-sahne { width: 100%; height: 100%; }
+    .at-ust, .at-alt { transform-box: view-box; transform-origin: 208px 104px; }
+    .at-ust { animation: atust 3s ease-in-out infinite; }
+    .at-alt { animation: atalt 3s ease-in-out infinite; }
+    @keyframes atust { 0%, 28%, 64%, 100% { transform: rotate(0); } 40%, 56% { transform: rotate(-22deg); } }
+    @keyframes atalt { 0%, 28%, 64%, 100% { transform: rotate(0); } 40%, 56% { transform: rotate(13deg); } }
+    .at-yem { transform-box: fill-box; transform-origin: center; animation: atyem 3s ease-in-out infinite; }
+    @keyframes atyem { 0%, 52% { transform: none; opacity: 1; } 62% { transform: translateX(-45%) scale(.15); opacity: 0; } 86% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+    .at-isaret { transform-box: fill-box; transform-origin: center; animation: atisaret 3s ease-in-out infinite; }
+    @keyframes atisaret { 0%, 56% { transform: scale(0); } 66% { transform: scale(1.15); } 72%, 90% { transform: scale(1); } 100% { transform: scale(0); } }
+    @media (prefers-reduced-motion: reduce) { .at-ust, .at-alt, .at-yem, .at-isaret { animation: none; } }
     /* ---- Rakam Oteli kart animasyonu: 4 onluk + 7 birlik = 47 ---- */
     .rakam-oteli-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .ro-sahne { width: 100%; height: 100%; }
@@ -976,7 +989,6 @@ const categories = [
         file: "hikaye_sahnesi.html",
         desc: "Hikâyeyi oku; kahramanı, yeri, zamanı ve olayı bul. Perde açılsın, hikâye sahnelensin!",
         sinif: "2. Sınıf — Hikâye unsurları",
-        isNew: true,
         thumbBg: "linear-gradient(170deg, #4A0F22 0%, #2A0A14 100%)",
         customThumb: `
 <div class="hikaye-sahnesi-thumb">
@@ -1020,7 +1032,6 @@ const categories = [
         file: "sozluk_postasi.html",
         desc: "Evleri sözlük sırasına diz, mektupları doğru iki evin arasına götür!",
         sinif: "2. Sınıf — Sözlük sıralaması",
-        isNew: true,
         thumbBg: "linear-gradient(170deg, #E6F3FF 0%, #FFF8F0 100%)",
         customThumb: `
 <div class="sozluk-postasi-thumb">
@@ -1082,7 +1093,6 @@ const categories = [
         file: "satir_sonu_makasi.html",
         desc: "Satıra sığmayan kelimeyi hecesinden kes, kısa çizgiyi doğru yere koy!",
         sinif: "2. Sınıf — Satır sonunda kelime bölme",
-        isNew: true,
         thumbBg: "linear-gradient(160deg, #6FB2FF 0%, #4D9FFF 100%)",
         customThumb: `
 <div class="satir-makasi-thumb">
@@ -1117,7 +1127,6 @@ const categories = [
         file: "hece_smaci.html",
         desc: "Harf ve hece sorularını bil, topu file üstünden aşır, smacı bas!",
         sinif: "2. Sınıf — Harf ve hece bilgisi",
-        isNew: true,
         thumbBg: "linear-gradient(165deg, #EAF6FF 0%, #CFE9FF 46%, #FFE3C6 100%)",
         customThumb: `
 <div class="hece-smaci-thumb">
@@ -1271,11 +1280,77 @@ const categories = [
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
       {
+        name: "Aç Timsah",
+        file: "ac_timsah.html",
+        desc: "Timsah hep büyük sayıyı yer! Büyüktür-küçüktür işaretini timsahla keşfet, sayıları sırala, akıllı tahtada arkadaşınla yarış!",
+        sinif: "2. Sınıf — Sayıların sırası (tek ya da 2 oyunculu)",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #FFF8F0 0%, #E6F5FF 57%, #6FD3F2 57%, #2E8FD6 100%)",
+        customThumb: `
+<div class="ac-timsah-thumb">
+<svg class="at-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="acTimsahGok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF8F0"/><stop offset="1" stop-color="#E6F5FF"/></linearGradient>
+    <linearGradient id="acTimsahSu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FD3F2"/><stop offset="1" stop-color="#2E8FD6"/></linearGradient>
+  </defs>
+  <!-- gökyüzü, güneş, tepeler -->
+  <rect width="240" height="150" fill="url(#acTimsahGok)"/>
+  <circle cx="30" cy="24" r="17" fill="#FFD600" opacity=".18"/><circle cx="30" cy="24" r="11" fill="#FFD600"/>
+  <path d="M0 88V76Q24 66 56 72T120 70T184 74T240 72V88Z" fill="#CFEBD5"/>
+  <path d="M0 90V82Q30 75 66 80T138 79T200 82T240 80V90Z" fill="#A9DCB4"/>
+  <!-- göl -->
+  <rect y="86" width="240" height="64" fill="url(#acTimsahSu)"/>
+  <path d="M0 86Q15 82 30 86T60 86T90 86T120 86T150 86T180 86T210 86T240 86V90H0Z" fill="#6FD3F2"/>
+  <g stroke="#fff" stroke-opacity=".35" stroke-width="2" fill="none" stroke-linecap="round"><path d="M20 114q6-4 12 0M96 130q8-5 16 0M178 110q6-4 12 0M140 142q5-3 10 0M48 140q5-3 10 0"/></g>
+  <g transform="translate(212 128)"><path d="M0 0 5-9A16 9 0 1 1-5-9Z" fill="#3DBE6B"/><circle cx="6" cy="-6" r="3" fill="#FF9EC0"/></g>
+  <!-- sol balık: 23 -->
+  <g transform="translate(12 63) scale(.42)">
+    <path d="M116 48 148 18q-8 30 0 60z" fill="#9CC9FF" stroke="#2B2D42" stroke-opacity=".22" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50 14q20-16 40-2z" fill="#9CC9FF" stroke="#2B2D42" stroke-opacity=".22" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="66" cy="48" rx="58" ry="40" fill="#9CC9FF" stroke="#2B2D42" stroke-opacity=".22" stroke-width="3"/>
+      <ellipse cx="72" cy="21" rx="34" ry="7.5" fill="#fff" opacity=".42"/>
+      <circle cx="21" cy="40" r="7" fill="#fff"/><circle cx="22" cy="40.5" r="4.4" fill="#2B2D42"/>
+    <text x="72" y="64" text-anchor="middle" font-size="48" font-weight="900" fill="#2B2D42" font-family="Nunito,Arial Rounded MT Bold,sans-serif">23</text>
+  </g>
+  <!-- timsah (ağzı 45'e doğru açılır) -->
+  <svg x="74" y="53" width="100" height="53" viewBox="0 0 320 170">
+    <path d="M100 120q-4 22-12 30h22q2-12 6-26z" fill="#24894A"/><path d="M192 118q-2 22-8 32h22q0-14 4-28z" fill="#24894A"/>
+    <path d="M72 96C48 92 26 80 6 58c8 26 30 54 70 64z" fill="#3DBE6B"/>
+    <path d="M56 88l5-8 5 7zM42 81l4-7 5 6zM29 73l4-7 4 6zM18 65l3-6 4 5z" fill="#24894A"/>
+    <ellipse cx="140" cy="104" rx="82" ry="30" fill="#3DBE6B"/>
+    <path d="M80 118c30 14 96 16 134-2-10 14-44 20-74 20s-50-6-60-18z" fill="#FCEFB4"/>
+    <g fill="#24894A"><circle cx="86" cy="82" r="6"/><circle cx="104" cy="77" r="6.5"/><circle cx="122" cy="75" r="7"/><circle cx="140" cy="74" r="7"/><circle cx="158" cy="75" r="7"/><circle cx="176" cy="78" r="6.5"/><circle cx="193" cy="83" r="6"/></g>
+    <path d="M84 124q-2 16-10 26h24q2-12 4-24z" fill="#3DBE6B"/><path d="M176 124q0 16-6 26h24q0-12 2-24z" fill="#3DBE6B"/>
+    <g class="at-alt"><path d="M204 104h98c10 1 10 9 0 11-30 5-66 7-96 3z" fill="#3DBE6B"/><g fill="#fff"><path d="M254 105l4-8 4 8z"/><path d="M268 105l4-8 4 8z"/><path d="M282 105l4-8 4 8z"/></g></g>
+    <ellipse cx="222" cy="98" rx="28" ry="22" fill="#3DBE6B"/>
+    <ellipse cx="233" cy="111" rx="7" ry="3.6" fill="#FF9EC0" opacity=".55"/>
+    <g class="at-ust"><path d="M204 86c34-6 76-4 102 4 8 3 8 11 0 14H204z" fill="#3DBE6B"/><g fill="#fff"><path d="M226 103l4 8 4-8z"/><path d="M242 103l4 8 4-8z"/><path d="M258 103l4 8 4-8z"/><path d="M274 103l4 8 4-8z"/><path d="M290 103l3.5 7 3.5-7z"/></g><circle cx="298" cy="89" r="3.5" fill="#24894A"/></g>
+    <circle cx="228" cy="78" r="13" fill="#3DBE6B"/><circle cx="230" cy="76" r="9" fill="#fff"/><ellipse cx="232" cy="76.5" rx="3" ry="6.5" fill="#1E1E2E"/><circle cx="233.6" cy="73" r="1.6" fill="#fff"/>
+    <path d="M217 70c6-8 17-11 25-5" stroke="#24894A" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+  </svg>
+  <!-- sağ balık: 45 (yenir, sonra geri gelir) -->
+  <g transform="translate(166 63) scale(.42)">
+    <g class="at-yem">
+      <g transform="translate(150 0) scale(-1 1)">
+      <path d="M116 48 148 18q-8 30 0 60z" fill="#FFD25E" stroke="#2B2D42" stroke-opacity=".22" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50 14q20-16 40-2z" fill="#FFD25E" stroke="#2B2D42" stroke-opacity=".22" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="66" cy="48" rx="58" ry="40" fill="#FFD25E" stroke="#2B2D42" stroke-opacity=".22" stroke-width="3"/>
+      <ellipse cx="72" cy="21" rx="34" ry="7.5" fill="#fff" opacity=".42"/>
+      <circle cx="21" cy="40" r="7" fill="#fff"/><circle cx="22" cy="40.5" r="4.4" fill="#2B2D42"/>
+      </g>
+      <text x="78" y="64" text-anchor="middle" font-size="48" font-weight="900" fill="#2B2D42" font-family="Nunito,Arial Rounded MT Bold,sans-serif">45</text>
+    </g>
+  </g>
+  <!-- işaret balonu: 23 < 45 -->
+  <g class="at-isaret"><circle cx="120" cy="32" r="14" fill="#fff" stroke="#C9D6E3" stroke-width="2"/><path d="M125 25 115 32 125 39" fill="none" stroke="#2FA85A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>
+</div>`,
+      },
+      {
         name: "Pota Düellosu",
         file: "pota_duellosu.html",
         desc: "İki oyuncu karşı karşıya! Onluk ve birlikle sayıyı kur, rakibinden önce bil, topu çal ve basket at!",
         sinif: "2. Sınıf — Onluk ve birlik (2 oyunculu)",
-        isNew: true,
         thumbBg: "linear-gradient(180deg, #150f28 0%, #3d3159 64%, #E9B676 64%, #C08043 100%)",
         customThumb: `
 <div class="pota-duello-thumb">
@@ -1341,7 +1416,6 @@ const categories = [
         file: "panayir_tahmincisi.html",
         desc: "Saymadan tahmin et! Soldaki kavanozda kaç şeker varsa sağdakini kıyasla, perde inmeden tahminini ver, bilet kazan, panayırını kur!",
         sinif: "2. Sınıf — Miktar ve ölçü tahmini",
-        isNew: true,
         thumbBg: "linear-gradient(170deg, #6D4FC2 0%, #9A6FE0 45%, #FFD27A 46%, #FFB84D 100%)",
         customThumb: `
 <div class="panayir-thumb">
@@ -1368,7 +1442,6 @@ const categories = [
         file: "rakam_oteli.html",
         desc: "Onlar ve birler odalarındaki misafirlerle basamak ve basamak değerini bul, sayıları onluk ve birliklerle kur!",
         sinif: "2. Sınıf — İki basamaklı sayıları çözümleme",
-        isNew: true,
         thumbBg: "linear-gradient(170deg, #BFE5FF 0%, #E3F4FF 60%, #FFF4E4 100%)",
         customThumb: `
 <div class="rakam-oteli-thumb">
@@ -1401,7 +1474,6 @@ const categories = [
         file: "kurabiye_firini.html",
         desc: "Siparişi oku, kutu ve kurabiyelerle hazırla, sayıyı rakamla ve yazıyla yaz!",
         sinif: "2. Sınıf — 100'e kadar sayıların temsilleri",
-        isNew: true,
         thumbBg: "linear-gradient(160deg, #FFF8EE 0%, #FCE7CF 55%, #F6D3AE 100%)",
         customThumb: `
 <div class="kurabiye-thumb">
@@ -1426,7 +1498,6 @@ const categories = [
         file: "kedi_kasabasi.html",
         desc: "Çatılarda ritmik say, mamaları doğru kapıya götür, kedileri sepetlere doldur!",
         sinif: "2. Sınıf — 100'e kadar sayılar",
-        isNew: true,
         thumbBg: "linear-gradient(170deg, #2A2554 0%, #463F82 100%)",
         customThumb: `
 <div class="kedi-kasabasi-thumb">
@@ -1494,7 +1565,6 @@ const categories = [
         file: "limonata_tezgahi.html",
         desc: "Kaba kaç bardak limonata sığar? Önce tahmin et, sonra dök ve karşılaştır!",
         sinif: "2. Sınıf — Sıvı miktarını tahmin etme",
-        isNew: true,
         thumbBg: "linear-gradient(160deg, #FFF8D6 0%, #FFE98A 55%, #FFD84D 100%)",
         customThumb: `
 <div class="limonata-thumb">
@@ -1548,7 +1618,6 @@ const categories = [
         file: "yapi_ustasi.html",
         desc: "Geometrik cisimleri birleştirerek model kur, arkadaşınla yarış!",
         sinif: "2. Sınıf — Geometrik cisimler",
-        isNew: true,
         thumbBg: "linear-gradient(160deg, #FFF7EE 0%, #FBE4D0 55%, #F2CEAF 100%)",
         customThumb: `
 <div class="yapi-ustalari-thumb">
@@ -1757,7 +1826,6 @@ const categories = [
         file: "saglikli_can.html",
         desc: "Can'ın gününü planla, sağlıklı alışkanlıkların büyümesine nasıl yardım ettiğini keşfet!",
         sinif: "2. Sınıf — Sağlıklı büyüme ve alışkanlıklar",
-        isNew: true,
         thumbBg: "linear-gradient(170deg, #E6FBF6 0%, #FFF8F0 100%)",
         customThumb: `
 <div class="saglikli-can-thumb">
