@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Maden Kâşifi</title>
+<style>
+/* =========================================================
+   1. TEMEL DEĞİŞKENLER VE SAHNE
+   ========================================================= */
+:root{
+  --bg:#1b2a35; --sea1:#2f7393; --sea2:#1d5370;
+  --land:#ecd3a0; --landEdge:#b98a4e;
+  --ink:#2b2118; --paper:#fdf6e6; --paper2:#f4e7c8;
+  --accent:#e0772c; --accentDark:#a9521a;
+  --ok:#2f9a58; --bad:#cc5139; --gold:#f2b81f;
+  --font:"Trebuchet MS","Segoe UI",Verdana,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font);color:var(--ink);
+  user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;overflow:hidden;background:var(--bg)}
+.scr{position:absolute;inset:0;display:none}
+.scr.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+#scr-match.active ~ .footer{display:none}
+.footer{position:absolute;right:14px;bottom:6px;font-size:14px;color:rgba(255,255,255,.55);pointer-events:none;z-index:40}
+svg{display:block}
+
+/* =========================================================
+   2. ORTAK BİLEŞENLER: DÜĞME, ÇİP, BALON
+   ========================================================= */
+.btn{font-family:var(--font);border:none;cursor:pointer;border-radius:18px;font-weight:700;font-size:26px;padding:14px 28px;
+  background:var(--accent);color:#fff;box-shadow:0 6px 0 var(--accentDark);transition:transform .08s, box-shadow .08s;display:inline-flex;align-items:center;gap:10px}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--accentDark)}
+.btn.big{font-size:38px;padding:20px 54px;border-radius:24px}
+.btn.alt{background:#3d7fa6;box-shadow:0 6px 0 #24577a}
+.btn.alt:active{box-shadow:0 2px 0 #24577a}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 6px 0 #c9b791}
+.btn.ghost:active{box-shadow:0 2px 0 #c9b791}
+.btn.green{background:var(--ok);box-shadow:0 6px 0 #1d6b3b}
+.btn.red{background:var(--bad);box-shadow:0 6px 0 #8a3020}
+.btn.locked{background:#8d8d8d;box-shadow:0 6px 0 #5f5f5f}
+.btn svg{width:30px;height:30px}
+.iconbtn{width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.95);
+  box-shadow:0 4px 0 rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
+.iconbtn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.iconbtn svg{width:36px;height:36px}
+.topbar{position:absolute;left:0;right:0;top:0;height:86px;display:flex;align-items:center;gap:14px;padding:0 20px;
+  background:linear-gradient(#14212b,#14212bdd);z-index:10}
+.topbar h1{color:#fff4d6;font-size:32px;flex:1;letter-spacing:.5px;white-space:nowrap}
+.chip{background:rgba(255,255,255,.12);color:#fff;border-radius:30px;padding:8px 18px;font-size:24px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.chip svg{width:28px;height:28px}
+.bubble{background:#fff;border-radius:22px;padding:16px 20px;font-size:23px;line-height:1.35;box-shadow:0 6px 18px rgba(0,0,0,.25);position:relative}
+.bubble.ok{background:#e6f7ec;border:3px solid var(--ok)}
+.bubble.bad{background:#fdece7;border:3px solid var(--bad)}
+.toast{position:absolute;left:50%;top:104px;transform:translateX(-50%);background:var(--gold);color:var(--ink);font-weight:700;font-size:28px;
+  padding:14px 30px;border-radius:40px;box-shadow:0 8px 20px rgba(0,0,0,.35);z-index:60;animation:toast 3s ease forwards;pointer-events:none;white-space:nowrap}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-20px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+
+/* =========================================================
+   3. BAŞLANGIÇ EKRANI
+   ========================================================= */
+#scr-start{background:linear-gradient(#8fd0ef 0%,#cdebf7 34%,#7fb65a 34%,#6aa047 37%,#b07a4a 37%,#9a6640 55%,#7d5232 55%,#6b4429 75%,#55351f 75%)}
+.start-title{position:absolute;left:0;right:0;top:40px;text-align:center}
+.start-title h1{font-size:110px;color:#fff6dc;letter-spacing:2px;
+  text-shadow:0 5px 0 #a9521a,0 8px 0 #6b3412,0 14px 20px rgba(0,0,0,.35)}
+.start-title p{font-size:30px;color:#25455a;font-weight:700;margin-top:6px}
+.start-guide{position:absolute;left:70px;bottom:120px;width:220px}
+.start-menu{position:absolute;left:0;right:0;top:330px;display:flex;flex-direction:column;align-items:center;gap:22px}
+.start-menu .row{display:flex;gap:20px}
+.buried{position:absolute;width:86px;height:86px;opacity:.95;filter:drop-shadow(0 4px 3px rgba(0,0,0,.4))}
+
+/* =========================================================
+   4. HARİTA EKRANI
+   ========================================================= */
+#scr-map{background:radial-gradient(ellipse at 50% 40%,var(--sea1),var(--sea2))}
+#mapWrap{position:absolute;left:10px;right:10px;top:92px;bottom:8px}
+#mapSvg{width:100%;height:100%}
+.land{fill:var(--land);stroke:var(--landEdge);stroke-width:3;stroke-linejoin:round}
+.seaLabel{fill:#9fd0e6;font-size:24px;font-style:italic;font-weight:700;letter-spacing:3px}
+.node{cursor:pointer}
+.node .pulse{fill:none;stroke:#fff;stroke-width:3;opacity:.8;animation:pulse 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+.node .plabel{font-size:19px;font-weight:700;fill:#3a2814;paint-order:stroke;stroke:#fdf3dc;stroke-width:5px;stroke-linejoin:round}
+.node .mlabel{font-size:16px;font-weight:700;fill:#a9521a;paint-order:stroke;stroke:#fdf3dc;stroke-width:4px}
+.node:active .bodyc{transform:scale(.9)}
+.map-guide{position:absolute;left:24px;bottom:22px;width:470px;display:flex;align-items:flex-end;gap:6px;z-index:5;pointer-events:none}
+.map-guide .g{width:110px;flex:none}
+.map-guide .bubble{font-size:21px;margin-bottom:20px}
+
+/* =========================================================
+   5. KAZI (KEŞİF) EKRANI
+   ========================================================= */
+#scr-dig{background:#2a1d14}
+#digArea{position:absolute;left:30px;top:100px;width:600px;height:600px;border-radius:26px;overflow:hidden;cursor:pointer;
+  box-shadow:inset 0 0 0 4px rgba(0,0,0,.25);touch-action:none}
+#digArea svg.ground{position:absolute;inset:0}
+#boulder{transform-box:fill-box;transform-origin:center;transition:transform .1s}
+#boulder.shake{animation:shake .25s}
+#boulder.broken{animation:breakAway .5s forwards}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px) rotate(-1deg)}75%{transform:translateX(7px) rotate(1deg)}}
+@keyframes breakAway{to{transform:scale(1.25);opacity:0}}
+.crack{opacity:0;transition:opacity .15s}
+.crack.on{opacity:1}
+#reveal{position:absolute;left:175px;top:200px;width:250px;height:250px;display:none}
+#reveal.show{display:block;animation:rise .8s cubic-bezier(.2,1.6,.4,1)}
+@keyframes rise{0%{transform:translateY(80px) scale(.3);opacity:0}100%{transform:none;opacity:1}}
+#reveal .rays{position:absolute;inset:-70px;animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#reveal .gem{position:absolute;inset:0;filter:drop-shadow(0 10px 8px rgba(0,0,0,.5))}
+.pick{position:absolute;width:110px;height:110px;pointer-events:none;transform-origin:80% 80%;animation:swing .3s ease-out forwards;z-index:4}
+@keyframes swing{0%{transform:rotate(-55deg);opacity:1}60%{transform:rotate(18deg)}100%{transform:rotate(10deg);opacity:0}}
+.dirt{position:absolute;width:14px;height:14px;border-radius:50%;pointer-events:none;z-index:3;animation:dirt .6s ease-out forwards}
+@keyframes dirt{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+.frag{position:absolute;width:40px;height:34px;background:#8a8378;clip-path:polygon(0 30%,40% 0,100% 20%,85% 100%,15% 90%);pointer-events:none;z-index:3;
+  animation:frag .9s ease-in forwards}
+@keyframes frag{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+#digSide{position:absolute;left:660px;top:100px;width:590px;height:600px}
+.dig-wait{display:flex;flex-direction:column;align-items:center;gap:20px;padding-top:60px}
+.dig-wait .g{width:200px}
+.taps{display:flex;gap:16px}
+.taps span{width:34px;height:34px;border-radius:50%;background:#5a4130;border:3px solid #c9a27a}
+.taps span.on{background:var(--gold);border-color:#fff3c4}
+
+/* =========================================================
+   6. BİLGİ KARTI
+   ========================================================= */
+.infocard{background:var(--paper);border-radius:26px;padding:24px 28px;box-shadow:0 12px 30px rgba(0,0,0,.4);animation:cardIn .5s ease}
+@keyframes cardIn{from{transform:translateX(60px);opacity:0}to{transform:none;opacity:1}}
+.ic-top{display:flex;gap:18px;align-items:center}
+.ic-stone{width:120px;height:120px;flex:none;background:var(--paper2);border-radius:22px;padding:8px}
+.ic-top h2{font-size:48px;line-height:1}
+.ic-place{display:flex;align-items:center;gap:6px;font-size:24px;font-weight:700;color:#7a5530;margin-top:8px}
+.ic-place svg{width:26px;height:26px}
+.ic-desc{font-size:22px;line-height:1.4;margin:14px 0 10px}
+.infocard h3{font-size:22px;color:var(--accentDark);margin-bottom:8px}
+.ic-uses{display:flex;gap:14px}
+.ic-use{flex:1;background:#fff;border-radius:16px;padding:8px;display:flex;align-items:center;gap:10px;font-size:21px;font-weight:700;border:2px solid #eadbb8}
+.ic-use .ico{width:64px;height:64px;flex:none}
+.ic-tr{margin-top:14px;background:#fff1ec;border-left:7px solid #d4322c;border-radius:12px;padding:12px 14px;font-size:21px;line-height:1.4}
+.ic-tr b{color:#b0241f}
+.ic-actions{margin-top:16px;display:flex;justify-content:flex-end}
+
+/* =========================================================
+   7. EŞLEŞTİRME EKRANI
+   ========================================================= */
+#scr-match{background:linear-gradient(#f6ebd2,#ecd9b0)}
+#scr-match .topbar{background:#5b3b22}
+#items{position:absolute;left:20px;right:20px;top:100px;height:420px;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:18px}
+.item{width:270px;height:196px;background:#fff;border-radius:22px;border:4px solid #e2cfa5;box-shadow:0 6px 0 #d2bb8b;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .12s,border-color .12s,background .12s}
+.item .ico{width:108px;height:108px}
+.item .lbl{font-size:23px;font-weight:700;margin-top:4px;text-align:center;padding:0 8px;line-height:1.1}
+.item .slot{position:absolute;right:10px;top:10px;width:58px;height:58px;border-radius:50%;border:3px dashed #c9b083;display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:700;color:#c9b083}
+.item.over{transform:scale(1.06);border-color:var(--accent);background:#fff6ea}
+.item.sel-target{border-color:#7fb3d1}
+.item.done{border-color:var(--ok);background:#effaf2;box-shadow:0 6px 0 #9fd3b0}
+.item.done .slot{border:none;width:76px;height:76px;right:6px;top:6px}
+.item.done .mname{position:absolute;left:0;right:0;bottom:-2px;text-align:center;font-size:18px;font-weight:700;color:var(--ok)}
+.item.shakeX{animation:shakeX .4s}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+#tray{position:absolute;left:0;right:0;bottom:0;height:188px;background:#5b3b22;display:flex;align-items:center;padding:0 16px;gap:10px;
+  box-shadow:0 -6px 0 #43291a}
+#stones{flex:1;display:flex;justify-content:center;gap:10px}
+.stone{width:112px;height:160px;border-radius:18px;background:#7a5234;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;touch-action:none;
+  border:3px solid #8f6646;transition:transform .12s, background .12s}
+.stone .gem{width:92px;height:92px;pointer-events:none}
+.stone .nm.long{font-size:17px}
+.stone .nm{color:#fff;font-weight:700;font-size:21px;margin-top:2px;pointer-events:none;white-space:nowrap}
+.stone.sel{background:#a8734b;border-color:var(--gold);transform:translateY(-10px)}
+.stone.hint{animation:hintPulse .9s ease-in-out 3}
+@keyframes hintPulse{50%{transform:translateY(-14px) scale(1.08);border-color:var(--gold);background:#a8734b}}
+#feedback{width:400px;flex:none;display:flex;align-items:center;gap:6px}
+#feedback .g{width:82px;flex:none}
+#feedback .bubble{font-size:20px;flex:1;padding:12px 14px;min-height:90px;display:flex;align-items:center}
+.dragghost{position:absolute;width:100px;height:100px;pointer-events:none;z-index:50;filter:drop-shadow(0 10px 8px rgba(0,0,0,.4))}
+.dragghost.fly{transition:left .32s ease, top .32s ease, transform .32s ease, opacity .32s}
+
+/* =========================================================
+   8. TUR ÖZETİ, DEFTER, AYARLAR, MODAL
+   ========================================================= */
+#scr-summary{background:radial-gradient(circle at 50% 30%,#3e6d88,#1b2a35)}
+.panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--paper);border-radius:30px;padding:30px 40px;
+  box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.sum-panel{width:900px;max-height:660px;display:flex;flex-direction:column;align-items:center}
+.sum-panel h2{font-size:46px}
+.stars{display:flex;gap:14px;margin:14px 0}
+.stars svg{width:84px;height:84px}
+.stars .pop{animation:starPop .5s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes starPop{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+.sum-line{font-size:26px;font-weight:700;margin-bottom:10px}
+.mist{width:100%;max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:10px;margin:6px 0 16px}
+.mist .m{display:flex;align-items:center;gap:14px;background:#fff;border-radius:16px;padding:8px 14px;border:2px solid #eadbb8}
+.mist .m .ico{width:58px;height:58px;flex:none}
+.mist .m .tx{font-size:20px;line-height:1.35}
+.mist .m .tx b{font-size:22px}
+.btnrow{display:flex;gap:20px;justify-content:center}
+
+#scr-book{background:linear-gradient(#5b3b22,#3e2716)}
+#bookGrid{position:absolute;left:30px;right:30px;top:110px;bottom:40px;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(2,1fr);gap:18px}
+.bcard{background:var(--paper);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:10px;
+  box-shadow:0 6px 0 #2a190d;border:4px solid #e8d4a8;text-align:center}
+.bcard:active{transform:translateY(3px)}
+.bcard .ico{width:120px;height:120px}
+.bcard .t{font-size:23px;font-weight:700;margin-top:6px;line-height:1.1}
+.bcard .s{font-size:18px;color:#7a5530;font-weight:700;margin-top:3px}
+.bcard.locked{background:#6e5340;border-color:#7d604a;cursor:default}
+.bcard.locked .t,.bcard.locked .s{color:#d6c2a8}
+.bcard.special{border-color:var(--gold)}
+
+#scr-settings{background:radial-gradient(circle at 50% 30%,#3e6d88,#1b2a35)}
+.set-panel{width:640px;display:flex;flex-direction:column;gap:26px;align-items:stretch}
+.set-panel h2{font-size:44px;text-align:center}
+.set-row{display:flex;align-items:center;justify-content:space-between;font-size:28px;font-weight:700;background:#fff;border-radius:18px;padding:16px 22px}
+.toggle{width:110px;height:56px;border-radius:30px;background:#bbb;position:relative;cursor:pointer;border:none;transition:background .2s}
+.toggle::after{content:"";position:absolute;left:5px;top:5px;width:46px;height:46px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.toggle.on{background:var(--ok)}
+.toggle.on::after{left:59px}
+.set-foot{text-align:center;font-size:20px;color:#7a5530}
+
+.modal{position:absolute;inset:0;background:rgba(10,18,24,.72);z-index:70;display:flex;align-items:center;justify-content:center}
+.modal.hidden{display:none}
+.modal-box{background:var(--paper);border-radius:30px;padding:30px 36px;max-width:1080px;max-height:680px;overflow:auto;position:relative;box-shadow:0 16px 40px rgba(0,0,0,.5);animation:pop .3s ease}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.modal-box .infocard{box-shadow:none;padding:0;background:transparent;animation:none;width:640px}
+.mclose{position:absolute;right:16px;top:16px;width:56px;height:56px}
+.intro{display:flex;gap:30px;align-items:center;width:960px}
+.intro .g{width:230px;flex:none}
+.intro .body{flex:1}
+.intro .bubble{font-size:28px;line-height:1.45;padding:24px 28px}
+.intro .pic{display:flex;gap:14px;justify-content:center;margin:18px 0}
+.intro .pic svg{width:120px;height:120px}
+.intro .navrow{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.dots{display:flex;gap:10px}
+.dots span{width:16px;height:16px;border-radius:50%;background:#d8c49b}
+.dots span.on{background:var(--accent)}
+.lvls{display:flex;gap:24px;margin-top:20px}
+.lvl{width:270px;background:#fff;border-radius:22px;border:4px solid #e2cfa5;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;box-shadow:0 6px 0 #d2bb8b}
+.lvl:active{transform:translateY(3px)}
+.lvl h3{font-size:34px}
+.lvl .d{font-size:21px;color:#7a5530;font-weight:700;text-align:center}
+.lvl .stars svg{width:46px;height:46px}
+.lvl .stars{margin:4px 0;gap:6px}
+.lvl.locked{background:#e9e2d3;cursor:default;opacity:.85}
+.lvl .lk{width:50px;height:50px}
+.zen{width:900px}
+.zen h2{font-size:40px;text-align:center;margin-bottom:10px}
+.zen .wrap{display:flex;gap:20px;align-items:center}
+.zen .mini{width:470px;flex:none;background:#2f7393;border-radius:20px;padding:8px}
+.zen ul{list-style:none;display:flex;flex-direction:column;gap:6px;flex:1}
+.zen li{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:700;background:#fff;border-radius:12px;padding:4px 10px}
+.zen li svg{width:44px;height:44px}
+.zen li span{color:#7a5530;font-weight:400}
+.zen p{font-size:23px;line-height:1.45;margin-top:14px;text-align:center}
+.confirm{width:560px;text-align:center}
+.confirm h2{font-size:36px;margin-bottom:14px}
+.confirm p{font-size:24px;margin-bottom:24px}
+
+/* =========================================================
+   9. YÖN UYARISI (telefon/tablet dikey)
+   ========================================================= */
+#rotate{display:none;position:fixed;inset:0;z-index:999;background:var(--bg);color:#fff;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  font-family:var(--font);font-size:24px;font-weight:700;text-align:center;padding:30px}
+#rotate svg{width:110px;height:110px;animation:rot 2s ease-in-out infinite}
+@keyframes rot{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+@media (orientation:portrait) and (max-width:1024px){#rotate{display:flex}}
+</style>
+</head>
+<body>
+
+<div id="rotate">
+  <svg viewBox="0 0 100 100"><rect x="30" y="10" width="40" height="80" rx="8" fill="none" stroke="#fff" stroke-width="6"/><circle cx="50" cy="80" r="4" fill="#fff"/></svg>
+  <div>Lütfen cihazını yan çevir.</div>
+</div>
+
+<div id="stage">
+
+  <!-- ===== EKRAN 1: BAŞLANGIÇ ===== -->
+  <section id="scr-start" class="scr active">
+    <div id="buriedLayer"></div>
+    <div class="start-title">
+      <h1>Maden Kâşifi</h1>
+      <p>Türkiye'nin toprak altı zenginliklerini keşfet!</p>
+    </div>
+    <div class="start-guide" id="startGuide"></div>
+    <div class="start-menu">
+      <button class="btn big" id="btnStart"></button>
+      <div class="row">
+        <button class="btn ghost" id="btnBookStart"></button>
+        <button class="btn ghost" id="btnSetStart"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EKRAN 2: HARİTA ===== -->
+  <section id="scr-map" class="scr">
+    <div class="topbar">
+      <button class="iconbtn" id="mapHome" aria-label="Ana sayfa"></button>
+      <h1>Maden Haritası</h1>
+      <div class="chip" id="chipMines"></div>
+      <div class="chip" id="chipFossils"></div>
+      <div class="chip" id="chipStars"></div>
+      <button class="btn alt" id="btnBook"></button>
+      <button class="btn" id="btnMatch"></button>
+    </div>
+    <div id="mapWrap"></div>
+    <div class="map-guide"><div class="g" id="mapGuideImg"></div><div class="bubble" id="mapBubble"></div></div>
+  </section>
+
+  <!-- ===== EKRAN 3: KAZI / KEŞİF ===== -->
+  <section id="scr-dig" class="scr">
+    <div class="topbar">
+      <button class="iconbtn" id="digBack" aria-label="Haritaya dön"></button>
+      <h1 id="digTitle"></h1>
+    </div>
+    <div id="digArea"></div>
+    <div id="digSide"></div>
+  </section>
+
+  <!-- ===== EKRAN 4: EŞLEŞTİRME ===== -->
+  <section id="scr-match" class="scr">
+    <div class="topbar">
+      <button class="iconbtn" id="matchBack" aria-label="Haritaya dön"></button>
+      <h1 id="matchTitle"></h1>
+      <div class="chip" id="matchProg"></div>
+    </div>
+    <div id="items"></div>
+    <div id="tray">
+      <div id="stones"></div>
+      <div id="feedback"><div class="g" id="fbGuide"></div><div class="bubble" id="fbText"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== EKRAN 5: TUR ÖZETİ ===== -->
+  <section id="scr-summary" class="scr">
+    <div class="panel sum-panel" id="sumPanel"></div>
+  </section>
+
+  <!-- ===== EKRAN 6: KÂŞİF DEFTERİ ===== -->
+  <section id="scr-book" class="scr">
+    <div class="topbar">
+      <button class="iconbtn" id="bookBack" aria-label="Geri"></button>
+      <h1>Kâşif Defteri</h1>
+      <div class="chip" id="bookCount"></div>
+    </div>
+    <div id="bookGrid"></div>
+  </section>
+
+  <!-- ===== EKRAN 7: AYARLAR ===== -->
+  <section id="scr-settings" class="scr">
+    <div class="panel set-panel">
+      <h2>Ayarlar</h2>
+      <div class="set-row"><span>Ses</span><button class="toggle" id="tglSound" aria-label="Ses"></button></div>
+      <div class="set-row"><span>Tanıtımı yeniden göster</span><button class="btn alt" id="btnIntroAgain">Göster</button></div>
+      <div class="set-row"><span>İlerlemeyi sıfırla</span><button class="btn red" id="btnReset">Sıfırla</button></div>
+      <div class="btnrow"><button class="btn" id="setBack">Geri</button></div>
+      <div class="set-foot">Sinan İnce 2026</div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal hidden"><div class="modal-box" id="modalBox"></div></div>
+  <div class="footer">Sinan İnce 2026</div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================
+   1. İÇERİK: MADENLER, KULLANIM NESNELERİ, FOSİLLER
+   (Taslak içerik — öğretmen onayı ile kesinleşir)
+   ========================================================= */
+const MINES = [
+  { id:'altin', ad:'Altın', il:'Uşak', lon:29.41, lat:38.68, lab:[0,42,'middle'],
+    tanim:'Parlak sarı renkli, çok değerli bir madendir. Zamanla paslanmaz.',
+    zenginlik:"Uşak'taki Kışladağ, Türkiye'nin en büyük altın madenlerinden biridir.",
+    yanlis:'Altın daha çok takılarda ve değerli paralarda kullanılır.',
+    kullanim:['yuzuk','ceyrek'] },
+  { id:'gumus', ad:'Gümüş', il:'Kütahya', lon:29.98, lat:39.42, lab:[-25,7,'end'],
+    tanim:'Parlak, açık gri renkli, değerli bir madendir.',
+    zenginlik:"Kütahya'daki Gümüşköy, adını buradan çıkarılan gümüşten alır.",
+    yanlis:'Gümüş daha çok sofra takımlarında ve aynalarda kullanılır.',
+    kullanim:['catal','ayna'] },
+  { id:'bakir', ad:'Bakır', il:'Artvin', lon:41.82, lat:41.18, lab:[0,44,'middle'],
+    tanim:'Kızıl-turuncu renkli bir madendir. Elektriği ve ısıyı çok iyi iletir.',
+    zenginlik:"Artvin'in Murgul ilçesinde uzun yıllardır bakır çıkarılır.",
+    yanlis:'Bakır daha çok kablolarda ve cezvelerde kullanılır.',
+    kullanim:['kablo','cezve'] },
+  { id:'bor', ad:'Bor', il:'Eskişehir', lon:30.52, lat:39.78, lab:[25,-3,'start'],
+    tanim:'Beyaz, kristal görünümlü bir madendir. Pek çok üründe kullanılır.',
+    zenginlik:"Dünyadaki bor yataklarının yarısından fazlası Türkiye'dedir! Eskişehir'in Kırka ilçesinde bor çıkarılır.",
+    yanlis:'Bor daha çok deterjanda ve ısıya dayanıklı camda kullanılır.',
+    kullanim:['deterjan','camkap'] },
+  { id:'mermer', ad:'Mermer', il:'Afyonkarahisar', lon:30.54, lat:38.76, lab:[25,7,'start'],
+    tanim:'Beyaz ya da renkli, damarlı ve sert bir kayaçtır. Parlatılınca çok güzel görünür.',
+    zenginlik:"Türkiye, mermer bakımından dünyanın en zengin ülkelerinden biridir. Marmara Denizi bile adını Marmara Adası'nın mermerinden alır!",
+    yanlis:'Mermer daha çok merdivenlerde, yer döşemelerinde ve heykellerde kullanılır.',
+    kullanim:['merdiven','heykel'] },
+  { id:'linyit', ad:'Linyit', il:'Manisa', lon:27.43, lat:38.61, lab:[-25,7,'end'],
+    tanim:'Kahverengimsi siyah renkli bir kömürdür. Yakılarak enerji elde edilir.',
+    zenginlik:"Linyit, Türkiye'nin pek çok ilinde bulunur. Manisa'nın Soma ilçesi bunlardan biridir.",
+    yanlis:'Linyit daha çok termik santrallerde yakılarak elektrik üretmek için kullanılır.',
+    kullanim:['santral'] },
+  { id:'taskomuru', ad:'Taşkömürü', il:'Zonguldak', lon:31.79, lat:41.45, lab:[25,8,'start'],
+    tanim:'Parlak siyah renkli bir kömürdür. Linyitten daha güçlü yanar.',
+    zenginlik:"Türkiye'de taşkömürü en çok Zonguldak'ta çıkarılır.",
+    yanlis:'Taşkömürü daha çok demir-çelik fabrikalarında kullanılır.',
+    kullanim:['celik'] },
+];
+const MB = Object.fromEntries(MINES.map(m=>[m.id,m]));
+
+// Her kullanım nesnesinin havuzda TEK doğru madeni vardır.
+const ITEMS = {
+  yuzuk:   { ad:'Yüzük', maden:'altin',
+    ipucu:'Takılarda parlak sarı ve paslanmayan bir maden kullanılır.',
+    aciklama:'Yüzük ve kolye gibi takılar çoğunlukla altından yapılır.' },
+  ceyrek:  { ad:'Çeyrek altın', maden:'altin',
+    ipucu:'Madenin adı, nesnenin adının içinde saklı!',
+    aciklama:'Çeyrek altın, adından da anlaşılacağı gibi altından yapılır.' },
+  catal:   { ad:'Çatal-kaşık takımı', maden:'gumus',
+    ipucu:'Değerli sofra takımları parlak, açık gri renkli bir madenden yapılır.',
+    aciklama:'Değerli çatal-kaşık takımları gümüşten yapılır.' },
+  ayna:    { ad:'Ayna', maden:'gumus',
+    ipucu:'Camın arkasına ince, parlak, açık gri bir maden sürülünce ayna olur.',
+    aciklama:'Aynanın arkasında ince bir gümüş tabakası vardır. Bu tabaka görüntüyü yansıtır.' },
+  kablo:   { ad:'Elektrik kablosu', maden:'bakir',
+    ipucu:'Kabloların içinde elektriği çok iyi ileten, kızıl-turuncu bir maden vardır.',
+    aciklama:'Bakır elektriği çok iyi iletir. Bu yüzden kabloların içinde bakır tel bulunur.' },
+  cezve:   { ad:'Cezve', maden:'bakir',
+    ipucu:'Geleneksel cezveler ısıyı iyi ileten, kızıl-turuncu bir madenden yapılır.',
+    aciklama:'Bakır ısıyı iyi iletir. Geleneksel cezveler ve tencereler bakırdan yapılır.' },
+  deterjan:{ ad:'Deterjan', maden:'bor',
+    ipucu:'Temizlik ürünlerinde beyaz, kristal görünümlü bir maden kullanılır.',
+    aciklama:'Bor, deterjan ve sabun gibi temizlik ürünlerinde kullanılır.' },
+  camkap:  { ad:'Fırın kabı', maden:'bor',
+    ipucu:'Bu cam kabın sıcak fırında çatlamamasını beyaz, kristal görünümlü bir maden sağlar.',
+    aciklama:'Bor eklenen cam ısıya dayanıklı olur. Fırına giren cam kaplar böyle yapılır.' },
+  merdiven:{ ad:'Merdiven', maden:'mermer',
+    ipucu:'Beyaz, damarlı ve parlatılabilen sert bir kayaç düşün.',
+    aciklama:'Mermer sert ve dayanıklıdır. Merdivenlerde ve yer döşemelerinde kullanılır.' },
+  heykel:  { ad:'Heykel', maden:'mermer',
+    ipucu:'Heykeltıraşlar beyaz, damarlı bir kayacı oyarak şekil verir.',
+    aciklama:'Mermer kolay işlenip parlatılabildiği için heykel yapımında kullanılır.' },
+  santral: { ad:'Termik santral', maden:'linyit',
+    ipucu:'Bu santralde kahverengimsi siyah bir kömür yakılarak elektrik üretilir.',
+    aciklama:'Linyit termik santrallerde yakılır ve elektrik üretilir.' },
+  celik:   { ad:'Demir-çelik fabrikası', maden:'taskomuru',
+    ipucu:'Demiri eritmek için çok güçlü yanan, parlak siyah bir kömür gerekir.',
+    aciklama:'Taşkömürü çok güçlü yanar. Demir-çelik fabrikalarında demiri eritmek için kullanılır.' },
+};
+
+// Gizli fosil noktaları (il adı verilmez, fosil çeşidine girilmez)
+const FOSSILS = [
+  { id:'kabuk', ad:'Deniz kabuğu fosili', lon:34.8, lat:38.7,
+    metin:'Bu kayacın içinde, çok uzun zaman önce yaşamış bir deniz canlısının kabuğu korunmuş. Demek ki burası bir zamanlar denizmiş!' },
+  { id:'yaprak', ad:'Yaprak fosili', lon:38.9, lat:39.6,
+    metin:'Bu kayacın içinde, çok eski zamanlarda yaşamış bir bitkinin yaprağı korunmuş.' },
+  { id:'balik', ad:'Balık fosili', lon:36.7, lat:37.7,
+    metin:'Bu kayacın içinde, çok uzun zaman önce yaşamış bir balığın kemikleri korunmuş.' },
+];
+const FB = Object.fromEntries(FOSSILS.map(f=>[f.id,f]));
+const FOSSIL_DEF = 'Fosil, çok uzun zaman önce yaşamış canlıların kayaçlar içinde korunmuş kalıntısıdır. Fosiller bize geçmişte hangi canlıların yaşadığını anlatır.';
+
+const LEVELS = {
+  1:{ ad:'Kolay', need:3, mines:3, items:3, d:'3 maden, 3 nesne' },
+  2:{ ad:'Orta',  need:5, mines:5, items:5, d:'5 maden, 5 nesne' },
+  3:{ ad:'Zor',   need:7, mines:7, items:8, d:'7 maden, 8 karışık nesne' },
+};
+
+/* =========================================================
+   2. KALICILIK (localStorage: madenKasifi_v1)
+   ========================================================= */
+const KEY = 'madenKasifi_v1';
+function defState(){ return { found:[], fossils:[], stars:{1:0,2:0,3:0}, lastWrong:[], sound:true, introSeen:false, summarySeen:false }; }
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && Array.isArray(s.found)) return Object.assign(defState(), s); }catch(e){}
+  return defState();
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+let S = load();
+
+/* =========================================================
+   3. SES (Web Audio API, dosya yok)
+   ========================================================= */
+let AC = null, noiseBuf = null;
+function ac(){
+  if(!S.sound) return null;
+  if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function tone(f, t0, dur, type='sine', vol=.18, f2){
+  const a = ac(); if(!a) return;
+  const t = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.05);
+}
+function noise(t0, dur, vol=.25, freq=1200){
+  const a = ac(); if(!a) return;
+  if(!noiseBuf){ noiseBuf = a.createBuffer(1, a.sampleRate*.5, a.sampleRate); const d = noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; }
+  const t = a.currentTime+t0, s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = noiseBuf; f.type='bandpass'; f.frequency.value=freq; f.Q.value=.8;
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f).connect(g).connect(a.destination); s.start(t); s.stop(t+dur);
+}
+const SFX = {
+  click(){ tone(700,0,.07,'triangle',.1); },
+  dig(){ noise(0,.12,.35,2200); tone(140,0,.15,'sine',.25,70); },
+  crash(){ noise(0,.45,.4,700); tone(110,0,.35,'sine',.3,50); },
+  found(){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.11,.35,'triangle',.16)); tone(1568,.46,.5,'sine',.08); },
+  correct(){ tone(880,0,.5,'sine',.16); tone(1320,.06,.45,'sine',.08); },
+  wrong(){ tone(240,0,.28,'triangle',.14,170); },
+  star(){ tone(1200,0,.2,'sine',.12,1800); },
+  end(){ [523,659,784,659,1047].forEach((f,i)=>tone(f,i*.14,.3,'triangle',.14)); },
+};
+
+/* =========================================================
+   4. SVG ÇİZİMLERİ: TAŞLAR, NESNELER, FOSİLLER, KARAKTER, İKONLAR
+   ========================================================= */
+let gid = 0;
+const ROCK = 'M14 64 L24 36 L48 20 L74 26 L88 50 L82 76 L54 88 L26 82 Z';
+const STONE_COL = {
+  altin:['#fff1a0','#e8b923','#a87a0a'], gumus:['#ffffff','#c5ccd4','#7d8794'],
+  bakir:['#ffc08a','#d2733a','#7e3d17'], mermer:['#ffffff','#eeede6','#c4c2b7'],
+  linyit:['#7a5a40','#4a3424','#261a11'], taskomuru:['#5a5a64','#1e1e24','#050507'],
+};
+function sparkle(x,y,s){ return `<path d="M${x} ${y-s} L${x+s*.25} ${y-s*.25} L${x+s} ${y} L${x+s*.25} ${y+s*.25} L${x} ${y+s} L${x-s*.25} ${y+s*.25} L${x-s} ${y} L${x-s*.25} ${y-s*.25} Z" fill="#fff"/>`; }
+function stoneSVG(id){
+  const g = 'sg'+(gid++);
+  if(id==='bor'){
+    return `<svg viewBox="0 0 100 100"><defs><linearGradient id="${g}" x1="0" x2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfdcea"/></linearGradient></defs>
+    <path d="M12 82 Q50 70 88 82 L84 90 L16 90 Z" fill="#b7aa95"/>
+    <path d="M22 84 L20 48 L28 36 L36 46 L36 84 Z" fill="url(#${g})" stroke="#9fb3c8" stroke-width="2" transform="rotate(-14 28 84)"/>
+    <path d="M42 86 L42 30 L51 14 L60 30 L60 86 Z" fill="url(#${g})" stroke="#9fb3c8" stroke-width="2"/>
+    <path d="M51 14 L51 86" stroke="#b9cadb" stroke-width="2"/>
+    <path d="M64 84 L64 44 L72 32 L80 44 L80 84 Z" fill="url(#${g})" stroke="#9fb3c8" stroke-width="2" transform="rotate(16 72 84)"/>
+    ${sparkle(46,30,6)}${sparkle(72,52,4)}</svg>`;
+  }
+  const c = STONE_COL[id];
+  let extra = '';
+  if(id==='altin') extra = sparkle(40,40,7)+sparkle(66,62,5)+sparkle(30,66,4);
+  if(id==='gumus') extra = sparkle(42,42,6)+sparkle(68,60,4);
+  if(id==='bakir') extra = `<circle cx="34" cy="62" r="5" fill="#4fa38a" opacity=".8"/><circle cx="66" cy="70" r="4" fill="#4fa38a" opacity=".7"/>`+sparkle(44,38,4);
+  if(id==='mermer') extra = `<path d="M22 48 Q40 56 50 44 T84 58" fill="none" stroke="#8f8d85" stroke-width="2.5"/><path d="M30 74 Q46 64 60 76 T80 70" fill="none" stroke="#a9a79e" stroke-width="2"/><path d="M50 26 Q46 36 54 46" fill="none" stroke="#a9a79e" stroke-width="1.6"/>`;
+  if(id==='linyit') extra = `<circle cx="38" cy="58" r="2" fill="#8a6a50"/><circle cx="62" cy="40" r="1.6" fill="#8a6a50"/><circle cx="66" cy="70" r="2.2" fill="#8a6a50"/><path d="M24 56 L80 62" stroke="#2a1d14" stroke-width="2" opacity=".6"/>`;
+  if(id==='taskomuru') extra = `<path d="M30 40 L44 30" stroke="#fff" stroke-width="3" opacity=".7" stroke-linecap="round"/><path d="M62 34 L72 38" stroke="#fff" stroke-width="2" opacity=".6" stroke-linecap="round"/>`+sparkle(56,62,3);
+  const shine = id==='linyit' ? .1 : .3;
+  return `<svg viewBox="0 0 100 100"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".5" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient></defs>
+  <path d="${ROCK}" fill="url(#${g})" stroke="${c[2]}" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M24 36 L48 20 L74 26 L52 50 Z" fill="#fff" opacity="${shine}"/>
+  <path d="M52 50 L88 50 L82 76 L54 88 Z" fill="#000" opacity=".15"/>
+  <path d="M24 36 L52 50 L88 50 M52 50 L54 88" fill="none" stroke="${c[2]}" stroke-width="1.5" opacity=".5"/>
+  ${extra}</svg>`;
+}
+function pebbleSVG(){ return `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="60" rx="38" ry="26" fill="#a59d92" stroke="#77706a" stroke-width="3"/><ellipse cx="40" cy="52" rx="14" ry="6" fill="#fff" opacity=".3"/><circle cx="62" cy="66" r="3" fill="#8a837a"/><circle cx="36" cy="70" r="2" fill="#8a837a"/></svg>`; }
+
+const ITEM_SVG = {
+  yuzuk:`<ellipse cx="50" cy="62" rx="27" ry="24" fill="none" stroke="#c9961a" stroke-width="10"/><ellipse cx="50" cy="62" rx="27" ry="24" fill="none" stroke="#ffe27a" stroke-width="3"/><path d="M38 36 L50 20 L62 36 L50 46 Z" fill="#e84a6a" stroke="#a0213f" stroke-width="2"/><path d="M44 32 L50 24 L52 32 Z" fill="#fff" opacity=".7"/>`,
+  ceyrek:`<circle cx="50" cy="52" r="34" fill="#f1c232" stroke="#a87a0a" stroke-width="4"/><circle cx="50" cy="52" r="25" fill="none" stroke="#c99a1c" stroke-width="3" stroke-dasharray="3 4"/><path d="M50 36 L54 47 L66 47 L56 54 L60 66 L50 59 L40 66 L44 54 L34 47 L46 47 Z" fill="#d9a520" stroke="#a87a0a" stroke-width="1.5"/><path d="M28 36 Q34 26 46 22" stroke="#fff" stroke-width="3" fill="none" opacity=".7" stroke-linecap="round"/>`,
+  catal:`<rect x="26" y="46" width="8" height="44" rx="4" fill="#c5ccd4" stroke="#7d8794" stroke-width="2"/><path d="M20 14 L20 38 Q20 48 30 48 Q40 48 40 38 L40 14" fill="none" stroke="#7d8794" stroke-width="4"/><path d="M26 14 V38 M34 14 V38" stroke="#7d8794" stroke-width="3"/><rect x="62" y="46" width="8" height="44" rx="4" fill="#c5ccd4" stroke="#7d8794" stroke-width="2"/><ellipse cx="66" cy="30" rx="13" ry="18" fill="#dfe4ea" stroke="#7d8794" stroke-width="3"/><ellipse cx="62" cy="25" rx="4" ry="8" fill="#fff" opacity=".8"/>`,
+  ayna:`<rect x="45" y="66" width="10" height="28" rx="4" fill="#8b5a2b"/><ellipse cx="50" cy="40" rx="28" ry="32" fill="#b5651d"/><ellipse cx="50" cy="40" rx="22" ry="26" fill="#cfe9f7"/><path d="M36 30 L52 18 M38 44 L60 26" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".9"/>`,
+  kablo:`<path d="M8 80 C30 80 26 44 52 44 L68 44" fill="none" stroke="#2f6fd0" stroke-width="16" stroke-linecap="round"/><path d="M8 80 C30 80 26 44 52 44 L68 44" fill="none" stroke="#6fa0ea" stroke-width="4" stroke-linecap="round" opacity=".6"/><path d="M70 38 L90 30 M70 42 L92 40 M70 46 L92 50 M70 50 L90 60" stroke="#d97a3a" stroke-width="4" stroke-linecap="round"/><path d="M80 10 L70 26 L80 26 L72 40" fill="none" stroke="#f2b81f" stroke-width="4" stroke-linejoin="round"/>`,
+  cezve:`<path d="M28 88 L66 88 Q70 62 58 48 L60 40 L32 40 L34 48 Q22 62 28 88 Z" fill="#d2733a" stroke="#7e3d17" stroke-width="3"/><path d="M32 40 L24 34 L36 40" fill="#d2733a" stroke="#7e3d17" stroke-width="2"/><path d="M60 46 L94 26" stroke="#5b3216" stroke-width="7" stroke-linecap="round"/><path d="M36 60 Q34 74 38 82" stroke="#ffc08a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M40 30 Q36 22 42 14 M52 30 Q48 22 54 14" stroke="#9aa" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  deterjan:`<circle cx="30" cy="16" r="7" fill="#d6efff" stroke="#8cc4e6" stroke-width="2"/><circle cx="46" cy="10" r="5" fill="#d6efff" stroke="#8cc4e6" stroke-width="2"/><circle cx="62" cy="18" r="6" fill="#d6efff" stroke="#8cc4e6" stroke-width="2"/><rect x="22" y="30" width="56" height="62" rx="6" fill="#3aa0d8" stroke="#1f6d99" stroke-width="3"/><rect x="40" y="24" width="20" height="10" rx="3" fill="#1f6d99"/><rect x="30" y="48" width="40" height="26" rx="5" fill="#fff"/><circle cx="42" cy="61" r="5" fill="#8cc4e6"/><circle cx="56" cy="58" r="4" fill="#8cc4e6"/><circle cx="58" cy="67" r="3" fill="#8cc4e6"/>`,
+  camkap:`<path d="M14 40 L86 40 L78 68 L22 68 Z" fill="#cfe9f7" stroke="#6fa3c4" stroke-width="3" opacity=".95"/><path d="M8 40 L14 40 M86 40 L92 40" stroke="#6fa3c4" stroke-width="6" stroke-linecap="round"/><path d="M24 54 Q50 46 76 54 L72 64 L28 64 Z" fill="#e8a35a" opacity=".9"/><path d="M22 46 L40 44" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M28 88 Q32 80 28 74 M50 88 Q54 80 50 74 M72 88 Q76 80 72 74" stroke="#e5562a" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+  merdiven:`<path d="M10 90 L10 72 L32 72 L32 54 L54 54 L54 36 L76 36 L76 18 L92 18 L92 90 Z" fill="#f1f0ea" stroke="#9a9890" stroke-width="3" stroke-linejoin="round"/><path d="M14 80 Q30 76 40 84 M36 62 Q50 58 62 66 M60 44 Q70 40 82 48" stroke="#b6b4ab" stroke-width="2" fill="none"/><path d="M10 72 L32 72 M32 54 L54 54 M54 36 L76 36 M76 18 L92 18" stroke="#fff" stroke-width="3"/>`,
+  heykel:`<rect x="24" y="76" width="52" height="16" rx="3" fill="#e3e1d8" stroke="#a8a69e" stroke-width="3"/><path d="M26 76 Q26 56 50 54 Q74 56 74 76 Z" fill="#f4f3ee" stroke="#a8a69e" stroke-width="3"/><circle cx="50" cy="34" r="17" fill="#f4f3ee" stroke="#a8a69e" stroke-width="3"/><path d="M34 26 Q50 10 66 26 Q60 20 50 22 Q40 20 34 26 Z" fill="#e3e1d8" stroke="#a8a69e" stroke-width="2"/><path d="M44 36 L46 36 M54 36 L56 36" stroke="#a8a69e" stroke-width="3" stroke-linecap="round"/><path d="M40 64 Q46 70 52 62" stroke="#c4c2b7" stroke-width="2" fill="none"/>`,
+  santral:`<path d="M10 92 Q22 66 16 42 L42 42 Q36 66 48 92 Z" fill="#b8bec4" stroke="#6f7780" stroke-width="3"/><path d="M12 36 Q14 22 26 26 Q30 14 40 22 Q50 20 46 34 Z" fill="#fff" stroke="#c9d1d8" stroke-width="2"/><rect x="54" y="56" width="36" height="36" fill="#8f979f" stroke="#5f666d" stroke-width="3"/><rect x="62" y="30" width="8" height="26" fill="#6f7780"/><rect x="60" y="64" width="8" height="8" fill="#ffe27a"/><rect x="76" y="64" width="8" height="8" fill="#ffe27a"/><path d="M80 8 L70 26 L80 26 L72 44" fill="none" stroke="#f2b81f" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>`,
+  celik:`<path d="M8 92 L8 50 L24 38 L24 50 L40 38 L40 50 L56 38 L56 92 Z" fill="#8f979f" stroke="#5f666d" stroke-width="3" stroke-linejoin="round"/><rect x="44" y="16" width="8" height="26" fill="#6f7780"/><path d="M46 14 Q40 6 48 4 Q56 2 54 10" fill="#c9c9c9"/><path d="M62 30 L92 30 L86 52 L68 52 Z" fill="#555" stroke="#333" stroke-width="3"/><path d="M68 52 Q66 70 74 88" stroke="#ff8a1e" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M68 52 Q66 70 74 88" stroke="#ffe27a" stroke-width="2.5" fill="none"/><rect x="62" y="86" width="30" height="6" fill="#ff8a1e"/><rect x="16" y="62" width="10" height="10" fill="#ffb347"/><rect x="34" y="62" width="10" height="10" fill="#ffb347"/>`,
+};
+function itemSVG(id){ return `<svg viewBox="0 0 100 100">${ITEM_SVG[id]}</svg>`; }
+
+function fossilSVG(id){
+  let im = '';
+  if(id==='kabuk') im = `<path d="M50 70 L28 42 Q50 22 72 42 Z" fill="#a8916d" stroke="#7a6446" stroke-width="2.5"/><path d="M50 70 L34 40 M50 70 L42 34 M50 70 L50 32 M50 70 L58 34 M50 70 L66 40" stroke="#7a6446" stroke-width="2"/><path d="M44 70 L56 70 L52 76 L48 76 Z" fill="#a8916d" stroke="#7a6446" stroke-width="2"/>`;
+  if(id==='yaprak') im = `<path d="M24 72 Q30 30 74 28 Q72 66 24 72 Z" fill="#a8916d" stroke="#7a6446" stroke-width="2.5"/><path d="M24 72 L70 32 M38 58 L36 44 M38 58 L52 58 M50 48 L48 36 M50 48 L62 48 M60 40 L60 32" stroke="#7a6446" stroke-width="2"/>`;
+  if(id==='balik') im = `<path d="M22 52 L72 52" stroke="#7a6446" stroke-width="3"/><path d="M14 52 L26 42 L30 52 L26 62 Z" fill="#a8916d" stroke="#7a6446" stroke-width="2"/><circle cx="21" cy="49" r="2" fill="#7a6446"/><path d="M34 40 L36 64 M42 38 L44 66 M50 38 L52 66 M58 40 L60 64 M66 44 L67 60" stroke="#7a6446" stroke-width="2"/><path d="M72 52 L86 40 L84 52 L86 64 Z" fill="#a8916d" stroke="#7a6446" stroke-width="2"/>`;
+  return `<svg viewBox="0 0 100 100"><path d="M8 58 Q6 22 46 16 Q90 12 92 50 Q94 86 50 88 Q10 90 8 58 Z" fill="#d6c4a2" stroke="#9c8566" stroke-width="3"/><circle cx="20" cy="30" r="2" fill="#b8a27e"/><circle cx="82" cy="74" r="2.5" fill="#b8a27e"/>${im}</svg>`;
+}
+function guideSVG(){
+  return `<svg viewBox="0 0 120 150">
+  <path d="M26 150 Q26 100 60 98 Q94 100 94 150 Z" fill="#4f8a3c" stroke="#2f5d22" stroke-width="3"/>
+  <path d="M44 100 L48 150 M76 100 L72 150" stroke="#a9733f" stroke-width="5"/>
+  <rect x="52" y="112" width="16" height="12" rx="2" fill="#a9733f"/>
+  <rect x="50" y="86" width="20" height="16" fill="#efc298"/>
+  <circle cx="60" cy="62" r="31" fill="#f6cfa6" stroke="#c99a70" stroke-width="2"/>
+  <path d="M30 56 Q34 40 48 40 L42 52 Z M90 56 Q86 40 72 40 L78 52 Z" fill="#6b3f1f"/>
+  <circle cx="49" cy="64" r="4.5" fill="#2b2118"/><circle cx="71" cy="64" r="4.5" fill="#2b2118"/>
+  <circle cx="50.5" cy="62.5" r="1.5" fill="#fff"/><circle cx="72.5" cy="62.5" r="1.5" fill="#fff"/>
+  <circle cx="42" cy="74" r="5" fill="#f59a8a" opacity=".6"/><circle cx="78" cy="74" r="5" fill="#f59a8a" opacity=".6"/>
+  <path d="M50 76 Q60 86 70 76" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="60" cy="40" rx="46" ry="9" fill="#9a6a36" stroke="#6b4520" stroke-width="2"/>
+  <path d="M30 40 Q30 12 60 12 Q90 12 90 40 Z" fill="#c08a4a" stroke="#6b4520" stroke-width="2"/>
+  <path d="M30 34 Q60 28 90 34 L90 40 L30 40 Z" fill="#6b4520"/>
+  <circle cx="60" cy="26" r="8" fill="#ffe27a" stroke="#c99a1c" stroke-width="2"/>
+  <circle cx="60" cy="26" r="3.5" fill="#fff"/>
+  </svg>`;
+}
+const IC = {
+  home:`<svg viewBox="0 0 40 40"><path d="M6 20 L20 7 L34 20 M10 17 V34 H30 V17" fill="none" stroke="#2b2118" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><rect x="17" y="24" width="6" height="10" fill="#2b2118"/></svg>`,
+  back:`<svg viewBox="0 0 40 40"><path d="M25 8 L12 20 L25 32" fill="none" stroke="#2b2118" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  close:`<svg viewBox="0 0 40 40"><path d="M10 10 L30 30 M30 10 L10 30" stroke="#2b2118" stroke-width="5" stroke-linecap="round"/></svg>`,
+  book:`<svg viewBox="0 0 40 40"><path d="M6 8 Q14 5 20 10 Q26 5 34 8 V32 Q26 29 20 34 Q14 29 6 32 Z" fill="#fff" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M20 10 V34" stroke="currentColor" stroke-width="3"/></svg>`,
+  gear:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="none" stroke="currentColor" stroke-width="4"/><path d="M20 3 V9 M20 31 V37 M3 20 H9 M31 20 H37 M8 8 L12 12 M28 28 L32 32 M32 8 L28 12 M12 28 L8 32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>`,
+  play:`<svg viewBox="0 0 40 40"><path d="M12 6 L34 20 L12 34 Z" fill="#fff"/></svg>`,
+  pick:`<svg viewBox="0 0 40 40"><path d="M10 34 L28 12" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/><path d="M14 10 Q28 2 36 18 Q28 10 22 12 Z" fill="#9aa3ad" stroke="#5f666d" stroke-width="2"/></svg>`,
+  pin:`<svg viewBox="0 0 40 40"><path d="M20 37 Q8 22 8 15 A12 12 0 0 1 32 15 Q32 22 20 37 Z" fill="#d4322c"/><circle cx="20" cy="15" r="5" fill="#fff"/></svg>`,
+  lock:`<svg viewBox="0 0 40 40"><rect x="8" y="18" width="24" height="18" rx="4" fill="#7d7d7d"/><path d="M13 18 V12 A7 7 0 0 1 27 12 V18" fill="none" stroke="#7d7d7d" stroke-width="4"/></svg>`,
+  match:`<svg viewBox="0 0 40 40"><path d="M6 14 H26 L22 9 M34 26 H14 L18 31" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  fossil:`<svg viewBox="0 0 40 40"><path d="M20 32 L8 16 Q20 4 32 16 Z" fill="#d6c4a2" stroke="#fff" stroke-width="2"/><path d="M20 32 L13 15 M20 32 L20 12 M20 32 L27 15" stroke="#fff" stroke-width="2"/></svg>`,
+  gem:`<svg viewBox="0 0 40 40"><path d="M8 15 L14 7 H26 L32 15 L20 34 Z" fill="#f2b81f" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M8 15 H32 M14 7 L20 15 L26 7 M20 15 V34" stroke="#fff" stroke-width="1.5"/></svg>`,
+  redo:`<svg viewBox="0 0 40 40"><path d="M30 20 A10 10 0 1 1 26 12" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M22 6 L28 12 L22 17" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+function starSVG(on, cls=''){
+  return `<svg viewBox="0 0 40 40" class="${cls}"><path d="M20 3 L25 14.5 L37.5 15.5 L28 24 L31 36.5 L20 30 L9 36.5 L12 24 L2.5 15.5 L15 14.5 Z" fill="${on?'#f2b81f':'#d8cdb4'}" stroke="${on?'#b8860b':'#b3a68a'}" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+function starsRow(n, pop){ let h=''; for(let i=0;i<3;i++) h += starSVG(i<n, pop&&i<n?'pop':''); return h; }
+
+/* =========================================================
+   5. TÜRKİYE HARİTASI (basitleştirilmiş kıyı çizgisi, gömülü)
+   ========================================================= */
+const THRACE = [[26.07,40.72],[26.35,40.95],[26.36,41.25],[26.6,41.6],[26.55,41.95],[27.3,42.08],[28.0,41.98],[28.3,41.55],[28.9,41.3],[29.08,41.22],
+  [29.05,41.03],[28.6,40.98],[27.95,40.98],[27.5,40.97],[27.15,40.65],[26.8,40.5],[26.67,40.4],[26.38,40.18],[26.2,40.05],[26.25,40.3],[26.55,40.55],[26.75,40.63],[26.3,40.62]];
+const ANATOLIA = [[29.12,41.22],[29.9,41.15],[30.5,41.18],[31.0,41.1],[31.4,41.3],[31.8,41.48],[32.3,41.75],[33.0,41.95],[33.5,42.0],[34.2,41.98],[34.9,42.07],[35.2,42.0],
+  [35.4,41.7],[36.0,41.7],[36.35,41.3],[36.9,41.35],[37.6,41.1],[38.3,40.95],[39.0,41.0],[39.7,41.0],[40.3,41.0],[40.8,41.2],[41.4,41.4],[41.55,41.52],
+  [42.0,41.5],[42.5,41.45],[43.0,41.2],[43.45,41.1],[43.6,40.9],[43.75,40.6],[43.6,40.3],[44.0,40.05],[44.4,40.0],[44.78,39.72],[44.4,39.4],[44.2,39.0],
+  [44.3,38.4],[44.45,38.0],[44.25,37.6],[44.6,37.2],[44.8,37.15],[44.3,37.05],[43.9,37.25],[43.4,37.3],[42.8,37.35],[42.35,37.1],[41.5,37.08],[40.8,37.1],
+  [40.0,36.85],[39.2,36.67],[38.5,36.83],[38.0,36.85],[37.2,36.65],[36.7,36.83],[36.65,36.5],[36.4,36.2],[35.95,35.83],[35.9,36.0],[35.8,36.3],[36.17,36.6],
+  [36.2,36.85],[35.95,36.95],[35.79,36.77],[35.38,36.57],[34.63,36.8],[33.93,36.37],[32.83,36.02],[32.0,36.54],[31.2,36.82],[30.7,36.88],[30.55,36.6],[30.15,36.3],
+  [29.64,36.2],[29.1,36.62],[28.8,36.73],[28.27,36.85],[27.6,36.75],[27.4,36.68],[28.0,36.95],[27.43,37.03],[27.25,37.0],[27.27,37.38],[27.25,37.86],[26.9,38.05],
+  [26.3,38.25],[26.3,38.4],[26.5,38.65],[26.8,38.45],[27.1,38.42],[26.75,38.67],[26.88,39.07],[26.69,39.31],[27.0,39.58],[26.5,39.55],[26.06,39.48],[26.15,39.85],
+  [26.4,40.15],[26.68,40.35],[27.3,40.4],[27.97,40.35],[28.5,40.4],[28.88,40.37],[29.15,40.43],[29.0,40.6],[29.9,40.75],[29.4,40.78],[29.2,40.88],[29.02,41.02]];
+function proj(lon,lat){ return [(lon-25.6)*54.4, (42.3-lat)*70]; }
+function pathOf(pts){ return 'M'+pts.map(p=>proj(p[0],p[1]).map(v=>v.toFixed(1)).join(' ')).join(' L')+' Z'; }
+const TR_PATH = pathOf(THRACE)+' '+pathOf(ANATOLIA);
+
+function buildMap(){
+  let h = `<svg id="mapSvg" viewBox="-40 -55 1110 560" preserveAspectRatio="xMidYMid meet">
+  <defs><pattern id="soil" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="6" r="1.6" fill="#d6b77e"/><circle cx="16" cy="15" r="1.2" fill="#d6b77e"/></pattern>
+  <filter id="sh"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#0c2a3a" flood-opacity=".5"/></filter></defs>
+  <text class="seaLabel" x="430" y="-22">KARADENİZ</text>
+  <text class="seaLabel" x="560" y="490">AKDENİZ</text>
+  <text class="seaLabel" x="-10" y="250" transform="rotate(-90 -10 250)">EGE DENİZİ</text>
+  <path d="${TR_PATH}" class="land" filter="url(#sh)"/>
+  <path d="${TR_PATH}" fill="url(#soil)" stroke="none"/>`;
+  // Fosil noktaları
+  FOSSILS.forEach(f=>{
+    const [x,y] = proj(f.lon,f.lat), got = S.fossils.includes(f.id);
+    h += `<g class="node" data-kind="fossil" data-id="${f.id}" transform="translate(${x} ${y})">
+      <circle r="20" fill="transparent"/>
+      ${got ? `<g transform="translate(-20 -20) scale(.4)">${fossilSVG(f.id).replace('<svg viewBox="0 0 100 100">','<g>').replace('</svg>','</g>')}</g>`
+            : `<circle r="16" fill="#cbb58e" stroke="#8f7a5c" stroke-width="2.5" stroke-dasharray="5 4"/><text y="7" text-anchor="middle" font-size="22" font-weight="700" fill="#6b5634">?</text>`}
+    </g>`;
+  });
+  // Maden noktaları
+  MINES.forEach(m=>{
+    const [x,y] = proj(m.lon,m.lat), got = S.found.includes(m.id);
+    const [lx,ly,anc] = m.lab;
+    h += `<g class="node" data-kind="mine" data-id="${m.id}" transform="translate(${x} ${y})">
+      ${got?'':'<circle class="pulse" r="17"/>'}
+      <circle r="19" fill="${got?'#fff8e6':'#e0772c'}" stroke="${got?'#2f9a58':'#fff'}" stroke-width="3"/>
+      ${got ? `<g transform="translate(-16 -16) scale(.32)">${stoneSVG(m.id).replace(/^<svg viewBox="0 0 100 100">/,'<g>').replace(/<\/svg>$/,'</g>')}</g>`
+            : `<g transform="translate(-13 -13) scale(.65)">${IC.pick.replace('<svg viewBox="0 0 40 40">','<g>').replace('</svg>','</g>')}</g>`}
+      <text class="plabel" x="${lx}" y="${ly}" text-anchor="${anc}">${m.il}</text>
+      ${got?`<text class="mlabel" x="${lx}" y="${ly+19}" text-anchor="${anc}">${m.ad}</text>`:''}
+    </g>`;
+  });
+  h += '</svg>';
+  return h;
+}
+
+/* =========================================================
+   6. SAHNE YÖNETİCİSİ VE ÖLÇEKLEME
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+let scale = 1;
+function fit(){
+  scale = Math.min(innerWidth/1280, innerHeight/720);
+  stage.style.transform = `translate(${(innerWidth-1280*scale)/2}px,${(innerHeight-720*scale)/2}px) scale(${scale})`;
+}
+addEventListener('resize', fit); fit();
+function show(name){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  $('scr-'+name).classList.add('active');
+  if(name==='map') renderMap();
+  if(name==='book') renderBook();
+  if(name==='settings') renderSettings();
+}
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; stage.appendChild(t); setTimeout(()=>t.remove(),3100); }
+function openModal(html){ $('modalBox').innerHTML = html; $('modal').classList.remove('hidden'); }
+function closeModal(){ $('modal').classList.add('hidden'); $('modalBox').innerHTML=''; }
+function closeBtn(){ return `<button class="iconbtn mclose" onclick="SFX.click();closeModal()" aria-label="Kapat">${IC.close}</button>`; }
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function rectStage(el){ const r=el.getBoundingClientRect(), s=stage.getBoundingClientRect(); return { x:(r.left-s.left)/scale, y:(r.top-s.top)/scale, w:r.width/scale, h:r.height/scale }; }
+function toStage(e){ const s=stage.getBoundingClientRect(); return { x:(e.clientX-s.left)/scale, y:(e.clientY-s.top)/scale }; }
+
+/* =========================================================
+   7. BAŞLANGIÇ EKRANI VE TANITIM
+   ========================================================= */
+function initStart(){
+  $('startGuide').innerHTML = guideSVG();
+  $('btnStart').innerHTML = IC.play + 'Başla';
+  $('btnBookStart').innerHTML = `<span style="color:#2b2118">${IC.book}</span>Kâşif Defteri`;
+  $('btnSetStart').innerHTML = `<span style="color:#2b2118">${IC.gear}</span>Ayarlar`;
+  const spots = [[150,470,'altin'],[380,600,'bakir'],[560,500,'bor'],[760,610,'mermer'],[920,480,'gumus'],[1080,590,'linyit'],[1170,460,'taskomuru']];
+  $('buriedLayer').innerHTML = spots.map(([x,y,id],i)=>`<div class="buried" style="left:${x}px;top:${y}px;transform:rotate(${(i%2?14:-12)}deg)">${stoneSVG(id)}</div>`).join('');
+  $('btnStart').onclick = ()=>{ SFX.click(); if(!S.introSeen) showIntro(0); else show('map'); };
+  $('btnBookStart').onclick = ()=>{ SFX.click(); bookFrom='start'; show('book'); };
+  $('btnSetStart').onclick = ()=>{ SFX.click(); setFrom='start'; show('settings'); };
+}
+const INTRO = [
+  { t:"Merhaba! Ben <b>Kâşif Toprak</b>. Bugün birlikte Türkiye'nin toprak altı zenginliklerini keşfedeceğiz.", pic:()=>'' },
+  { t:"Yer kabuğunu oluşturan katı ve sert parçalara <b>kayaç</b> denir. Çevremizde gördüğümüz taşlar ve kayalar birer kayaçtır.", pic:()=>pebbleSVG()+pebbleSVG() },
+  { t:"Bazı kayaçlar çok işimize yarar. Onları topraktan çıkarır, işler ve kullanırız. <b>Ekonomik değeri olan kayaçlara maden denir.</b>", pic:()=>stoneSVG('altin')+stoneSVG('bakir')+stoneSVG('bor') },
+  { t:"Haritada kazma işaretli illere dokun ve kaz! <b>3 maden</b> bulunca eşleştirme oyunu açılır. Soru işaretli gizli noktalara da bak!", pic:()=>'' },
+];
+function showIntro(i){
+  const s = INTRO[i], last = i===INTRO.length-1;
+  openModal(`<div class="intro"><div class="g">${guideSVG()}</div><div class="body">
+    <div class="bubble">${s.t}</div><div class="pic">${s.pic()}</div>
+    <div class="navrow"><div class="dots">${INTRO.map((_,k)=>`<span class="${k===i?'on':''}"></span>`).join('')}</div>
+    <button class="btn" id="introNext">${last?'Haritaya Git':'İleri'}</button></div></div></div>`);
+  $('introNext').onclick = ()=>{ SFX.click(); if(last){ S.introSeen=true; save(); closeModal(); show('map'); } else showIntro(i+1); };
+}
+
+/* =========================================================
+   8. HARİTA EKRANI
+   ========================================================= */
+function totalStars(){ return S.stars[1]+S.stars[2]+S.stars[3]; }
+function renderMap(){
+  $('mapWrap').innerHTML = buildMap();
+  $('mapHome').innerHTML = IC.home;
+  $('chipMines').innerHTML = IC.gem + `Madenler ${S.found.length}/7`;
+  $('chipFossils').innerHTML = IC.fossil + `Fosiller ${S.fossils.length}/3`;
+  $('chipStars').innerHTML = starSVG(true) + `${totalStars()}/9`;
+  $('btnBook').innerHTML = IC.book.replace('fill="#fff"','fill="none"') + 'Defter';
+  $('btnBook').style.color = '#fff';
+  const open = S.found.length >= 3;
+  $('btnMatch').innerHTML = (open ? IC.match : IC.lock.replace(/#7d7d7d/g,'#fff')) + 'Eşleştir';
+  $('btnMatch').classList.toggle('locked', !open);
+  $('mapGuideImg').innerHTML = guideSVG();
+  const n = S.found.length;
+  let msg;
+  if(n===0) msg = 'Kazma işaretli bir ile dokun ve kazı yap!';
+  else if(n<3) msg = `Harika! <b>${3-n} maden</b> daha bul, eşleştirme oyunu açılsın.`;
+  else if(n<7) msg = 'Eşleştirme oyunu açık! Daha çok maden bulursan yeni seviyeler açılır.';
+  else if(S.fossils.length<3) msg = 'Bütün madenleri buldun! Soru işaretli gizli noktalarda neler saklı?';
+  else msg = 'Bütün madenleri ve fosilleri buldun. Sen gerçek bir kâşifsin!';
+  $('mapBubble').innerHTML = msg;
+  document.querySelectorAll('#mapSvg .node').forEach(g=>{
+    g.addEventListener('click', ()=>{ SFX.click(); openDig(g.dataset.kind, g.dataset.id); });
+  });
+}
+function initMap(){
+  $('mapHome').onclick = ()=>{ SFX.click(); show('start'); };
+  $('btnBook').onclick = ()=>{ SFX.click(); bookFrom='map'; show('book'); };
+  $('btnMatch').onclick = ()=>{
+    SFX.click();
+    if(S.found.length<3){ toast(`Önce ${3-S.found.length} maden daha keşfet!`); return; }
+    showLevels();
+  };
+}
+function showLevels(){
+  let h = `${closeBtn()}<h2 style="font-size:40px;text-align:center">Seviye Seç</h2><div class="lvls">`;
+  [1,2,3].forEach(lv=>{
+    const L = LEVELS[lv], open = S.found.length >= L.need;
+    h += `<div class="lvl ${open?'':'locked'}" data-lv="${lv}">
+      <h3>${L.ad}</h3><div class="d">${L.d}</div>
+      ${open ? `<div class="stars">${starsRow(S.stars[lv])}</div>` : `<div class="lk">${IC.lock}</div><div class="d">${L.need} maden keşfet</div>`}
+    </div>`;
+  });
+  openModal(h+'</div>');
+  document.querySelectorAll('.lvl').forEach(el=>{
+    el.onclick = ()=>{ const lv=+el.dataset.lv; if(S.found.length < LEVELS[lv].need){ SFX.wrong(); return; } SFX.click(); closeModal(); startRound(lv); };
+  });
+}
+
+/* =========================================================
+   9. KAZI (KEŞİF) EKRANI
+   ========================================================= */
+let dig = null;
+function groundSVG(){
+  let pebbles = '';
+  for(let i=0;i<26;i++){ const x=(i*97)%580+10, y=120+((i*53)%460); pebbles += `<ellipse cx="${x}" cy="${y}" rx="${4+(i%4)*2}" ry="${3+(i%3)*1.5}" fill="#000" opacity=".12"/>`; }
+  return `<svg class="ground" viewBox="0 0 600 600">
+   <rect width="600" height="80" fill="#9fd6f0"/><rect y="80" width="600" height="22" fill="#6aa047"/>
+   <path d="M0 102 H600 V210 Q450 196 300 214 T0 206 Z" fill="#b07a4a"/>
+   <path d="M0 206 Q150 222 300 214 T600 210 V340 Q420 326 300 344 T0 336 Z" fill="#9a6640"/>
+   <path d="M0 336 Q150 352 300 344 T600 340 V470 Q430 456 300 474 T0 466 Z" fill="#7d5232"/>
+   <path d="M0 466 Q150 482 300 474 T600 470 V600 H0 Z" fill="#62402a"/>
+   ${pebbles}
+   <g id="boulder">
+     <path d="M150 360 L176 250 L260 200 L360 206 L440 258 L456 360 L404 430 L290 448 L196 430 Z" fill="#8a8378" stroke="#5e584f" stroke-width="5" stroke-linejoin="round"/>
+     <path d="M176 250 L260 200 L360 206 L300 300 Z" fill="#fff" opacity=".14"/>
+     <path d="M300 300 L456 360 L404 430 L290 448 Z" fill="#000" opacity=".14"/>
+     <path class="crack" d="M300 300 L270 270 L282 240 L262 214" fill="none" stroke="#3a352f" stroke-width="5" stroke-linecap="round"/>
+     <path class="crack" d="M300 300 L344 316 L360 360 L400 380 M300 300 L240 330 L214 380" fill="none" stroke="#3a352f" stroke-width="5" stroke-linecap="round"/>
+     <path class="crack" d="M300 300 L320 250 L380 236 M240 330 L250 400 L280 440 M344 316 L420 300" fill="none" stroke="#3a352f" stroke-width="5" stroke-linecap="round"/>
+   </g>
+  </svg>`;
+}
+function openDig(kind, id){
+  const isMine = kind==='mine', obj = isMine ? MB[id] : FB[id];
+  const already = isMine ? S.found.includes(id) : S.fossils.includes(id);
+  dig = { kind, id, taps:0, done:already, revisit:already };
+  $('digBack').innerHTML = IC.back;
+  $('digTitle').textContent = isMine ? `${locative(obj.il)} kazı yapıyorsun` : 'Gizli bir noktada kazı yapıyorsun';
+  const art = $('digArea');
+  art.innerHTML = groundSVG() + `<div id="reveal"><svg class="rays" viewBox="0 0 100 100">${raysSVG()}</svg><div class="gem">${isMine?stoneSVG(id):fossilSVG(id)}</div></div>`;
+  if(already){
+    $('boulder').style.display='none';
+    $('reveal').classList.add('show');
+    showInfo();
+  } else {
+    $('digSide').innerHTML = `<div class="dig-wait"><div class="g">${guideSVG()}</div>
+      <div class="bubble" style="font-size:28px;text-align:center">Kayaya <b>3 kez</b> dokun ve kaz!<br>İçinde ne saklı acaba?</div>
+      <div class="taps"><span></span><span></span><span></span></div></div>`;
+  }
+  art.onpointerdown = digTap;
+  show('dig');
+}
+// Türkçe bulunma eki: Uşak'ta, Kütahya'da, Artvin'de, Eskişehir'de ...
+function locative(w){
+  const vowels = w.toLocaleLowerCase('tr').match(/[aeıioöuü]/g); const last = vowels[vowels.length-1];
+  const back = 'aıou'.includes(last);
+  const hard = 'fstkçşhp'.includes(w.slice(-1).toLocaleLowerCase('tr'));
+  return `${w}'${hard?'t':'d'}${back?'a':'e'}`;
+}
+function raysSVG(){ let r=''; for(let i=0;i<12;i++) r+=`<path d="M50 50 L${50+60*Math.cos(i*Math.PI/6-.12)} ${50+60*Math.sin(i*Math.PI/6-.12)} L${50+60*Math.cos(i*Math.PI/6+.12)} ${50+60*Math.sin(i*Math.PI/6+.12)} Z" fill="#ffe27a" opacity=".35"/>`; return r; }
+function digTap(e){
+  if(!dig || dig.done) return;
+  const r = rectStage($('digArea')), p = toStage(e), x = p.x - r.x, y = p.y - r.y;
+  // kazma animasyonu
+  const pk = document.createElement('div'); pk.className='pick'; pk.innerHTML = IC.pick;
+  pk.style.left=(x-88)+'px'; pk.style.top=(y-88)+'px'; $('digArea').appendChild(pk); setTimeout(()=>pk.remove(),350);
+  for(let i=0;i<7;i++){ const d=document.createElement('div'); d.className='dirt'; d.style.left=x+'px'; d.style.top=y+'px';
+    d.style.background = pick(['#7d5232','#9a6640','#5e584f','#b07a4a']);
+    d.style.setProperty('--dx',(Math.random()*120-60)+'px'); d.style.setProperty('--dy',(-Math.random()*90-10)+'px');
+    $('digArea').appendChild(d); setTimeout(()=>d.remove(),650); }
+  dig.taps++;
+  SFX.dig();
+  const b = $('boulder'); b.classList.remove('shake'); void b.getBBox(); b.classList.add('shake');
+  document.querySelectorAll('#boulder .crack').forEach((c,i)=>c.classList.toggle('on', i<dig.taps));
+  document.querySelectorAll('.taps span').forEach((s,i)=>s.classList.toggle('on', i<dig.taps));
+  if(dig.taps>=3){ dig.done = true; setTimeout(breakBoulder, 250); }
+}
+function breakBoulder(){
+  SFX.crash();
+  $('boulder').classList.add('broken');
+  for(let i=0;i<10;i++){ const f=document.createElement('div'); f.className='frag'; f.style.left=(280+Math.random()*40)+'px'; f.style.top=(300+Math.random()*40)+'px';
+    const a=Math.random()*Math.PI*2; f.style.setProperty('--dx',Math.cos(a)*260+'px'); f.style.setProperty('--dy',(Math.sin(a)*200+120)+'px'); f.style.setProperty('--r',(Math.random()*400-200)+'deg');
+    $('digArea').appendChild(f); setTimeout(()=>f.remove(),950); }
+  const d = dig;
+  setTimeout(()=>{
+    if(dig!==d) return; // oyuncu bu arada çıktıysa
+    $('reveal').classList.add('show'); SFX.found();
+    // Bulunanı hemen kaydet
+    const firstThree = dig.kind==='mine' && S.found.length===2;
+    if(dig.kind==='mine'){ if(!S.found.includes(dig.id)) S.found.push(dig.id); }
+    else if(!S.fossils.includes(dig.id)) S.fossils.push(dig.id);
+    save();
+    dig.unlockToast = firstThree;
+    showInfo();
+  }, 450);
+}
+function mineCardHTML(id){
+  const m = MB[id];
+  return `<div class="ic-top"><div class="ic-stone">${stoneSVG(id)}</div><div><h2>${m.ad}</h2>
+      <div class="ic-place">${IC.pin}Örnek il: ${m.il}</div></div></div>
+    <p class="ic-desc">${m.tanim}</p>
+    <h3>Nerelerde kullanılır?</h3>
+    <div class="ic-uses">${m.kullanim.map(u=>`<div class="ic-use"><div class="ico">${itemSVG(u)}</div>${ITEMS[u].ad}</div>`).join('')}</div>
+    <div class="ic-tr"><b>Türkiye'nin zenginliği:</b> ${m.zenginlik}</div>`;
+}
+function fossilCardHTML(id){
+  const f = FB[id];
+  return `<div class="ic-top"><div class="ic-stone">${fossilSVG(id)}</div><div><h2>Fosil buldun!</h2>
+      <div class="ic-place" style="color:#7a5530">${f.ad}</div></div></div>
+    <p class="ic-desc">${f.metin}</p>
+    <div class="ic-tr" style="border-left-color:#9c8566;background:#f6efe2"><b style="color:#7a5530">Fosil nedir?</b> ${FOSSIL_DEF}</div>`;
+}
+function showInfo(){
+  const isMine = dig.kind==='mine';
+  $('digSide').innerHTML = `<div class="infocard">${isMine?mineCardHTML(dig.id):fossilCardHTML(dig.id)}
+    <div class="ic-actions"><button class="btn green" id="infoOk">${dig.revisit?'Haritaya Dön':'Deftere Ekle ✓'}</button></div></div>`;
+  $('infoOk').onclick = backFromDig;
+}
+function backFromDig(){
+  SFX.click();
+  const unlock = dig && dig.unlockToast;
+  dig = null; show('map');
+  if(unlock) setTimeout(()=>{ toast('Eşleştirme oyunu açıldı!'); SFX.star(); }, 300);
+  if(S.found.length===7 && !S.summarySeen){ S.summarySeen = true; save(); setTimeout(showZenginlik, 500); }
+}
+function initDig(){ $('digBack').onclick = ()=>{ if(dig && dig.done && $('infoOk')) backFromDig(); else { SFX.click(); dig=null; show('map'); } }; }
+
+/* =========================================================
+   10. TÜRKİYE'NİN TOPRAK ALTI ZENGİNLİKLERİ (özet kartı)
+   ========================================================= */
+function zenginlikHTML(){
+  let dots = MINES.map(m=>{ const [x,y]=proj(m.lon,m.lat); return `<circle cx="${x}" cy="${y}" r="24" fill="#fff8e6" stroke="#2f9a58" stroke-width="4"/><g transform="translate(${x-19} ${y-19}) scale(.38)">${stoneSVG(m.id).replace(/^<svg viewBox="0 0 100 100">/,'<g>').replace(/<\/svg>$/,'</g>')}</g>`; }).join('');
+  return `<div class="zen"><h2>Türkiye'nin Toprak Altı Zenginlikleri</h2><div class="wrap">
+    <div class="mini"><svg viewBox="0 -10 1070 480"><path d="${TR_PATH}" fill="#ecd3a0" stroke="#b98a4e" stroke-width="3"/>${dots}</svg></div>
+    <ul>${MINES.map(m=>`<li>${stoneSVG(m.id)}${m.ad} <span>— ${m.il}</span></li>`).join('')}</ul></div>
+    <p>Bu madenler ülkemiz için çok değerlidir. Madenler bir gün tükenebilir; onları <b>tasarruflu</b> kullanmalıyız.</p></div>`;
+}
+function showZenginlik(){ SFX.found(); openModal(closeBtn()+zenginlikHTML()); }
+
+/* =========================================================
+   11. EŞLEŞTİRME (SÜRÜKLE-BIRAK + DOKUN-DOKUN)
+   ========================================================= */
+let R = null, drag = null;
+function startRound(lv){
+  const L = LEVELS[lv];
+  const lw = S.lastWrong;
+  // Son turda yanlış yapılan nesnelerin madenleri öncelikli
+  const pri = shuffle(S.found.filter(m=>MB[m].kullanim.some(i=>lw.includes(i))));
+  const rest = shuffle(S.found.filter(m=>!pri.includes(m)));
+  const mines = pri.concat(rest).slice(0, L.mines);
+  let items;
+  if(lv<3){
+    items = mines.map(m=>{ const u=MB[m].kullanim, w=u.filter(i=>lw.includes(i)); return pick(w.length?w:u); });
+  } else {
+    const all = Object.keys(ITEMS).filter(i=>S.found.includes(ITEMS[i].maden));
+    const w = shuffle(all.filter(i=>lw.includes(i))), r = shuffle(all.filter(i=>!w.includes(i)));
+    items = w.concat(r).slice(0, L.items);
+  }
+  R = { lv, mines:shuffle(mines), items:shuffle(items), done:{}, wrong:{}, mistakes:0, sel:null, over:false };
+  renderRound();
+  show('match');
+}
+function renderRound(){
+  $('matchBack').innerHTML = IC.back;
+  $('matchTitle').textContent = `Eşleştir — ${LEVELS[R.lv].ad}`;
+  $('items').innerHTML = R.items.map(i=>`<div class="item" data-id="${i}"><div class="slot">?</div><div class="ico">${itemSVG(i)}</div><div class="lbl">${ITEMS[i].ad}</div></div>`).join('');
+  $('stones').innerHTML = R.mines.map(m=>`<div class="stone" data-id="${m}"><div class="gem">${stoneSVG(m)}</div><div class="nm${MB[m].ad.length>7?' long':''}">${MB[m].ad}</div></div>`).join('');
+  $('fbGuide').innerHTML = guideSVG();
+  feedback('Maden taşını sürükle, onu kullanıldığı yere bırak!', '');
+  updateProg();
+  document.querySelectorAll('.stone').forEach(s=>{
+    s.addEventListener('pointerdown', stoneDown);
+    s.addEventListener('pointermove', stoneMove);
+    s.addEventListener('pointerup', stoneUp);
+    s.addEventListener('pointercancel', stoneCancel);
+  });
+  document.querySelectorAll('.item').forEach(it=>it.addEventListener('click', ()=>itemTap(it.dataset.id)));
+}
+function updateProg(){ $('matchProg').textContent = `${Object.keys(R.done).length} / ${R.items.length}`; }
+function feedback(html, cls){ const b=$('fbText'); b.className='bubble '+(cls||''); b.innerHTML=html; }
+function stoneEl(id){ return document.querySelector(`.stone[data-id="${id}"]`); }
+function itemEl(id){ return document.querySelector(`.item[data-id="${id}"]`); }
+function makeGhost(id,x,y){ const g=document.createElement('div'); g.className='dragghost'; g.innerHTML=stoneSVG(id); g.style.left=(x-50)+'px'; g.style.top=(y-50)+'px'; stage.appendChild(g); return g; }
+function itemUnder(e){ const el = document.elementFromPoint(e.clientX, e.clientY); const it = el && el.closest && el.closest('.item'); return it && !it.classList.contains('done') ? it : null; }
+
+function stoneDown(e){
+  if(!R || R.over) return;
+  e.preventDefault();
+  const el = e.currentTarget; el.setPointerCapture(e.pointerId);
+  const p = toStage(e);
+  drag = { id:el.dataset.id, el, sx:p.x, sy:p.y, moved:false, ghost:null, pid:e.pointerId, over:null };
+}
+function stoneMove(e){
+  if(!drag || e.pointerId!==drag.pid) return;
+  const p = toStage(e);
+  if(!drag.moved && Math.hypot(p.x-drag.sx, p.y-drag.sy) > 10){
+    drag.moved = true; drag.ghost = makeGhost(drag.id, p.x, p.y); clearSel();
+  }
+  if(drag.ghost){
+    drag.ghost.style.left=(p.x-50)+'px'; drag.ghost.style.top=(p.y-50)+'px';
+    const it = itemUnder(e);
+    if(drag.over && drag.over!==it) drag.over.classList.remove('over');
+    if(it) it.classList.add('over');
+    drag.over = it;
+  }
+}
+function stoneUp(e){
+  if(!drag || e.pointerId!==drag.pid) return;
+  const d = drag; drag = null;
+  if(d.over) d.over.classList.remove('over');
+  if(!d.moved){ toggleSel(d.id); return; }
+  const it = itemUnder(e);
+  if(it) attempt(d.id, it.dataset.id, d.ghost);
+  else returnGhost(d.ghost, d.id);
+}
+function stoneCancel(){ if(drag){ if(drag.ghost) drag.ghost.remove(); if(drag.over) drag.over.classList.remove('over'); drag=null; } }
+function returnGhost(g, id){
+  const r = rectStage(stoneEl(id));
+  g.classList.add('fly'); g.style.left=(r.x+r.w/2-50)+'px'; g.style.top=(r.y+r.h/2-60)+'px'; g.style.opacity='0';
+  setTimeout(()=>g.remove(), 340);
+}
+function clearSel(){ R.sel=null; document.querySelectorAll('.stone.sel').forEach(s=>s.classList.remove('sel')); }
+function toggleSel(id){
+  SFX.click();
+  if(R.sel===id){ clearSel(); feedback('Maden taşını sürükle, onu kullanıldığı yere bırak!',''); return; }
+  clearSel(); R.sel=id; stoneEl(id).classList.add('sel');
+  feedback(`<b>${MB[id].ad}</b> seçildi. Şimdi onun kullanıldığı nesneye dokun.`, '');
+}
+function itemTap(itemId){
+  if(!R || R.over || R.done[itemId]) return;
+  if(!R.sel){ feedback('Önce aşağıdan bir maden taşı seç ya da taşı sürükle.', ''); return; }
+  const id = R.sel, r = rectStage(stoneEl(id));
+  clearSel();
+  const g = makeGhost(id, r.x+r.w/2, r.y+r.h/2-14);
+  attempt(id, itemId, g);
+}
+function attempt(mineId, itemId, ghost){
+  const it = itemEl(itemId), item = ITEMS[itemId];
+  const tr = rectStage(it.querySelector('.slot'));
+  if(item.maden === mineId){
+    // DOĞRU
+    R.done[itemId] = true;
+    ghost.classList.add('fly'); ghost.style.left=(tr.x+tr.w/2-50)+'px'; ghost.style.top=(tr.y+tr.h/2-50)+'px'; ghost.style.transform='scale(.75)';
+    setTimeout(()=>{
+      ghost.remove();
+      it.classList.add('done');
+      it.querySelector('.slot').innerHTML = stoneSVG(mineId);
+      it.insertAdjacentHTML('beforeend', `<div class="mname">${MB[mineId].ad}</div>`);
+    }, 330);
+    SFX.correct();
+    feedback(`<span><b>Doğru!</b> ${item.aciklama}</span>`, 'ok');
+    updateProg();
+    if(Object.keys(R.done).length === R.items.length){ R.over = true; setTimeout(endRound, 2200); }
+  } else {
+    // YANLIŞ — taş geri seker, ipucu verilir
+    R.mistakes++; R.wrong[itemId] = (R.wrong[itemId]||0)+1;
+    SFX.wrong();
+    it.classList.remove('shakeX'); void it.offsetWidth; it.classList.add('shakeX');
+    returnGhost(ghost, mineId);
+    if(R.wrong[itemId] >= 2){
+      const right = MB[item.maden];
+      feedback(`<span>${MB[mineId].yanlis} <b>${item.ad}</b> için doğru maden: <b>${right.ad}</b>. Haydi, onu sürükle!</span>`, 'bad');
+      const s = stoneEl(item.maden); if(s){ s.classList.remove('hint'); void s.offsetWidth; s.classList.add('hint'); }
+    } else {
+      feedback(`<span>${MB[mineId].yanlis} <b>İpucu:</b> ${item.ipucu}</span>`, 'bad');
+    }
+  }
+}
+function endRound(){
+  const n = R.items.length;
+  const first = R.items.filter(i=>!R.wrong[i]).length;
+  const stars = R.mistakes===0 ? 3 : R.mistakes<=2 ? 2 : 1;
+  if(stars > S.stars[R.lv]) S.stars[R.lv] = stars;
+  S.lastWrong = R.items.filter(i=>R.wrong[i]);
+  save();
+  const wrongs = R.items.filter(i=>R.wrong[i]);
+  const title = stars===3 ? 'Mükemmel!' : stars===2 ? 'Çok iyi!' : 'Tamamladın!';
+  $('sumPanel').innerHTML = `<h2>${title}</h2><div class="stars">${starsRow(stars,true)}</div>
+    <div class="sum-line">İlk denemede doğru: ${first} / ${n}</div>
+    ${wrongs.length ? `<div style="font-size:22px;font-weight:700;color:var(--accentDark);align-self:flex-start">Bunları birlikte hatırlayalım:</div>
+      <div class="mist">${wrongs.map(i=>`<div class="m"><div class="ico">${itemSVG(i)}</div><div class="ico">${stoneSVG(ITEMS[i].maden)}</div>
+        <div class="tx"><b>${ITEMS[i].ad} → ${MB[ITEMS[i].maden].ad}</b><br>${ITEMS[i].aciklama}</div></div>`).join('')}</div>`
+      : `<p style="font-size:24px;margin:10px 0 20px">Hiç hata yapmadan bütün madenleri doğru yere yerleştirdin!</p>`}
+    <div class="btnrow"><button class="btn alt" id="sumMap">Haritaya Dön</button><button class="btn" id="sumAgain">${IC.redo}Tekrar Oyna</button></div>`;
+  show('summary');
+  SFX.end();
+  document.querySelectorAll('#sumPanel .stars .pop').forEach((s,i)=>{ s.style.animationDelay=(i*.25+.2)+'s'; setTimeout(SFX.star, 450+i*250); });
+  $('sumMap').onclick = ()=>{ SFX.click(); R=null; show('map'); };
+  $('sumAgain').onclick = ()=>{ SFX.click(); startRound(R.lv); };
+}
+function initMatch(){ $('matchBack').onclick = ()=>{ SFX.click(); stoneCancel(); R=null; show('map'); }; }
+
+/* =========================================================
+   12. KÂŞİF DEFTERİ
+   ========================================================= */
+let bookFrom = 'start';
+function renderBook(){
+  $('bookBack').innerHTML = IC.back;
+  $('bookCount').innerHTML = IC.gem + `${S.found.length + S.fossils.length} / 10`;
+  let h = '';
+  MINES.forEach(m=>{
+    const got = S.found.includes(m.id);
+    h += got ? `<div class="bcard" data-k="mine" data-id="${m.id}"><div class="ico">${stoneSVG(m.id)}</div><div class="t">${m.ad}</div><div class="s">${m.il}</div></div>`
+             : `<div class="bcard locked"><div class="ico" style="opacity:.35">${pebbleSVG()}</div><div class="t">?</div><div class="s">Henüz bulunmadı</div></div>`;
+  });
+  FOSSILS.forEach(f=>{
+    const got = S.fossils.includes(f.id);
+    h += got ? `<div class="bcard" data-k="fossil" data-id="${f.id}"><div class="ico">${fossilSVG(f.id)}</div><div class="t">${f.ad}</div></div>`
+             : `<div class="bcard locked"><div class="ico" style="opacity:.35">${pebbleSVG()}</div><div class="t">Gizli fosil</div><div class="s">Henüz bulunmadı</div></div>`;
+  });
+  h += `<div class="bcard special" data-k="concept"><div class="ico" style="display:flex">${pebbleSVG()}${stoneSVG('altin')}</div><div class="t">Kayaç ve Maden</div></div>`;
+  h += S.found.length===7 ? `<div class="bcard special" data-k="zen"><div class="ico">${IC.pin}</div><div class="t">Toprak Altı Zenginliklerimiz</div></div>`
+       : `<div class="bcard locked"><div class="ico" style="opacity:.6">${IC.lock}</div><div class="t">Zenginlik kartı</div><div class="s">7 madeni bul</div></div>`;
+  $('bookGrid').innerHTML = h;
+  document.querySelectorAll('.bcard:not(.locked)').forEach(c=>c.onclick = ()=>{
+    SFX.click();
+    const k = c.dataset.k, id = c.dataset.id;
+    if(k==='mine') openModal(closeBtn()+`<div class="infocard">${mineCardHTML(id)}</div>`);
+    if(k==='fossil') openModal(closeBtn()+`<div class="infocard">${fossilCardHTML(id)}</div>`);
+    if(k==='zen') openModal(closeBtn()+zenginlikHTML());
+    if(k==='concept') openModal(closeBtn()+`<div class="infocard"><h2 style="font-size:42px;margin-bottom:12px">Kayaç ve Maden</h2>
+      <div style="display:flex;gap:20px;align-items:center"><div class="ic-stone">${pebbleSVG()}</div><p class="ic-desc">Yer kabuğunu oluşturan katı ve sert parçalara <b>kayaç</b> denir.</p></div>
+      <div style="display:flex;gap:20px;align-items:center;margin-top:10px"><div class="ic-stone">${stoneSVG('altin')}</div><p class="ic-desc"><b>Ekonomik değeri olan kayaçlara maden denir.</b> Madenleri topraktan çıkarır, işler ve kullanırız.</p></div></div>`);
+  });
+}
+function initBook(){ $('bookBack').onclick = ()=>{ SFX.click(); show(bookFrom); }; }
+
+/* =========================================================
+   13. AYARLAR
+   ========================================================= */
+let setFrom = 'start';
+function renderSettings(){ $('tglSound').classList.toggle('on', S.sound); }
+function initSettings(){
+  $('tglSound').onclick = ()=>{ S.sound = !S.sound; save(); renderSettings(); SFX.click(); };
+  $('setBack').onclick = ()=>{ SFX.click(); show(setFrom); };
+  $('btnIntroAgain').onclick = ()=>{ SFX.click(); setFrom='start'; showIntro(0); };
+  $('btnReset').onclick = ()=>{
+    SFX.click();
+    openModal(`<div class="confirm"><h2>Emin misin?</h2><p>Bulduğun bütün madenler, fosiller ve yıldızlar silinecek.</p>
+      <div class="btnrow"><button class="btn ghost" id="rNo">Vazgeç</button><button class="btn red" id="rYes">Evet, sıfırla</button></div></div>`);
+    $('rNo').onclick = ()=>{ SFX.click(); closeModal(); };
+    $('rYes').onclick = ()=>{
+      try{ localStorage.removeItem(KEY); }catch(e){}
+      S = defState();
+      closeModal(); toast('İlerleme sıfırlandı'); renderSettings();
+    };
+  };
+}
+
+/* =========================================================
+   14. BAŞLAT
+   ========================================================= */
+$('modal').addEventListener('click', e=>{ if(e.target.id==='modal' && !$('introNext') && !$('rYes')) closeModal(); });
+initStart(); initMap(); initDig(); initMatch(); initBook(); initSettings();
+</script>
+</body>
+</html>

@@ -661,6 +661,23 @@
       .ku-teker, .ku-kapi, .ku-p1, .ku-p2 { animation: none; }
       .ku-p1, .ku-p2 { opacity: 1; }
     }
+    /* ---- Maden Kâşifi kart animasyonu: kazma vurur, kaya çatlar, altın parlar ---- */
+    .maden-kasifi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .maden-kasifi-thumb svg { width: 100%; height: 100%; }
+    .mk-kazma { transform-box: view-box; transform-origin: 196px 112px; animation: mkKazma 4s ease-in-out infinite; }
+    @keyframes mkKazma { 0%, 100% { transform: rotate(0deg); } 8%, 28%, 48% { transform: rotate(-38deg); } 14%, 34%, 54% { transform: rotate(6deg); } 62% { transform: rotate(0deg); } }
+    .mk-catlak { opacity: 0; animation: mkCatlak 4s linear infinite; }
+    @keyframes mkCatlak { 0%, 14% { opacity: 0; } 16%, 58% { opacity: 1; } 62%, 100% { opacity: 0; } }
+    .mk-kaya { animation: mkKaya 4s linear infinite; }
+    @keyframes mkKaya { 0%, 56% { opacity: 1; } 62%, 92% { opacity: 0; } 100% { opacity: 1; } }
+    .mk-altin { transform-box: fill-box; transform-origin: center; opacity: 0; animation: mkAltin 4s ease-out infinite; }
+    @keyframes mkAltin { 0%, 58% { opacity: 0; transform: translateY(14px) scale(.4); } 68%, 88% { opacity: 1; transform: translateY(-6px) scale(1.15); } 96%, 100% { opacity: 0; transform: translateY(-6px) scale(1); } }
+    .mk-isik { transform-box: fill-box; transform-origin: center; opacity: 0; animation: mkIsik 4s linear infinite; }
+    @keyframes mkIsik { 0%, 62% { opacity: 0; transform: rotate(0deg); } 70%, 88% { opacity: .9; } 96%, 100% { opacity: 0; transform: rotate(60deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .mk-kazma, .mk-catlak, .mk-kaya, .mk-altin, .mk-isik { animation: none; }
+      .mk-kaya { opacity: 0; } .mk-altin, .mk-isik { opacity: 1; }
+    }
     /* ---- Hece Smaçı kart animasyonu ---- */
     .hece-smaci-thumb {
       position: absolute; inset: 0;
@@ -1320,7 +1337,7 @@ const categories = [
   },
   {
     name: "➕ Matematik",
-    gizliTetik: true, // ikona 3 kez dokununca gizli kategori şifresi sorulur
+    gizliTetik: 'mat', // ikona 3 kez dokununca gizli kategori şifresi sorulur
     color: "#FF6B35",
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
@@ -1863,6 +1880,7 @@ const categories = [
   },
   {
     name: "🌱 Hayat Bilgisi",
+    gizliTetik: 'hb', // ikona 3 kez dokununca gizli 4. sınıf Fen kategorisi şifresi sorulur
     color: "#4CAF50",
     iconBg: "linear-gradient(135deg, #4CAF50, #00C9A7)",
     lineColor: "linear-gradient(90deg, #4CAF50, #00C9A7)",
@@ -1970,12 +1988,14 @@ const categories = [
 
 // ============================================================
 // GİZLİ KATEGORİLER — normal sitede görünmez.
-// Matematik başlığındaki ikona üst üste 3 kez dokun, şifreyi gir.
+// Matematik ya da Hayat Bilgisi başlığındaki ikona üst üste 3 kez dokun, şifreyi gir.
+// Her gizli kategori, "tetik" alanındaki kategorinin hemen altında açılır.
 // Açık kalma süresi: tarayıcı sekmesi kapanana kadar (sessionStorage).
 // ============================================================
 const hiddenCategories = [
   {
     name: "🔐 4. Sınıflar",
+    tetik: 'mat',
     color: "#4D9FFF",
     iconBg: "linear-gradient(135deg, #4D9FFF, #A855F7)",
     lineColor: "linear-gradient(90deg, #4D9FFF, #A855F7)",
@@ -2023,6 +2043,65 @@ const hiddenCategories = [
 `
       }
     ]
+  },
+  {
+    name: "🔐 4. Sınıf Fen Bilimleri",
+    tetik: 'hb',
+    color: "#4CAF50",
+    iconBg: "linear-gradient(135deg, #4CAF50, #00C9A7)",
+    lineColor: "linear-gradient(90deg, #4CAF50, #00C9A7)",
+    games: [
+      {
+        name: "Maden Kâşifi",
+        file: "maden_kasifi.html",
+        desc: "Türkiye haritasını gez, madenleri kazıp çıkar, nerelerde kullanıldıklarını eşleştir!",
+        sinif: "4. Sınıf — Kayaçlar, madenler ve fosiller",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #9FD6F0, #7D5232)",
+        customThumb: `
+<div class="maden-kasifi-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mkAltinG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1A0"/><stop offset=".5" stop-color="#E8B923"/><stop offset="1" stop-color="#A87A0A"/></linearGradient>
+  </defs>
+  <!-- gökyüzü, çimen, toprak katmanları -->
+  <rect width="240" height="34" fill="#9FD6F0"/>
+  <rect y="34" width="240" height="8" fill="#6AA047"/>
+  <rect y="42" width="240" height="38" fill="#B07A4A"/>
+  <path d="M0 80 Q60 86 120 81 T240 80 V116 Q180 110 120 117 T0 114 Z" fill="#9A6640"/>
+  <path d="M0 114 Q60 120 120 117 T240 116 V150 H0 Z" fill="#7D5232"/>
+  <g fill="#000" opacity=".12"><ellipse cx="22" cy="60" rx="5" ry="3"/><ellipse cx="200" cy="58" rx="4" ry="2.5"/><ellipse cx="40" cy="132" rx="6" ry="3"/><ellipse cx="218" cy="138" rx="5" ry="3"/><ellipse cx="150" cy="140" rx="4" ry="2"/></g>
+  <!-- toprağa gömülü madenler: bor ve bakır -->
+  <g transform="translate(18 92) scale(.32)"><path d="M42 86 L42 30 L51 14 L60 30 L60 86 Z" fill="#fff" stroke="#9FB3C8" stroke-width="3"/><path d="M22 84 L20 48 L28 36 L36 46 L36 84 Z" fill="#E8F0F8" stroke="#9FB3C8" stroke-width="3" transform="rotate(-14 28 84)"/><path d="M64 84 L64 44 L72 32 L80 44 L80 84 Z" fill="#E8F0F8" stroke="#9FB3C8" stroke-width="3" transform="rotate(16 72 84)"/></g>
+  <g transform="translate(196 100) scale(.3)"><path d="M14 64 L24 36 L48 20 L74 26 L88 50 L82 76 L54 88 L26 82 Z" fill="#D2733A" stroke="#7E3D17" stroke-width="4"/><circle cx="36" cy="60" r="6" fill="#4FA38A"/></g>
+  <!-- altının çıktığı ışık -->
+  <g class="mk-isik" fill="#FFE27A">
+    <path d="M120 92 L108 52 L132 52 Z"/><path d="M120 92 L80 80 L80 104 Z"/><path d="M120 92 L160 80 L160 104 Z"/><path d="M120 92 L108 132 L132 132 Z"/>
+  </g>
+  <!-- kaya ve çatlakları -->
+  <g class="mk-kaya">
+    <path d="M86 104 L94 76 L116 64 L142 66 L158 82 L160 106 L146 122 L116 126 L96 120 Z" fill="#8A8378" stroke="#5E584F" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M94 76 L116 64 L142 66 L122 92 Z" fill="#fff" opacity=".15"/>
+    <path class="mk-catlak" d="M122 92 L112 80 L116 70 M122 92 L138 98 L146 112 M122 92 L104 104 L98 116" fill="none" stroke="#3A352F" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <!-- ortaya çıkan altın -->
+  <g class="mk-altin">
+    <path d="M100 104 L106 90 L118 82 L132 85 L140 98 L137 110 L122 116 L108 113 Z" fill="url(#mkAltinG)" stroke="#A87A0A" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M106 90 L118 82 L132 85 L121 98 Z" fill="#fff" opacity=".35"/>
+    <path d="M114 94 L116 99 L121 101 L116 103 L114 108 L112 103 L107 101 L112 99 Z" fill="#fff"/>
+  </g>
+  <!-- kazma -->
+  <g class="mk-kazma">
+    <path d="M196 112 L158 64" stroke="#8B5A2B" stroke-width="6" stroke-linecap="round"/>
+    <path d="M140 72 Q156 50 182 56 Q160 60 152 76 Z" fill="#9AA3AD" stroke="#5F666D" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+  <!-- Türkiye işareti -->
+  <g transform="translate(8 6)"><rect width="36" height="22" rx="4" fill="#E30A17"/><circle cx="14" cy="11" r="6" fill="#fff"/><circle cx="15.8" cy="11" r="4.8" fill="#E30A17"/><path d="M21.6 11 L27 9.2 L23.7 13.8 L23.7 8.2 L27 12.8 Z" fill="#fff"/></g>
+</svg>
+</div>
+`
+      }
+    ]
   }
 ];
 
@@ -2038,7 +2117,7 @@ function buildPage() {
     // Gizli kategoriler tetik kategorisinin hemen altında açılır
     if (cat.gizliTetik) {
       const alan = document.createElement('div');
-      alan.id = 'gizli-alan';
+      alan.id = 'gizli-alan-' + cat.gizliTetik;
       main.appendChild(alan);
     }
   });
@@ -2089,7 +2168,7 @@ function makeSection(cat, ci) {
       grid.appendChild(card);
     });
 
-    if (cat.gizliTetik) header.querySelector('.category-icon').addEventListener('click', gizliDokunus);
+    if (cat.gizliTetik) header.querySelector('.category-icon').addEventListener('click', () => gizliDokunus(cat.gizliTetik));
 
     section.appendChild(header);
     section.appendChild(grid);
@@ -2105,29 +2184,33 @@ function gizliOzet(s) {
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
   return h.toString(16);
 }
-function gizliAcikMi() { try { return sessionStorage.getItem('gizliKategori') === '1'; } catch (e) { return false; } }
+// Her tetiğin kendi açık/kapalı kaydı var (Matematik eski anahtarını korur)
+function gizliAnahtar(t) { return t === 'mat' ? 'gizliKategori' : 'gizliKategori_' + t; }
+function gizliAcikMi(t) { try { return sessionStorage.getItem(gizliAnahtar(t)) === '1'; } catch (e) { return false; } }
 function gizliCiz() {
-  const alan = document.getElementById('gizli-alan');
-  if (!alan) return;
-  alan.innerHTML = '';
-  if (!gizliAcikMi()) return;
-  hiddenCategories.forEach((cat, i) => alan.appendChild(makeSection(cat, i)));
+  document.querySelectorAll('[id^="gizli-alan-"]').forEach(alan => {
+    const t = alan.id.slice('gizli-alan-'.length);
+    alan.innerHTML = '';
+    if (!gizliAcikMi(t)) return;
+    hiddenCategories.filter(cat => cat.tetik === t).forEach((cat, i) => alan.appendChild(makeSection(cat, i)));
+  });
 }
-let gizliSayac = 0, gizliZaman = 0;
-function gizliDokunus() {
+let gizliSayac = 0, gizliZaman = 0, gizliSonTetik = null, gizliAktif = null;
+function gizliDokunus(t) {
   const simdi = Date.now();
-  if (simdi - gizliZaman > 800) gizliSayac = 0;
-  gizliZaman = simdi;
+  if (simdi - gizliZaman > 800 || t !== gizliSonTetik) gizliSayac = 0;
+  gizliZaman = simdi; gizliSonTetik = t;
   if (++gizliSayac < 3) return;
   gizliSayac = 0;
-  if (gizliAcikMi()) { // açıkken yine 3 dokunuş → gizle
-    try { sessionStorage.removeItem('gizliKategori'); } catch (e) {}
+  if (gizliAcikMi(t)) { // açıkken yine 3 dokunuş → gizle
+    try { sessionStorage.removeItem(gizliAnahtar(t)); } catch (e) {}
     gizliCiz();
   } else {
-    gizliAc();
+    gizliAc(t);
   }
 }
-function gizliAc() {
+function gizliAc(t) {
+  gizliAktif = t;
   const inp = document.getElementById('gizli-sifre');
   inp.value = '';
   document.getElementById('gizli-hata').textContent = '';
@@ -2138,10 +2221,10 @@ function gizliKapat() { document.getElementById('gizli-overlay').classList.remov
 function gizliKontrol() {
   const inp = document.getElementById('gizli-sifre');
   if (gizliOzet(inp.value.trim()) === GIZLI_OZET) {
-    try { sessionStorage.setItem('gizliKategori', '1'); } catch (e) {}
+    try { sessionStorage.setItem(gizliAnahtar(gizliAktif), '1'); } catch (e) {}
     gizliKapat();
     gizliCiz();
-    const alan = document.getElementById('gizli-alan');
+    const alan = document.getElementById('gizli-alan-' + gizliAktif);
     if (alan && alan.firstChild) alan.firstChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else {
     document.getElementById('gizli-hata').textContent = 'Şifre yanlış.';
