@@ -676,6 +676,32 @@
       .kp-kizak { animation: none; transform: translate(188px, 108px); }
       .kp-bayrak { animation: none; fill: #00C9A7; }
     }
+    /* ---- Elde Ekspresi kart animasyonu: sonuç sağdan sola yazılır, elde sandığı onlar vagonuna taşınır ---- */
+    .elde-ekspresi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .elde-ekspresi-thumb svg { width: 100%; height: 100%; }
+    .ee-sandik { animation: eeSandik 6s ease-in-out infinite; }
+    @keyframes eeSandik {
+      0%, 14%   { transform: translate(196px, 100px); opacity: 0; }
+      18%       { transform: translate(196px, 100px); opacity: 1; }
+      38%, 92%  { transform: translate(180px, 40px); opacity: 1; }
+      100%      { transform: translate(180px, 40px); opacity: 0; }
+    }
+    .ee-r1 { opacity: 0; animation: eeR1 6s linear infinite; }
+    .ee-r2 { opacity: 0; animation: eeR2 6s linear infinite; }
+    .ee-r3 { opacity: 0; animation: eeR3 6s linear infinite; }
+    .ee-r4 { opacity: 0; animation: eeR4 6s linear infinite; }
+    @keyframes eeR1 { 0%, 8% { opacity: 0; } 12%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+    @keyframes eeR2 { 0%, 44% { opacity: 0; } 48%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+    @keyframes eeR3 { 0%, 60% { opacity: 0; } 64%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+    @keyframes eeR4 { 0%, 74% { opacity: 0; } 78%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+    .ee-duman circle { fill: #EDEDED; transform-box: fill-box; transform-origin: center; animation: eeDuman 1.6s ease-out infinite; }
+    .ee-duman circle:nth-child(2) { animation-delay: .8s; }
+    @keyframes eeDuman { 0% { transform: translate(0, 0) scale(.6); opacity: .9; } 100% { transform: translate(-6px, -14px) scale(1.6); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .ee-sandik { animation: none; transform: translate(180px, 40px); }
+      .ee-r1, .ee-r2, .ee-r3, .ee-r4 { animation: none; opacity: 1; }
+      .ee-duman circle { animation: none; }
+    }
     /* ---- Maden Kâşifi kart animasyonu: kazma vurur, kaya çatlar, altın parlar ---- */
     .maden-kasifi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .maden-kasifi-thumb svg { width: 100%; height: 100%; }
@@ -2100,6 +2126,75 @@ const hiddenCategories = [
       <path d="M18 -75 L29 -72 L18 -69 Z" fill="#FF9F1C"/>
       <rect x="-15" y="-65" width="34" height="8" rx="4" fill="#4D9FFF"/>
     </g>
+  </g>
+</svg>
+</div>
+`
+      },
+      {
+        name: "Elde Ekspresi",
+        file: "elde_ekspresi.html",
+        desc: "Vagonları sütun sütun topla, elde sandığını bir sonraki vagona taşı!",
+        sinif: "4. Sınıf — En çok dört basamaklı sayılarla toplama",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #BFE8FF, #8BD36A)",
+        customThumb: `
+<div class="elde-ekspresi-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><pattern id="eeRay" width="12" height="4" patternUnits="userSpaceOnUse"><rect width="6" height="4" fill="#8A5A32"/></pattern></defs>
+  <rect width="240" height="150" fill="#BFE8FF"/>
+  <circle cx="218" cy="20" r="10" fill="#FFD600"/>
+  <path d="M0 120 V96 C40 78 80 76 120 92 S200 106 240 90 V120 Z" fill="#C3EBAE"/>
+  <rect y="120" width="240" height="30" fill="#8BD36A"/>
+  <rect y="121" width="240" height="3" fill="#8E96A8"/>
+  <rect y="124" width="240" height="4" fill="url(#eeRay)"/>
+  <!-- işlem tabelası -->
+  <rect x="6" y="5" width="112" height="19" rx="6" fill="#2B2D42" stroke="#fff" stroke-width="2"/>
+  <!-- lokomotif -->
+  <g class="ee-duman"><circle cx="32" cy="64" r="4"/><circle cx="30" cy="62" r="3.5"/></g>
+  <rect x="27" y="70" width="10" height="18" fill="#2B2D42"/>
+  <rect x="20" y="86" width="38" height="24" rx="7" fill="#E63946"/>
+  <circle cx="18" cy="82" r="4" fill="#FFE066" stroke="#B8860B" stroke-width="1.5"/>
+  <rect x="52" y="70" width="28" height="40" rx="3" fill="#E63946"/>
+  <rect x="49" y="66" width="34" height="6" rx="2" fill="#2B2D42"/>
+  <rect x="57" y="76" width="18" height="13" rx="2" fill="#CFEFFF" stroke="#2B2D42" stroke-width="1.5"/>
+  <rect x="16" y="108" width="68" height="5" rx="1" fill="#2B2D42"/>
+  <circle cx="30" cy="116" r="5" fill="#2B2D42" stroke="#A9AEBB" stroke-width="2"/><circle cx="44" cy="116" r="5" fill="#2B2D42" stroke="#A9AEBB" stroke-width="2"/>
+  <circle cx="69" cy="114" r="7" fill="#2B2D42" stroke="#A9AEBB" stroke-width="2"/>
+  <!-- vagonlar: binler, yüzler, onlar, birler -->
+  <rect x="92" y="30" width="32" height="80" rx="4" fill="#F3E8FF" stroke="#A855F7" stroke-width="2"/>
+  <rect x="90" y="26" width="36" height="6" rx="3" fill="#A855F7"/>
+  <rect x="101" y="34" width="14" height="12" rx="2" fill="none" stroke="rgba(0,0,0,.2)" stroke-dasharray="2 2"/>
+  <circle cx="101" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/><circle cx="115" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/>
+  <rect x="128" y="30" width="32" height="80" rx="4" fill="#E3EFFF" stroke="#2F86F0" stroke-width="2"/>
+  <rect x="126" y="26" width="36" height="6" rx="3" fill="#2F86F0"/>
+  <rect x="137" y="34" width="14" height="12" rx="2" fill="none" stroke="rgba(0,0,0,.2)" stroke-dasharray="2 2"/>
+  <circle cx="137" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/><circle cx="151" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/>
+  <rect x="164" y="30" width="32" height="80" rx="4" fill="#D9F7F1" stroke="#00B394" stroke-width="2"/>
+  <rect x="162" y="26" width="36" height="6" rx="3" fill="#00B394"/>
+  <rect x="173" y="34" width="14" height="12" rx="2" fill="none" stroke="rgba(0,0,0,.2)" stroke-dasharray="2 2"/>
+  <circle cx="173" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/><circle cx="187" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/>
+  <rect x="200" y="30" width="32" height="80" rx="4" fill="#FFE8DE" stroke="#FF6B35" stroke-width="2"/>
+  <rect x="198" y="26" width="36" height="6" rx="3" fill="#FF6B35"/>
+  <rect x="209" y="34" width="14" height="12" rx="2" fill="none" stroke="rgba(0,0,0,.2)" stroke-dasharray="2 2"/>
+  <circle cx="209" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/><circle cx="223" cy="114" r="4" fill="#2B2D42" stroke="#A9AEBB" stroke-width="1.5"/>
+  <line x1="82" y1="89" x2="236" y2="89" stroke="#2B2D42" stroke-width="2"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <text x="62" y="19" font-size="12.5" fill="#FFD600">2 678 + 1 456</text>
+    <text x="85" y="84" font-size="15" fill="#2B2D42">+</text>
+    <text x="108" y="64" font-size="16" fill="#2B2D42">2</text><text x="108" y="84" font-size="16" fill="#2B2D42">1</text>
+    <text class="ee-r4" x="108" y="106" font-size="16" fill="#A855F7">4</text>
+    <text x="144" y="64" font-size="16" fill="#2B2D42">6</text><text x="144" y="84" font-size="16" fill="#2B2D42">4</text>
+    <text class="ee-r3" x="144" y="106" font-size="16" fill="#2F86F0">1</text>
+    <text x="180" y="64" font-size="16" fill="#2B2D42">7</text><text x="180" y="84" font-size="16" fill="#2B2D42">5</text>
+    <text class="ee-r2" x="180" y="106" font-size="16" fill="#00B394">3</text>
+    <text x="216" y="64" font-size="16" fill="#2B2D42">8</text><text x="216" y="84" font-size="16" fill="#2B2D42">6</text>
+    <text class="ee-r1" x="216" y="106" font-size="16" fill="#FF6B35">4</text>
+  </g>
+  <!-- elde sandığı -->
+  <g class="ee-sandik">
+    <rect x="-6" y="-6" width="12" height="12" rx="2" fill="#FFD600" stroke="#B8860B" stroke-width="1.5"/>
+    <text x="0" y="3.5" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="9" fill="#6B4A00" text-anchor="middle">1</text>
   </g>
 </svg>
 </div>
