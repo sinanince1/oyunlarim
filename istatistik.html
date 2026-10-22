@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Oyun İstatistikleri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Nunito', sans-serif; background: #FFF8F0; color: #2D2D2D; }
+    header { background: linear-gradient(135deg, #FF6B35, #FF4D8D, #A855F7); color: #fff; padding: 18px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 1.5rem; font-weight: 900; flex: 1; }
+    header a { color: #fff; font-weight: 900; text-decoration: none; background: rgba(255,255,255,.22); padding: 8px 16px; border-radius: 99px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+    .ozet { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .kart { background: #fff; border-radius: 20px; padding: 18px; box-shadow: 0 6px 0 rgba(0,0,0,.06); border: 3px solid #F0E8DC; }
+    .kart .n { font-size: 2rem; font-weight: 900; color: #FF6B35; }
+    .kart .l { font-weight: 800; color: #8A7F74; font-size: .9rem; }
+    .arac { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+    .arac button, .arac select { font-family: inherit; font-weight: 900; font-size: .95rem; padding: 9px 16px; border-radius: 99px; border: 3px solid #EADFD3; background: #fff; cursor: pointer; color: #2D2D2D; }
+    .arac button.aktif { background: linear-gradient(135deg, #A855F7, #FF4D8D); color: #fff; border-color: transparent; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 6px 0 rgba(0,0,0,.06); border: 3px solid #F0E8DC; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 2px solid #F7F0E6; }
+    th { background: #FBF6EE; font-weight: 900; font-size: .85rem; color: #8A7F74; text-transform: uppercase; letter-spacing: .5px; cursor: pointer; user-select: none; white-space: nowrap; }
+    th.sirali::after { content: ' ▼'; color: #FF6B35; }
+    td.sayi { font-weight: 900; text-align: right; font-variant-numeric: tabular-nums; }
+    tr:last-child td { border-bottom: none; }
+    .bar { height: 8px; border-radius: 99px; background: linear-gradient(90deg, #FF6B35, #FFD600); min-width: 4px; }
+    .bos { text-align: center; padding: 60px 20px; font-weight: 900; color: #B9AEA0; font-size: 1.2rem; }
+    .gunler { display: flex; gap: 4px; align-items: flex-end; height: 70px; margin-top: 10px; }
+    .gun { flex: 1; background: linear-gradient(180deg, #A855F7, #4D9FFF); border-radius: 6px 6px 2px 2px; min-height: 3px; position: relative; }
+    .gun span { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: .7rem; font-weight: 900; color: #8A7F74; white-space: nowrap; }
+    .gun-etiket { display: flex; gap: 4px; margin-top: 4px; }
+    .gun-etiket div { flex: 1; text-align: center; font-size: .65rem; font-weight: 800; color: #B9AEA0; }
+    #kilit { position: fixed; inset: 0; background: #FFF8F0; display: flex; align-items: center; justify-content: center; z-index: 10; padding: 16px; }
+    #kilit .kutu { background: #fff; border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,.1); border: 3px solid #F0E8DC; }
+    #kilit input { width: 100%; font-family: inherit; font-size: 1.6rem; font-weight: 900; text-align: center; letter-spacing: 4px; padding: 12px; border-radius: 14px; border: 3px solid #E8DFF5; outline: none; margin: 12px 0 6px; }
+    #kilit button { width: 100%; font-family: inherit; font-weight: 900; font-size: 1.1rem; padding: 12px; border-radius: 99px; border: none; cursor: pointer; background: linear-gradient(135deg, #4D9FFF, #A855F7); color: #fff; margin-top: 8px; }
+    @media (max-width: 640px) { th, td { padding: 9px 8px; font-size: .9rem; } .gizle-mobil { display: none; } }
+  </style>
+</head>
+<body>
+
+<div id="kilit">
+  <div class="kutu">
+    <div style="font-size:2.6rem">📊</div>
+    <h3 style="margin:6px 0 0;font-weight:900">Öğretmen Şifresi</h3>
+    <input id="sifre" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="••••••">
+    <p id="hata" style="color:#FF4D8D;font-weight:800;min-height:1.3em;margin:0"></p>
+    <button onclick="kontrol()">Aç</button>
+    <p style="margin:14px 0 0"><a href="index.html" style="color:#8A7F74;font-weight:800">← Ana sayfa</a></p>
+  </div>
+</div>
+
+<header>
+  <h1>📊 Oyun İstatistikleri</h1>
+  <a href="index.html">← Siteye dön</a>
+</header>
+
+<main>
+  <div class="ozet">
+    <div class="kart"><div class="n" id="o-toplam">–</div><div class="l">Toplam oynanma</div></div>
+    <div class="kart"><div class="n" id="o-bugun">–</div><div class="l">Bugün</div></div>
+    <div class="kart"><div class="n" id="o-hafta">–</div><div class="l">Son 7 gün</div></div>
+    <div class="kart"><div class="n" id="o-oyun">–</div><div class="l">Oynanan farklı oyun</div></div>
+  </div>
+
+  <div class="kart" style="margin-bottom:24px">
+    <div class="l" style="font-weight:900;color:#2D2D2D">Son 14 gün</div>
+    <div class="gunler" id="gunler"></div>
+    <div class="gun-etiket" id="gun-etiket"></div>
+  </div>
+
+  <div class="arac">
+    <span style="font-weight:900">Dönem:</span>
+    <button class="aktif" data-d="toplam" onclick="donem('toplam',this)">Tümü</button>
+    <button data-d="30" onclick="donem(30,this)">Son 30 gün</button>
+    <button data-d="7" onclick="donem(7,this)">Son 7 gün</button>
+    <button data-d="1" onclick="donem(1,this)">Bugün</button>
+    <span style="flex:1"></span>
+    <button onclick="yukle()">🔄 Yenile</button>
+  </div>
+
+  <div id="tablo-alan"><div class="bos">Yükleniyor…</div></div>
+  <p style="color:#B9AEA0;font-weight:800;font-size:.85rem;margin-top:14px">Sayaç, ana sayfadan "Oyna" butonuna her basılışta 1 artar. Veriler Firebase'de (hikayesehri projesi, <code>oyun_istatistik</code> koleksiyonu) tutulur.</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// ---- Şifre kilidi ----
+const OZET = '2d3f9867';
+function ozet(s) { let h = 0x811c9dc5; s = 'sinanince:' + s; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16); }
+function acikMi() { try { return sessionStorage.getItem('istatistikAcik') === '1'; } catch (e) { return false; } }
+function kontrol() {
+  const inp = document.getElementById('sifre');
+  if (ozet(inp.value.trim()) === OZET) {
+    try { sessionStorage.setItem('istatistikAcik', '1'); } catch (e) {}
+    ac();
+  } else { document.getElementById('hata').textContent = 'Şifre yanlış.'; inp.value = ''; inp.focus(); }
+}
+document.getElementById('sifre').addEventListener('keydown', e => { if (e.key === 'Enter') kontrol(); });
+function ac() { document.getElementById('kilit').style.display = 'none'; yukle(); }
+
+// ---- Veri ----
+if (typeof firebase === "undefined") { document.getElementById("tablo-alan").innerHTML = "<div class='bos'>Firebase yüklenemedi (internet / engelleyici?). Sayfayı yenileyin.</div>"; }
+else firebase.initializeApp({ apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" });
+const db = typeof firebase !== "undefined" ? firebase.firestore() : null;
+let veri = [], seciliDonem = 'toplam', siraAlan = 'deger';
+if (acikMi()) ac(); else setTimeout(() => document.getElementById('sifre').focus(), 50);
+
+function gunKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function sonGunler(n) { const r = []; for (let i = n - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); r.push(gunKey(d)); } return r; }
+function toplamGun(o, gunler) { return gunler.reduce((t, g) => t + ((o.gunluk || {})[g] || 0), 0); }
+
+function yukle() {
+  if (!db) return;
+  document.getElementById('tablo-alan').innerHTML = '<div class="bos">Yükleniyor…</div>';
+  db.collection('oyun_istatistik').get().then(snap => {
+    veri = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    ciz();
+  }).catch(e => {
+    document.getElementById('tablo-alan').innerHTML = '<div class="bos">Veri okunamadı: ' + e.message + '</div>';
+  });
+}
+
+function donem(d, btn) {
+  seciliDonem = d;
+  document.querySelectorAll('.arac button[data-d]').forEach(b => b.classList.toggle('aktif', b === btn));
+  ciz();
+}
+
+function ciz() {
+  const g14 = sonGunler(14), g7 = sonGunler(7), bugun = gunKey(new Date());
+  const toplam = veri.reduce((t, o) => t + (o.toplam || 0), 0);
+  document.getElementById('o-toplam').textContent = toplam;
+  document.getElementById('o-bugun').textContent = veri.reduce((t, o) => t + toplamGun(o, [bugun]), 0);
+  document.getElementById('o-hafta').textContent = veri.reduce((t, o) => t + toplamGun(o, g7), 0);
+  document.getElementById('o-oyun').textContent = veri.filter(o => o.toplam > 0).length;
+
+  // 14 günlük çubuklar
+  const gunToplam = g14.map(g => veri.reduce((t, o) => t + toplamGun(o, [g]), 0));
+  const maks = Math.max(1, ...gunToplam);
+  document.getElementById('gunler').innerHTML = gunToplam.map(n => `<div class="gun" style="height:${Math.max(4, n / maks * 100)}%"><span>${n || ''}</span></div>`).join('');
+  document.getElementById('gun-etiket').innerHTML = g14.map(g => `<div>${g.slice(8)}.${g.slice(5, 7)}</div>`).join('');
+
+  // tablo
+  const gunler = seciliDonem === 'toplam' ? null : sonGunler(seciliDonem);
+  const satirlar = veri.map(o => ({
+    ad: o.ad || o.id, dosya: o.dosya || o.id + '.html',
+    deger: gunler ? toplamGun(o, gunler) : (o.toplam || 0),
+    toplam: o.toplam || 0,
+    son: o.son && o.son.toDate ? o.son.toDate() : null
+  })).filter(r => r.deger > 0 || !gunler);
+  satirlar.sort((a, b) => siraAlan === 'ad' ? a.ad.localeCompare(b.ad, 'tr') : siraAlan === 'son' ? (b.son || 0) - (a.son || 0) : b[siraAlan] - a[siraAlan]);
+  const enCok = Math.max(1, ...satirlar.map(r => r.deger));
+  if (!satirlar.length) { document.getElementById('tablo-alan').innerHTML = '<div class="bos">Bu dönemde henüz oynanma yok.</div>'; return; }
+  const th = (alan, ad, cls = '') => `<th class="${cls} ${siraAlan === alan ? 'sirali' : ''}" onclick="sirala('${alan}')">${ad}</th>`;
+  document.getElementById('tablo-alan').innerHTML = `<table>
+    <thead><tr><th style="width:36px">#</th>${th('ad', 'Oyun')}${th('deger', gunler ? 'Dönemde' : 'Oynanma')}<th class="gizle-mobil" style="width:30%"></th>${th('toplam', 'Toplam', 'gizle-mobil')}${th('son', 'Son oynanma', 'gizle-mobil')}</tr></thead>
+    <tbody>${satirlar.map((r, i) => `<tr>
+      <td style="color:#B9AEA0;font-weight:900">${i + 1}</td>
+      <td><a href="index.html#${r.dosya.replace(/\.html$/, '')}" style="color:#2D2D2D;font-weight:900;text-decoration:none">${r.ad}</a></td>
+      <td class="sayi">${r.deger}</td>
+      <td class="gizle-mobil"><div class="bar" style="width:${r.deger / enCok * 100}%"></div></td>
+      <td class="sayi gizle-mobil" style="color:#8A7F74">${r.toplam}</td>
+      <td class="gizle-mobil" style="color:#8A7F74;font-weight:800;white-space:nowrap">${r.son ? r.son.toLocaleDateString('tr-TR') + ' ' + r.son.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '–'}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+function sirala(alan) { siraAlan = alan; ciz(); }
+</script>
+</body>
+</html>

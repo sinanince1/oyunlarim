@@ -3717,7 +3717,32 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') geriKapat();
 const OYUN_KOK = /(^|\.)sinanince\.com$|github\.io$|^localhost$/.test(location.hostname) ? '' : 'https://sinanince.com/';
 if (OYUN_KOK) { const l = document.querySelector('.logo-img'); if (l) l.src = OYUN_KOK + 'logo.png'; }
 
+// ============================================================
+// OYNANMA SAYACI — Firestore (hikayesehri projesi), koleksiyon: oyun_istatistik
+// Sayfa yükünü artırmamak için Firebase yalnızca ilk oyun açılışında yüklenir.
+// ============================================================
+const FB_CONFIG = { apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" };
+let fbDbSoz = null;
+function fbDb() {
+  if (fbDbSoz) return fbDbSoz;
+  const yukle = src => new Promise((ok, hata) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = hata; document.head.appendChild(e); });
+  fbDbSoz = yukle('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js')
+    .then(() => yukle('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'))
+    .then(() => { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); return firebase.firestore(); });
+  return fbDbSoz;
+}
+function oyunSay(file, name) {
+  try {
+    const d = new Date(), gun = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const inc = () => firebase.firestore.FieldValue.increment(1);
+    fbDb().then(db => db.collection('oyun_istatistik').doc(file.replace(/\.html$/, '')).set({
+      ad: name, dosya: file, toplam: inc(), ['gunluk.' + gun]: inc(), son: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true })).catch(() => {});
+  } catch (e) {}
+}
+
 function openGame(file, name) {
+  oyunSay(file, name);
   document.getElementById('game-frame').src = OYUN_KOK + file;
   document.getElementById('modal-overlay').classList.add('active');
   document.body.style.overflow = 'hidden';
