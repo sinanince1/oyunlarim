@@ -1055,6 +1055,26 @@
       .kk-kedi, .kk-soru, .kk-cevap, .kk-yildiz { animation: none; }
     }
 
+    /* ---- Geri bildirim ---- */
+    .geri-btn {
+      position: fixed; right: 18px; bottom: 18px; z-index: 900;
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+      padding: 12px 20px; border-radius: 99px; border: none; cursor: pointer; color: #fff;
+      background: linear-gradient(135deg, #A855F7, #FF4D8D);
+      box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 8px 24px rgba(168,85,247,.35);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .geri-btn:hover { transform: translateY(-3px); }
+    .geri-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+    @media (max-width: 600px) { .geri-btn { padding: 11px 15px; font-size: .9rem; right: 12px; bottom: 12px; } }
+    .geri-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(20,20,40,.55); align-items: center; justify-content: center; padding: 16px; }
+    .geri-overlay.active { display: flex; animation: fadeIn .2s ease; }
+    .geri-kutu { background: #fff; border-radius: 24px; width: 100%; max-width: 680px; height: min(85vh, 760px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 0 rgba(0,0,0,.15); }
+    .geri-ust { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 3px dashed #F0E8DC; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.1rem; color: #2D2D2D; }
+    .geri-ust span { margin-right: auto; }
+    .geri-ust button { font-family: 'Nunito', sans-serif; font-weight: 900; width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer; background: #F0ECF7; color: #2D2D2D; font-size: 1rem; }
+    .geri-kutu iframe { flex: 1; border: none; width: 100%; background: #fff; }
+
     /* ---- Sınıf seçme çubuğu ---- */
     .sinif-bar {
       display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
@@ -1439,7 +1459,16 @@
   </div>
 </div>
 
-<footer>Tüm oyunlar <span>❤️</span> ile yapıldı</footer>
+<!-- GERİ BİLDİRİM -->
+<button class="geri-btn" id="geri-btn" onclick="geriAc()" hidden>💬 Geri Bildirim</button>
+<div class="geri-overlay" id="geri-overlay" role="dialog" aria-modal="true" aria-label="Geri bildirim formu">
+  <div class="geri-kutu">
+    <div class="geri-ust"><span>💬 Görüş, hata ya da oyun fikri</span><button onclick="geriKapat()" title="Kapat">✕</button></div>
+    <iframe id="geri-frame" src="" loading="lazy" title="Geri bildirim formu"></iframe>
+  </div>
+</div>
+
+<footer>Tüm oyunlar <span>❤️</span> ile yapıldı · <a href="#" onclick="geriAc();return false" style="color:inherit">Geri bildirim gönder</a></footer>
 
 <script>
 // ============================================================
@@ -3665,6 +3694,21 @@ function makeSection(cat, ci) {
     return section;
 }
 
+
+// ============================================================
+// GERİ BİLDİRİM — Google Form linki (boşsa buton görünmez)
+// ============================================================
+const GERI_BILDIRIM_FORM = '';
+if (GERI_BILDIRIM_FORM) document.getElementById('geri-btn').hidden = false;
+function geriAc() {
+  if (!GERI_BILDIRIM_FORM) return;
+  const f = document.getElementById('geri-frame');
+  if (!f.src) f.src = GERI_BILDIRIM_FORM.replace(/\/viewform.*$/, '/viewform?embedded=true');
+  document.getElementById('geri-overlay').classList.add('active');
+}
+function geriKapat() { document.getElementById('geri-overlay').classList.remove('active'); }
+document.getElementById('geri-overlay').addEventListener('click', function (e) { if (e.target === this) geriKapat(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') geriKapat(); });
 
 // ============================================================
 // MODAL
