@@ -702,6 +702,35 @@
       .ee-r1, .ee-r2, .ee-r3, .ee-r4 { animation: none; opacity: 1; }
       .ee-duman circle { animation: none; }
     }
+    /* ---- Örüntü Köprüsü kart animasyonu: kurbağa taş taş zıplar, oklarda +5 ✓ belirir, son taşa 20 yazılır ---- */
+    .oruntu-koprusu-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .oruntu-koprusu-thumb svg { width: 100%; height: 100%; }
+    .ork-kurbaga { animation: orkZipla 6s ease-in-out infinite; }
+    @keyframes orkZipla {
+      0%, 10%   { transform: translate(34px, 92px); opacity: 1; }
+      14%       { transform: translate(63px, 64px); }
+      18%, 30%  { transform: translate(92px, 92px); }
+      34%       { transform: translate(121px, 64px); }
+      38%, 50%  { transform: translate(150px, 92px); }
+      58%       { transform: translate(179px, 64px); }
+      62%, 90%  { transform: translate(208px, 92px); opacity: 1; }
+      95%       { transform: translate(208px, 92px); opacity: 0; }
+      96%       { transform: translate(34px, 92px); opacity: 0; }
+      100%      { transform: translate(34px, 92px); opacity: 1; }
+    }
+    .ork-e1 { opacity: 0; animation: orkE1 6s linear infinite; }
+    .ork-e2 { opacity: 0; animation: orkE2 6s linear infinite; }
+    .ork-e3 { opacity: 0; animation: orkE3 6s linear infinite; }
+    .ork-soru { animation: orkSoru 6s linear infinite; }
+    @keyframes orkE1 { 0%, 17% { opacity: 0; } 20%, 90% { opacity: 1; } 95%, 100% { opacity: 0; } }
+    @keyframes orkE2 { 0%, 37% { opacity: 0; } 40%, 90% { opacity: 1; } 95%, 100% { opacity: 0; } }
+    @keyframes orkE3 { 0%, 51% { opacity: 0; } 54%, 90% { opacity: 1; } 95%, 100% { opacity: 0; } }
+    @keyframes orkSoru { 0%, 51% { opacity: 1; } 54%, 95% { opacity: 0; } 100% { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) {
+      .ork-kurbaga { animation: none; transform: translate(208px, 92px); }
+      .ork-e1, .ork-e2, .ork-e3 { animation: none; opacity: 1; }
+      .ork-soru { animation: none; opacity: 0; }
+    }
     /* ---- Maden Kâşifi kart animasyonu: kazma vurur, kaya çatlar, altın parlar ---- */
     .maden-kasifi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .maden-kasifi-thumb svg { width: 100%; height: 100%; }
@@ -2028,12 +2057,64 @@ const categories = [
 ];
 
 // ============================================================
-// GİZLİ KATEGORİLER — normal sitede görünmez.
+// GİZLİ KATEGORİLER — normal sitede görünmez. (Matematik: 3. ve 4. Sınıflar birlikte açılır)
 // Matematik ya da Hayat Bilgisi başlığındaki ikona üst üste 3 kez dokun, şifreyi gir.
 // Her gizli kategori, "tetik" alanındaki kategorinin hemen altında açılır.
 // Açık kalma süresi: tarayıcı sekmesi kapanana kadar (sessionStorage).
 // ============================================================
 const hiddenCategories = [
+  {
+    name: "🔐 3. Sınıflar",
+    tetik: 'mat',
+    color: "#00C9A7",
+    iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
+    lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
+    games: [
+      {
+        name: "Örüntü Köprüsü",
+        file: "oruntu_koprusu.html",
+        desc: "Kuralı bul, kurbağayı taş taş karşıya geçir! Sayı ve şekil örüntüleri.",
+        sinif: "3. Sınıf — Sayı ve şekil örüntüleri",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #8EDBFF, #2484CB)",
+        customThumb: `
+<div class="oruntu-koprusu-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="orkSu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8EDBFF"/><stop offset="1" stop-color="#2484CB"/></linearGradient>
+    <radialGradient id="orkTas" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#F1F4F8"/><stop offset="1" stop-color="#BCC7D3"/></radialGradient>
+  </defs>
+  <rect width="240" height="150" fill="url(#orkSu)"/>
+  <path d="M0 0 H240 V30 C196 42 150 26 100 36 S34 42 0 32 Z" fill="#7AD06A"/>
+  <g stroke="#3E8E3A" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M14 34 Q13 22 10 12"/><path d="M20 34 Q21 20 21 8"/><path d="M226 30 Q227 20 230 12"/></g>
+  <g fill="#8A5A2B"><rect x="8" y="10" width="4" height="9" rx="2"/><rect x="19" y="6" width="4" height="10" rx="2"/><rect x="228" y="10" width="4" height="8" rx="2"/></g>
+  <g fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"><path d="M20 132 q10 -5 20 0 t20 0"/><path d="M150 138 q10 -5 20 0 t20 0"/></g>
+  <g transform="translate(212 132) rotate(30)"><path d="M0 0 L13 -4 A14 14 0 1 0 13 4 Z" fill="#46B86B"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <ellipse cx="34" cy="104" rx="25" ry="7" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><ellipse cx="34" cy="99" rx="23" ry="13" fill="#7F8FA0"/><ellipse cx="34" cy="96" rx="23" ry="13" fill="url(#orkTas)"/><text x="34" y="102" font-size="15" fill="#2B2D42">5</text><ellipse cx="92" cy="104" rx="25" ry="7" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><ellipse cx="92" cy="99" rx="23" ry="13" fill="#7F8FA0"/><ellipse cx="92" cy="96" rx="23" ry="13" fill="url(#orkTas)"/><text x="92" y="102" font-size="15" fill="#2B2D42">10</text><ellipse cx="150" cy="104" rx="25" ry="7" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><ellipse cx="150" cy="99" rx="23" ry="13" fill="#7F8FA0"/><ellipse cx="150" cy="96" rx="23" ry="13" fill="url(#orkTas)"/><text x="150" y="102" font-size="15" fill="#2B2D42">15</text>
+    <ellipse cx="208" cy="96" rx="23" ry="13" fill="rgba(255,255,255,.15)" stroke="#fff" stroke-width="2" stroke-dasharray="5 4"/>
+    <text class="ork-soru" x="208" y="102" font-size="16" fill="#fff">?</text>
+    <g class="ork-e3"><ellipse cx="208" cy="99" rx="23" ry="13" fill="#2FA98A"/><ellipse cx="208" cy="96" rx="23" ry="13" fill="#B9F0DF"/><text x="208" y="102" font-size="15" fill="#2B2D42">20</text></g>
+    <path d="M55 97 h12 M64 92.5 l5 4.5 -5 4.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M113 97 h12 M122 92.5 l5 4.5 -5 4.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M171 97 h12 M180 92.5 l5 4.5 -5 4.5" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <g class="ork-e1"><rect x="48" y="70" width="30" height="14" rx="7" fill="#fff"/><text x="63" y="80.5" font-size="9.5" fill="#0E9C7E">+5 ✓</text></g><g class="ork-e2"><rect x="106" y="70" width="30" height="14" rx="7" fill="#fff"/><text x="121" y="80.5" font-size="9.5" fill="#0E9C7E">+5 ✓</text></g><g class="ork-e3"><rect x="164" y="70" width="30" height="14" rx="7" fill="#fff"/><text x="179" y="80.5" font-size="9.5" fill="#0E9C7E">+5 ✓</text></g>
+  </g>
+  <g class="ork-kurbaga"><g transform="translate(-15 -27)">
+    <ellipse cx="15" cy="27" rx="12" ry="2" fill="rgba(0,0,0,.18)"/>
+    <ellipse cx="7" cy="22" rx="5.5" ry="3.5" fill="#2EA44F"/><ellipse cx="23" cy="22" rx="5.5" ry="3.5" fill="#2EA44F"/>
+    <ellipse cx="15" cy="19" rx="9" ry="7" fill="#3CC461"/><ellipse cx="15" cy="21" rx="5" ry="4" fill="#CFF7BE"/>
+    <path d="M7.5 16.5 Q15 20 22.5 16.5 L22 18.5 Q15 22 8 18.5 Z" fill="#FF6B35"/>
+    <ellipse cx="15" cy="12" rx="9.5" ry="6.5" fill="#3CC461"/>
+    <circle cx="10" cy="7" r="4" fill="#3CC461"/><circle cx="20" cy="7" r="4" fill="#3CC461"/>
+    <circle cx="10" cy="7" r="2.8" fill="#fff"/><circle cx="20" cy="7" r="2.8" fill="#fff"/>
+    <circle cx="10.5" cy="7.3" r="1.5" fill="#1F2430"/><circle cx="19.5" cy="7.3" r="1.5" fill="#1F2430"/>
+    <path d="M11.5 13.5 Q15 16 18.5 13.5" fill="none" stroke="#1E6B34" stroke-width="1" stroke-linecap="round"/>
+  </g></g>
+</svg>
+</div>
+`
+      }
+    ]
+  },
   {
     name: "🔐 4. Sınıflar",
     tetik: 'mat',

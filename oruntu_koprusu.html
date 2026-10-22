@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Örüntü Köprüsü</title>
+<style>
+/* =========================================================
+   1. TEMEL DEĞİŞKENLER VE SIFIRLAMA
+   ========================================================= */
+:root{
+  --turuncu:#FF6B35; --sari:#FFD600; --pembe:#FF4D8D; --yesil:#00C9A7; --mavi:#4D9FFF; --mor:#A855F7;
+  --zemin:#FFF8F0; --yazi:#2B2D42; --yazi-acik:#6B6F80;
+  --su1:#8EDBFF; --su2:#45ADEE; --su3:#2484CB;
+  --kiyi:#7AD06A; --kiyi-koyu:#4FA843;
+  --tas1:#F1F4F8; --tas2:#BCC7D3; --tas-golge:#7F8FA0;
+  --r:24px;
+  font-family:'Nunito','Trebuchet MS','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--zemin);color:var(--yazi);overflow:hidden;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+svg{display:block}
+
+/* =========================================================
+   2. ORTAK BİLEŞENLER (düğmeler, üst çubuk, altbilgi)
+   ========================================================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4em;min-height:56px;
+  padding:.6em 1.6em;border-radius:999px;font-weight:900;font-size:clamp(18px,2.2vw,28px);
+  color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.2);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.btn-turuncu{background:var(--turuncu)} .btn-mavi{background:var(--mavi)}
+.btn-yesil{background:var(--yesil)} .btn-mor{background:var(--mor)}
+.btn-pembe{background:var(--pembe)} .btn-gri{background:#E6E8EF;color:var(--yazi)}
+.btn-kucuk{min-height:48px;font-size:clamp(16px,1.8vw,22px);padding:.5em 1.2em}
+
+.ikon-btn{width:52px;height:52px;border-radius:50%;background:#F1F2F7;display:grid;place-items:center;flex:none;
+  box-shadow:0 4px 0 rgba(0,0,0,.1)}
+.ikon-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.1)}
+.ikon-btn svg{width:28px;height:28px}
+
+.ust-cubuk{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#fff;
+  box-shadow:0 3px 12px rgba(0,0,0,.06);position:relative;z-index:3;flex:none}
+.ust-baslik{font-weight:900;font-size:clamp(18px,2.2vw,28px);white-space:nowrap}
+
+.altbilgi{text-align:center;font-size:14px;font-weight:700;color:var(--yazi-acik);opacity:.8;padding:8px 0 10px;flex:none}
+
+@keyframes salla{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.salla{animation:salla .4s}
+
+/* =========================================================
+   3. SAHNE YÖNETİCİSİ
+   ========================================================= */
+.sahne{position:fixed;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;
+  transition:opacity .25s,visibility 0s .25s}
+.sahne.aktif{opacity:1;visibility:visible;transition:opacity .25s}
+
+/* =========================================================
+   4. BAŞLANGIÇ EKRANI
+   ========================================================= */
+#s-baslangic{background:linear-gradient(180deg,#BDE8FF 0%,#E6F6FF 55%,var(--zemin) 100%)}
+.bas-orta{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.5vh,26px);
+  padding:20px;text-align:center}
+.oyun-adi{font-size:clamp(42px,7.5vw,104px);font-weight:900;color:var(--turuncu);line-height:1;
+  text-shadow:0 5px 0 rgba(0,0,0,.08)}
+.oyun-alt{font-size:clamp(18px,2.4vw,30px);font-weight:800;color:var(--yazi-acik)}
+.bas-gorsel{width:min(520px,82vw);max-height:34vh;aspect-ratio:2/1}
+.bas-gorsel > svg{width:100%;height:100%}
+.bas-dugmeler{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.bob{animation:bob 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes bob{50%{transform:translateY(-6px) scaleY(1.03)}}
+
+/* =========================================================
+   5. KADEME SEÇİM EKRANI
+   ========================================================= */
+#s-kademe{background:var(--zemin)}
+.kademe-liste{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,320px));justify-content:center;
+  align-content:center;gap:clamp(14px,2.5vw,32px);padding:20px;overflow:auto}
+.kademe-kart{background:#fff;border-radius:var(--r);border-top:10px solid var(--kart-renk);
+  box-shadow:0 8px 0 rgba(0,0,0,.07),0 12px 30px rgba(0,0,0,.06);padding:26px 18px 22px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;transition:transform .1s}
+.kademe-kart:active{transform:scale(.97)}
+.kart-no{width:68px;height:68px;border-radius:50%;background:var(--kart-renk);color:#fff;font-weight:900;
+  font-size:36px;display:grid;place-items:center;flex:none;box-shadow:0 5px 0 rgba(0,0,0,.15)}
+.kart-yazi{display:flex;flex-direction:column;align-items:center;gap:8px}
+.kart-ad{font-size:clamp(22px,2.4vw,30px);font-weight:900}
+.kart-metin{font-size:clamp(15px,1.6vw,19px);color:var(--yazi-acik);font-weight:700;line-height:1.3}
+.kart-alt{display:flex;align-items:center;gap:6px;font-weight:800;font-size:clamp(15px,1.6vw,20px)}
+.kart-alt svg{width:26px;height:26px;flex:none}
+.kademe-kart.kilitli{filter:grayscale(1);opacity:.6}
+
+/* =========================================================
+   6. OYUN EKRANI — üst çubuk, nehir, taşlar, oklar, kurbağa
+   ========================================================= */
+#s-oyun{background:var(--su3)}
+.ilerleme{flex:1;display:flex;justify-content:center;gap:clamp(5px,1vw,10px)}
+.nokta{width:clamp(10px,1.3vw,16px);aspect-ratio:1;border-radius:50%;background:#E3E6EE}
+.nokta.bitti{background:var(--yesil)}
+.nokta.simdi{background:var(--sari);box-shadow:0 0 0 4px rgba(255,214,0,.35)}
+.yildiz-sayac{display:flex;align-items:center;gap:6px;font-weight:900;font-size:clamp(18px,2.2vw,28px);
+  background:#FFF6CC;border-radius:999px;padding:6px 14px 6px 10px}
+.yildiz-sayac svg{width:28px;height:28px}
+
+/* Nehir */
+.nehir{flex:1;min-height:0;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,var(--su1) 0%,var(--su2) 55%,var(--su3) 100%)}
+.dalga{position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='46'%3E%3Cpath d='M0 23 Q40 9 80 23 T160 23' fill='none' stroke='white' stroke-opacity='.45' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  animation:akinti 9s linear infinite}
+.dalga.d2{opacity:.3;background-size:240px 70px;animation-duration:14s;animation-direction:reverse;background-position:60px 30px}
+@keyframes akinti{to{background-position:160px 0}}
+.dalga.d2{animation-name:akinti2}
+@keyframes akinti2{from{background-position:60px 30px}to{background-position:300px 30px}}
+
+.gecit{position:absolute;inset:0;display:flex;align-items:stretch}
+.kiyi{flex:none;width:clamp(56px,7vw,110px);position:relative;
+  background:linear-gradient(90deg,var(--kiyi-koyu),var(--kiyi));
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.12)}
+.kiyi-sol{border-radius:0 34px 34px 0}
+.kiyi-sag{border-radius:34px 0 0 34px;background:linear-gradient(270deg,var(--kiyi-koyu),var(--kiyi))}
+.bayrak{position:absolute;left:50%;top:50%;width:46%;max-width:46px;transform:translate(-30%,-90%)}
+
+/* Örüntü şeridi: yatayda 6 taş tek sıra */
+.serit{flex:1;min-width:0;display:grid;align-items:center;align-content:center;
+  grid-template-columns:1fr minmax(26px,.42fr) 1fr minmax(26px,.42fr) 1fr minmax(26px,.42fr) 1fr minmax(26px,.42fr) 1fr minmax(26px,.42fr) 1fr;
+  padding:6.5vw clamp(8px,1.4vw,20px) 2.6em}
+.tas[data-i="0"]{grid-area:1/1} .tas[data-i="1"]{grid-area:1/3} .tas[data-i="2"]{grid-area:1/5}
+.tas[data-i="3"]{grid-area:1/7} .tas[data-i="4"]{grid-area:1/9} .tas[data-i="5"]{grid-area:1/11}
+.ok[data-i="0"]{grid-area:1/2} .ok[data-i="1"]{grid-area:1/4} .ok[data-i="2"]{grid-area:1/6}
+.ok[data-i="3"]{grid-area:1/8} .ok[data-i="4"]{grid-area:1/10}
+
+/* Taş */
+.tas{position:relative;aspect-ratio:1/.82;display:grid;place-items:center;cursor:pointer}
+.tas-yuzey{position:absolute;inset:0;border-radius:47% 53% 50% 50%/56% 52% 48% 44%;
+  background:radial-gradient(circle at 34% 28%,var(--tas1) 0%,var(--tas2) 78%);
+  box-shadow:0 8px 0 var(--tas-golge),0 14px 16px rgba(0,30,70,.28);transition:background .2s,box-shadow .2s}
+.tas-icerik{position:relative;z-index:1;display:grid;place-items:center;width:100%;height:100%}
+.tas-sayi{font-weight:900;font-size:clamp(18px,3.2vw,58px);color:var(--yazi);line-height:1}
+.tas-adim{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:12px;white-space:nowrap;
+  font-size:clamp(11px,1.15vw,17px);font-weight:800;color:#fff;opacity:.92;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.tas-catlak{position:absolute;inset:0;width:100%;height:100%;display:none;z-index:2;pointer-events:none}
+/* Taş durumları */
+.tas.bos .tas-yuzey{background:rgba(255,255,255,.16);border:4px dashed rgba(255,255,255,.95);box-shadow:none}
+.tas.bos .tas-sayi{color:#fff}
+.tas.catlak .tas-catlak{display:block}
+.tas.secili .tas-yuzey{box-shadow:0 0 0 6px var(--sari),0 8px 0 var(--tas-golge),0 14px 16px rgba(0,30,70,.28)}
+.tas.dogru .tas-yuzey{background:radial-gradient(circle at 34% 28%,#E9FFF8 0%,#7FE3C9 80%);box-shadow:0 8px 0 #2FA98A,0 14px 16px rgba(0,30,70,.28)}
+.tas.yanlis{animation:salla .4s}
+.tas.yanlis .tas-yuzey{background:radial-gradient(circle at 34% 28%,#FFF0F5 0%,#FF9EBE 80%);box-shadow:0 8px 0 #D23C6E,0 14px 16px rgba(0,30,70,.28)}
+
+/* Ok ve fark etiketi */
+.ok{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;align-self:center}
+.ok-duz{width:100%;max-width:62px}
+.ok-donus{display:none}
+.ok-etiket{visibility:hidden;background:#fff;border-radius:999px;padding:.1em .45em;font-weight:900;
+  font-size:clamp(13px,1.5vw,24px);color:var(--mavi);white-space:nowrap;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.ok.etiketli .ok-etiket{visibility:visible}
+
+/* Kurbağa */
+.kurbaga{position:absolute;left:0;top:0;z-index:5;pointer-events:none;will-change:transform}
+.kurbaga.anim{transition:transform var(--gecis,.45s) cubic-bezier(.45,0,.25,1)}
+.kurbaga-ic{width:100%;height:100%}
+.kurbaga-ic svg{width:100%;height:100%;overflow:visible}
+.kurbaga-ic.zipla{animation:zipla var(--gecis,.45s) ease}
+@keyframes zipla{0%{transform:scale(1,.9)}45%{transform:translateY(-55%) scale(.95,1.08)}85%{transform:translateY(0) scale(1.06,.9)}100%{transform:none}}
+
+/* Görev alanı */
+.gorev-alani{flex:none;background:#fff;border-radius:30px 30px 0 0;margin-top:-26px;position:relative;z-index:4;
+  padding:18px 20px 14px;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:clamp(130px,24vh,240px);
+  box-shadow:0 -6px 18px rgba(0,0,0,.1)}
+.gorev-metin{font-size:clamp(18px,2.3vw,30px);font-weight:800;text-align:center;line-height:1.3}
+.giris-alani{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+/* --- 6b. Görev: taş durumları, tuş takımı, geri bildirim (Aşama 2) --- */
+.tas.yaziliyor .tas-sayi{color:#1F6FD1}
+.tas.secili.bos .tas-yuzey{border-color:var(--sari);box-shadow:0 0 0 6px rgba(255,214,0,.45)}
+.tas.gosterildi .tas-yuzey{background:radial-gradient(circle at 34% 28%,#EEF6FF 0%,#9CC8FF 80%);box-shadow:0 8px 0 #3F7FD6,0 14px 16px rgba(0,30,70,.28)}
+.tas.catlak:not(.yaziliyor) .tas-sayi{opacity:.55}
+.tas.catliyor{animation:catla .45s ease}
+@keyframes catla{30%{transform:scale(1.08) rotate(-3deg)}60%{transform:scale(.96) rotate(2deg)}}
+.ok.etiketli .ok-etiket{animation:belir .25s ease}
+.ok.bozuk .ok-etiket{background:var(--pembe);color:#fff}
+.yildiz-sayac.pop{animation:pop .45s ease}
+@keyframes pop{50%{transform:scale(1.25)}}
+
+.gorev-metin.ipucu{color:#1F6FD1}
+.gorev-metin.uyari{color:#D23C6E}
+.gorev-metin.basari{color:#0E9C7E}
+.tuslar{--tus:clamp(48px,5.6vw,80px);display:grid;grid-template-columns:repeat(12,var(--tus));gap:clamp(6px,.8vw,12px)}
+.tus{height:var(--tus);border-radius:18px;background:#EEF1F8;font-weight:900;font-size:calc(var(--tus) * .5);
+  box-shadow:0 5px 0 #CDD3E0;display:grid;place-items:center;transition:transform .06s}
+.tus:active{transform:translateY(3px);box-shadow:0 2px 0 #CDD3E0}
+.tus svg{width:52%;height:52%}
+.tus-sil{background:#FFE3EC;box-shadow:0 5px 0 #F3B3C8}
+.tus-tamam{background:var(--yesil);box-shadow:0 5px 0 #079C82}
+@media (max-width:899px){.tuslar{grid-template-columns:repeat(6,var(--tus));--tus:clamp(46px,13.5vw,72px)}}
+@media (max-height:520px){
+  .tuslar{grid-template-columns:repeat(12,var(--tus));--tus:clamp(38px,5.6vw,54px);gap:6px}
+  .gorev-alani{min-height:0;padding:10px 14px 8px;gap:8px}
+  .gorev-metin{font-size:17px}
+}
+
+/* --- 6c. Kural kartları ve kontrol işaretleri (Aşama 3) --- */
+.kural-kartlar{display:flex;gap:clamp(8px,1.6vw,20px);justify-content:center;width:min(780px,100%)}
+.kural-kart{flex:1 1 0;min-width:0;max-width:240px;padding:10px 10px 12px;border-radius:20px;background:#fff;
+  border:4px solid #D3E3FF;box-shadow:0 6px 0 #BCD0F2;display:flex;flex-direction:column;align-items:center;gap:2px;
+  transition:transform .08s,opacity .2s}
+.kural-kart:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #BCD0F2}
+.kural-kart.azalan{border-color:#EBD9FF;box-shadow:0 6px 0 #D8C2F5}
+.kk-buyuk{font-size:clamp(28px,3.4vw,50px);font-weight:900;line-height:1.05;color:var(--mavi)}
+.kural-kart.azalan .kk-buyuk{color:var(--mor)}
+.kk-yazi{font-size:clamp(13px,1.45vw,19px);font-weight:800;color:var(--yazi-acik);line-height:1.2;text-align:center}
+.kural-kart:disabled{cursor:default}
+.kural-kart.denendi{opacity:.35;filter:grayscale(1)}
+.kural-kart.secilen{border-color:var(--sari);box-shadow:0 0 0 5px rgba(255,214,0,.4),0 6px 0 #E0BC00}
+.ok.uyuyor .ok-etiket{color:#0E9C7E}
+.ok-etiket b{font-weight:900;margin-left:2px}
+@media (max-height:520px){
+  .kural-kart{padding:6px 8px 8px}
+  .kk-buyuk{font-size:26px} .kk-yazi{font-size:13px}
+}
+
+/* --- 6d. Şekil taşları ve atlanan adımlar (Aşama 4) --- */
+.tas-sekil{display:none}
+.tas.sekil .tas-icerik{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;padding:15% 9% 10%}
+.tas.sekil .tas-sekil{display:block;width:100%;flex:1;min-height:0}
+.tas-sekil svg{width:100%;height:100%}
+.tas.sekil:not(.dogru):not(.gosterildi):not(.yanlis):not(.bos):not(.atla) .tas-yuzey{
+  background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#D6DFE8 80%)}
+.tas.sekil .tas-sayi{font-size:clamp(13px,1.7vw,28px);background:#fff;border-radius:999px;padding:.06em .5em;
+  box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.tas.sekil.bos .tas-sayi,.tas.sekil.atla .tas-sayi{background:none;box-shadow:none;font-size:clamp(18px,3.2vw,58px)}
+.tas.sekil.bos .tas-sekil,.tas.sekil.atla .tas-sekil{display:none}
+.tas.atla{cursor:default}
+.tas.atla .tas-yuzey{background:rgba(255,255,255,.1);border:3px dotted rgba(255,255,255,.75);box-shadow:none}
+.tas.atla .tas-sayi{color:#fff;opacity:.9}
+/* Şekil sorusunda oklar daralır, taşlar genişler */
+.serit.sekilli{grid-template-columns:1fr minmax(24px,.26fr) 1fr minmax(24px,.26fr) 1fr minmax(24px,.26fr) 1fr minmax(24px,.26fr) 1fr minmax(24px,.26fr) 1fr}
+.serit.sekilli .tas.sekil .tas-icerik{padding:13% 6% 8%}
+/* Yüksek yatay ekranda (akıllı tahta) şekil soruları 3 + 3 sıra: şekiller büyür */
+@media (orientation:landscape) and (min-height:820px){
+  .serit.sekilli{grid-template-columns:1fr minmax(30px,.3fr) 1fr minmax(30px,.3fr) 1fr;
+    grid-template-rows:auto clamp(64px,8vh,96px) auto;row-gap:2.4em;
+    width:100%;max-width:calc((100vh - 580px) * 2.6);margin:0 auto;padding:104px 2vw 3.2em}
+  .serit.sekilli .tas{aspect-ratio:1/.62}
+  .serit.sekilli .tas[data-i="0"]{grid-area:1/1} .serit.sekilli .tas[data-i="1"]{grid-area:1/3} .serit.sekilli .tas[data-i="2"]{grid-area:1/5}
+  .serit.sekilli .tas[data-i="3"]{grid-area:3/1} .serit.sekilli .tas[data-i="4"]{grid-area:3/3} .serit.sekilli .tas[data-i="5"]{grid-area:3/5}
+  .serit.sekilli .ok[data-i="0"]{grid-area:1/2} .serit.sekilli .ok[data-i="1"]{grid-area:1/4}
+  .serit.sekilli .ok[data-i="2"]{grid-area:2/1/3/6;align-self:stretch}
+  .serit.sekilli .ok[data-i="3"]{grid-area:3/2} .serit.sekilli .ok[data-i="4"]{grid-area:3/4}
+  .serit.sekilli .ok[data-i="2"] .ok-duz{display:none}
+  .serit.sekilli .ok[data-i="2"] .ok-donus{display:block;position:absolute;inset:-1.6em 0 0 0}
+  .serit.sekilli .ok[data-i="2"] .ok-etiket{position:relative;z-index:1}
+  .serit.sekilli .tas.sekil .tas-sayi{font-size:clamp(16px,1.5vw,30px)}
+  .serit.sekilli .tas.sekil.bos .tas-sayi,.serit.sekilli .tas.sekil.atla .tas-sayi{font-size:clamp(28px,3vw,64px)}
+  .serit.sekilli .tas-adim{font-size:clamp(12px,1vw,18px)}
+}
+@media (orientation:portrait){
+  .serit.sekilli{grid-template-columns:1fr minmax(18px,.3fr) 1fr minmax(18px,.3fr) 1fr}
+  .tas.sekil .tas-sayi{font-size:clamp(12px,3.6vw,26px)}
+  .tas.sekil.bos .tas-sayi,.tas.sekil.atla .tas-sayi{font-size:clamp(22px,7.5vw,64px)}
+}
+
+/* =========================================================
+   7. SONUÇ EKRANI
+   ========================================================= */
+#s-sonuc{background:linear-gradient(180deg,#FFF1C2,var(--zemin))}
+.sonuc-orta{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;text-align:center}
+.sonuc-baslik{font-size:clamp(34px,5vw,64px);font-weight:900;color:var(--turuncu)}
+.sonuc-yildiz{display:flex;align-items:center;gap:14px;font-size:clamp(40px,6vw,80px);font-weight:900}
+.sonuc-yildiz svg{width:clamp(70px,9vw,120px);height:auto;animation:parla 1.2s ease-in-out infinite}
+@keyframes parla{50%{transform:scale(1.08) rotate(6deg)}}
+.sonuc-mesaj{font-size:clamp(18px,2.4vw,30px);font-weight:800;color:var(--yazi-acik);max-width:640px}
+.sonuc-dugmeler{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+
+/* =========================================================
+   8. AYARLAR EKRANI
+   ========================================================= */
+.ayar-liste{flex:1;width:min(640px,100%);margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:20px 16px;overflow:auto}
+.ayar-satir{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border-radius:20px;
+  padding:16px 20px;box-shadow:0 5px 0 rgba(0,0,0,.06)}
+.ayar-ad{font-size:clamp(18px,2vw,24px);font-weight:900}
+.ayar-not{font-size:clamp(14px,1.5vw,17px);font-weight:700;color:var(--yazi-acik);margin-top:2px}
+.anahtar{width:76px;height:42px;border-radius:999px;background:#D5D9E3;position:relative;flex:none;transition:background .2s}
+.anahtar::after{content:"";position:absolute;top:5px;left:5px;width:32px;height:32px;border-radius:50%;background:#fff;
+  box-shadow:0 2px 4px rgba(0,0,0,.2);transition:transform .2s}
+.anahtar[aria-checked="true"]{background:var(--yesil)}
+.anahtar[aria-checked="true"]::after{transform:translateX(34px)}
+
+/* =========================================================
+   9. ONAY PENCERESİ
+   ========================================================= */
+.perde{position:fixed;inset:0;z-index:50;background:rgba(30,32,50,.45);display:grid;place-items:center;padding:16px}
+.perde[hidden]{display:none}
+.pencere{background:#fff;border-radius:28px;padding:28px 24px 22px;width:min(480px,100%);text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);animation:belir .2s ease}
+@keyframes belir{from{transform:scale(.9);opacity:0}}
+.pencere p{font-size:clamp(20px,2.4vw,28px);font-weight:800;margin-bottom:22px;line-height:1.3}
+.pencere-btn{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* =========================================================
+   9b. GÖRÜNÜM CİLASI VE TUR SONU (Aşama 5)
+   ========================================================= */
+:focus-visible{outline:4px solid var(--sari);outline-offset:3px}
+.oyun-adi{-webkit-text-stroke:0;text-shadow:0 3px 0 #fff,0 -3px 0 #fff,3px 0 0 #fff,-3px 0 0 #fff,0 9px 0 rgba(36,132,203,.22)}
+
+/* Başlangıç sahnesi ve süs taşı koleksiyonu */
+.bas-gorsel{width:min(1000px,100%);max-height:42vh;aspect-ratio:1000/360}
+.koleksiyon{display:flex;flex-direction:column;align-items:center;gap:6px}
+.koleksiyon-baslik{font-weight:800;font-size:clamp(14px,1.5vw,18px);color:var(--yazi-acik)}
+.koleksiyon-taslar{display:grid;grid-template-columns:repeat(12,auto);justify-content:center;gap:4px}
+@media (max-width:620px){.koleksiyon-taslar{grid-template-columns:repeat(6,auto)}}
+/* Kısa yatay ekranda tur sonu: düğmeler kartlardan önce görünür */
+@media (max-height:520px){
+  .sonuc-orta{gap:6px;padding:10px 16px}
+  .sonuc-baslik{font-size:26px} .sonuc-yildiz{font-size:30px} .sonuc-yildiz svg{width:44px}
+  .sonuc-dugmeler{order:5} .hatirla{order:6}
+  .sonuc-orta > :last-child{margin-bottom:auto}
+  .hk-metin,.hk-sekil{display:none}
+  #s-sonuc .altbilgi{display:none}
+}
+.koleksiyon-taslar svg{width:clamp(26px,2.6vw,36px);height:auto}
+
+/* Kademe rozeti (üst çubuk) ve kademe kartı simgesi */
+.kademe-rozet{display:inline-grid;place-items:center;width:1.55em;height:1.55em;border-radius:50%;
+  background:var(--rozet,var(--yesil));color:#fff;margin-right:.4em;font-size:.95em;vertical-align:middle;
+  box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.kart-ikon{width:clamp(64px,6vw,88px);height:auto}
+
+/* Nehir: nilüferler, taş altı su halkaları, kıyıda sazlar ve süs taşları */
+.nilufer{position:absolute;pointer-events:none;width:clamp(34px,4vw,72px);transform:rotate(var(--aci,0deg))}
+.nilufer svg{width:100%;height:auto}
+.tas{isolation:isolate}
+.tas::before{content:"";position:absolute;left:-9%;right:-9%;bottom:-13%;height:36%;border-radius:50%;
+  border:3px solid rgba(255,255,255,.32);background:rgba(255,255,255,.07);z-index:-1}
+.tas.bos::before,.tas.atla::before{opacity:.5}
+.saz{position:absolute;left:8%;width:84%;pointer-events:none}
+.saz.ust{top:1.5%} .saz.alt{bottom:1.5%}
+.kiyi-sus{position:absolute;left:0;right:0;top:24%;bottom:24%;display:flex;flex-direction:column;flex-wrap:wrap;
+  justify-content:space-evenly;align-items:center;pointer-events:none}
+.kiyi-sus svg{width:min(62%,34px);height:auto}
+.bayrak{z-index:1}
+
+/* Tur sonu */
+.sonuc-orta{overflow-y:auto;justify-content:flex-start;gap:12px}
+.sonuc-orta > :first-child{margin-top:auto}
+.sonuc-orta > :last-child{margin-bottom:auto}
+.sonuc-baslik{font-size:clamp(30px,4.4vw,56px)}
+.sonuc-yildiz{font-size:clamp(34px,5vw,64px)}
+.sonuc-yildiz svg{width:clamp(56px,7vw,96px)}
+.sonuc-ozet{font-size:clamp(16px,1.9vw,22px);font-weight:800}
+.yeni-sus{display:flex;align-items:center;gap:12px;background:#fff;border-radius:999px;padding:8px 22px 8px 12px;
+  font-weight:800;font-size:clamp(16px,1.8vw,22px);box-shadow:0 5px 0 rgba(0,0,0,.07);animation:belir .35s ease}
+.yeni-sus[hidden]{display:none}
+.yeni-sus svg{width:52px;height:auto;animation:parla 1.4s ease-in-out infinite}
+.hatirla{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(900px,100%)}
+.hatirla-baslik{font-weight:900;font-size:clamp(18px,2vw,26px)}
+.hatirla-liste{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%}
+.hatirla-kart{flex:1 1 200px;max-width:280px;background:#fff;border-radius:20px;border:4px solid #BDEFD9;
+  padding:10px 14px 12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hatirla-kart.zor{border-color:#FFC2D6}
+.hk-etiket{font-size:14px;font-weight:900;color:#0E9C7E;background:#E3FBF2;border-radius:999px;padding:2px 12px}
+.hatirla-kart.zor .hk-etiket{color:#D23C6E;background:#FFE6EE}
+.hk-kural{font-size:clamp(28px,3vw,42px);font-weight:900;color:var(--mavi);line-height:1.05}
+.hk-kural.azalan{color:var(--mor)}
+.hk-sekil{width:100%;height:44px}
+.hk-sekil svg{width:100%;height:100%}
+.hk-ornek{font-weight:800;font-size:clamp(15px,1.6vw,19px)}
+.hk-metin{font-size:15px;font-weight:700;color:var(--yazi-acik);text-align:center}
+
+/* Konfeti: yalnız yeni kademe ya da 12+ yıldızda, bir kez */
+.konfeti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:6}
+.konfeti i{position:absolute;top:-24px;width:10px;height:15px;border-radius:3px;animation:dus linear forwards}
+@keyframes dus{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
+
+@media (prefers-reduced-motion:reduce){
+  .dalga,.bob,.sonuc-yildiz svg,.yeni-sus svg{animation:none}
+  .kurbaga.anim{transition-duration:.05s}
+  .kurbaga-ic.zipla{animation:none}
+}
+
+/* =========================================================
+   10. DİKEY YERLEŞİM (telefon / dikey tablet): taşlar 3 + 3
+   ========================================================= */
+@media (orientation:portrait){
+  .kademe-liste{grid-template-columns:minmax(0,520px)}
+  .kademe-kart{flex-direction:row;text-align:left;border-top:0;border-left:10px solid var(--kart-renk);padding:16px}
+  .kart-yazi{align-items:flex-start;gap:4px}
+
+  .gecit{flex-direction:column}
+  .kiyi{width:100%;height:clamp(40px,6vh,64px)}
+  .kiyi-sol{border-radius:0 0 30px 30px;background:linear-gradient(180deg,var(--kiyi-koyu),var(--kiyi))}
+  .kiyi-sag{border-radius:30px 30px 0 0;background:linear-gradient(0deg,var(--kiyi-koyu),var(--kiyi))}
+  .bayrak{width:auto;height:70%;max-width:none;transform:translate(-30%,-75%)}
+  .serit{grid-template-columns:1fr minmax(22px,.4fr) 1fr minmax(22px,.4fr) 1fr;
+    grid-template-rows:auto clamp(64px,10vh,110px) auto;padding:14vw 16px 2.4em;row-gap:2.2em}
+  .tas[data-i="0"]{grid-area:1/1} .tas[data-i="1"]{grid-area:1/3} .tas[data-i="2"]{grid-area:1/5}
+  .tas[data-i="3"]{grid-area:3/1} .tas[data-i="4"]{grid-area:3/3} .tas[data-i="5"]{grid-area:3/5}
+  .ok[data-i="0"]{grid-area:1/2} .ok[data-i="1"]{grid-area:1/4}
+  .ok[data-i="2"]{grid-area:2/1/3/6;align-self:stretch}
+  .ok[data-i="3"]{grid-area:3/2} .ok[data-i="4"]{grid-area:3/4}
+  .ok[data-i="2"] .ok-duz{display:none}
+  .ok[data-i="2"] .ok-donus{display:block;position:absolute;inset:-1.6em 0 0 0}
+  .ok[data-i="2"] .ok-etiket{position:relative;z-index:1}
+  .tas-sayi{font-size:clamp(22px,7.5vw,64px)}
+  .tas-adim{font-size:clamp(12px,3vw,18px);margin-top:10px}
+  .saz{width:auto;height:88%;top:6%;left:auto}
+  .saz.ust{left:3%;top:6%} .saz.alt{right:3%;bottom:auto}
+  .kiyi-sus{top:0;bottom:0;left:16%;right:16%;flex-direction:row}
+  .kiyi-sus svg{width:auto;height:58%}
+  .hatirla-kart{flex-basis:100%;max-width:none;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:2px 10px;padding:8px 12px}
+  .hk-sekil{width:120px;height:34px}
+  .bas-gorsel{max-height:30vh}
+  .ok-etiket{font-size:clamp(13px,3.6vw,24px)}
+}
+.ok-donus svg{width:100%;height:100%}
+.ok-donus .donus-uc{position:absolute;left:calc(13.2% - 11px);bottom:-4px;width:22px;height:16px}
+
+/* Dar ekranda başlığı kısalt */
+@media (max-width:620px){
+  .ust-baslik .uzun{display:none}
+  .yildiz-sayac{padding:4px 10px 4px 6px}
+  .ust-cubuk{gap:8px;padding:8px 10px}
+  .ikon-btn{width:46px;height:46px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== BAŞLANGIÇ ===================== -->
+<section class="sahne" id="s-baslangic" aria-label="Başlangıç">
+  <div class="bas-orta">
+    <h1 class="oyun-adi">Örüntü Köprüsü</h1>
+    <p class="oyun-alt">Kuralı bul, köprüyü tamamla!</p>
+    <div class="bas-gorsel" id="bas-gorsel"></div>
+    <div class="bas-dugmeler">
+      <button class="btn btn-turuncu" id="bas-oyna">Oyna</button>
+      <button class="btn btn-gri" id="bas-ayarlar">Ayarlar</button>
+    </div>
+    <div class="koleksiyon" id="bas-koleksiyon"></div>
+  </div>
+  <footer class="altbilgi">Sinan İnce 2026</footer>
+</section>
+
+<!-- ===================== KADEME SEÇİMİ ===================== -->
+<section class="sahne" id="s-kademe" aria-label="Kademe seçimi">
+  <header class="ust-cubuk">
+    <button class="ikon-btn" id="kademe-geri" aria-label="Geri"></button>
+    <div class="ust-baslik">Kademe Seç</div>
+  </header>
+  <div class="kademe-liste" id="kademe-liste"></div>
+  <footer class="altbilgi">Sinan İnce 2026</footer>
+</section>
+
+<!-- ===================== OYUN ===================== -->
+<section class="sahne" id="s-oyun" aria-label="Oyun">
+  <header class="ust-cubuk">
+    <button class="ikon-btn" id="oyun-geri" aria-label="Geri"></button>
+    <div class="ust-baslik" id="oyun-kademe"></div>
+    <div class="ilerleme" id="oyun-ilerleme"></div>
+    <div class="yildiz-sayac" aria-label="Yıldız"><span class="yildiz-ikon"></span><span id="oyun-yildiz">0</span></div>
+  </header>
+  <div class="nehir" id="nehir">
+    <div class="dalga"></div><div class="dalga d2"></div>
+    <div class="gecit">
+      <div class="kiyi kiyi-sol" id="kiyi-sol"></div>
+      <div class="serit" id="serit"></div>
+      <div class="kiyi kiyi-sag" id="kiyi-sag"></div>
+    </div>
+    <div class="kurbaga" id="kurbaga"><div class="kurbaga-ic"></div></div>
+  </div>
+  <div class="gorev-alani" id="gorev-alani">
+    <p class="gorev-metin" id="gorev-metin" aria-live="polite"></p>
+    <!-- Tuş takımı / Devam düğmesi buraya çizilir -->
+    <div class="giris-alani" id="giris-alani"></div>
+  </div>
+</section>
+
+<!-- ===================== SONUÇ ===================== -->
+<section class="sahne" id="s-sonuc" aria-label="Tur sonu">
+  <div class="sonuc-orta">
+    <h2 class="sonuc-baslik" id="sonuc-baslik">Köprü tamam!</h2>
+    <div class="sonuc-yildiz"><span class="yildiz-ikon"></span><span id="sonuc-sayi">0 / 16</span></div>
+    <p class="sonuc-mesaj" id="sonuc-mesaj"></p>
+    <div class="yeni-sus" id="sonuc-sus" hidden></div>
+    <p class="sonuc-ozet" id="sonuc-ozet"></p>
+    <section class="hatirla" aria-label="Kuralı hatırla">
+      <h3 class="hatirla-baslik">Kuralı hatırla</h3>
+      <div class="hatirla-liste" id="sonuc-kurallar"></div>
+    </section>
+    <div class="sonuc-dugmeler">
+      <button class="btn btn-turuncu" id="sonuc-tekrar">Tekrar oyna</button>
+      <button class="btn btn-mavi" id="sonuc-kademeler">Kademeler</button>
+    </div>
+  </div>
+  <footer class="altbilgi">Sinan İnce 2026</footer>
+</section>
+
+<!-- ===================== AYARLAR ===================== -->
+<section class="sahne" id="s-ayarlar" aria-label="Ayarlar">
+  <header class="ust-cubuk">
+    <button class="ikon-btn" id="ayar-geri" aria-label="Geri"></button>
+    <div class="ust-baslik">Ayarlar</div>
+  </header>
+  <div class="ayar-liste">
+    <div class="ayar-satir">
+      <div><div class="ayar-ad">Ses</div><div class="ayar-not">Oyun seslerini aç veya kapat</div></div>
+      <button class="anahtar" id="ayar-ses" role="switch" aria-checked="true" aria-label="Ses"></button>
+    </div>
+    <div class="ayar-satir">
+      <div><div class="ayar-ad">Tüm kademeleri aç</div><div class="ayar-not">Öğretmen için</div></div>
+      <button class="btn btn-mor btn-kucuk" id="ayar-ac">Aç</button>
+    </div>
+    <div class="ayar-satir">
+      <div><div class="ayar-ad">İlerlemeyi sıfırla</div><div class="ayar-not">Yıldızlar, açık kademeler ve süs taşları silinir</div></div>
+      <button class="btn btn-pembe btn-kucuk" id="ayar-sifirla">Sıfırla</button>
+    </div>
+  </div>
+  <footer class="altbilgi">Sinan İnce 2026</footer>
+</section>
+
+<!-- ===================== ONAY PENCERESİ ===================== -->
+<div class="perde" id="perde" hidden>
+  <div class="pencere" role="dialog" aria-modal="true">
+    <p id="perde-metin"></p>
+    <div class="pencere-btn">
+      <button class="btn btn-gri btn-kucuk" id="perde-hayir"></button>
+      <button class="btn btn-turuncu btn-kucuk" id="perde-evet"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   1. SABİTLER
+   ========================================================= */
+const SORU_SAYISI = 8;          // bir turdaki soru
+const YILDIZ_ESIK = 12;         // sonraki kademeyi açmak için
+const YILDIZ_MAKS = 16;         // 8 soru × 2 yıldız
+const KADEMELER = [
+  {no:1, ad:'Sakin Dere',   renk:'var(--yesil)', metin:"2'şer, 5'er, 10'ar say. Sayılar 100'e kadar."},
+  {no:2, ad:'Hızlı Akıntı', renk:'var(--mavi)',  metin:"İleri ve geri say, şekilleri çöz. Sayılar 500'e kadar."},
+  {no:3, ad:'Büyük Şelale', renk:'var(--mor)',   metin:"25'er, 50'şer, 100'er say. Sayılar 1000'e kadar."}
+];
+
+/* =========================================================
+   1b. SAYI ÖRÜNTÜSÜ ÜRETİCİSİ (Aşama 2)
+   Kademe 1: ileri 2'şer/5'er/10'ar, 100'e kadar, boşluk sonda
+   Kademe 2: ileri 3/4, geri 2/5/10, 500'e kadar, boşluk ortada veya hatalı adım
+   Kademe 3: 25/50/100 ileri, 100 geri, 1000'e kadar, 2 boşluk veya hatalı adım
+   ========================================================= */
+const KURALLAR  = {1:[2,5,10], 2:[3,4,-2,-5,-10], 3:[25,50,100,-100]};
+const UST_SINIR = {1:100, 2:500, 3:1000};
+const rastgele = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const sec = dizi => dizi[Math.floor(Math.random() * dizi.length)];
+
+const Uretici = {
+  /* Örüntünün 1. adımı: 6 adımın hepsi 1 ile üst sınır arasında kalır */
+  baslangic(k, d){
+    const ust = UST_SINIR[k], m = Math.abs(d), aralik = 5 * m;
+    if (d > 0){
+      const enCok = ust - aralik;
+      if (k === 1 && d !== 10) return d * rastgele(1, Math.floor(enCok / d));
+      if (k === 3 && d !== 100) return 25 * rastgele(1, Math.floor(enCok / 25));
+      const s = rastgele(1, enCok);
+      return (k !== 3 && Math.random() < .5) ? Math.max(m, Math.floor(s / m) * m) : s;
+    }
+    const s = rastgele(aralik + 1, ust);
+    return Math.random() < .5 ? Math.max(aralik + m, Math.floor(s / m) * m) : s;
+  },
+  /* tur: 'sayi' | 'sekil'
+     son: {d, aile} — bir önceki sayı kuralı ve şekil ailesi (art arda gelmez)
+     zorunlu: {d} veya {aile} — turun sonunda tekrar sorulacak soru
+     Görev tipleri: A = eksik adım, B = hatalı adım, C = genelleme (ilk 3 adım → 6. adım)
+     Kademe 1 yalnız A; kademe 2–3'te A/B/C eşit olasılıkla */
+  soru(k, tur, son, zorunlu){
+    if (zorunlu) tur = zorunlu.aile ? 'sekil' : 'sayi';
+    let o;
+    if (tur === 'sekil'){
+      const aile = zorunlu ? zorunlu.aile : sec(SEKIL_AILE[k].filter(a => a !== son.aile));
+      const sayilar = [1,2,3,4,5,6].map(i => SEKILLER[aile].sayi(i));
+      o = {tur, aile, d: sayilar[1] - sayilar[0], sayilar};
+    } else {
+      const d = zorunlu ? zorunlu.d : sec(KURALLAR[k].filter(x => x !== son.d));
+      const s = this.baslangic(k, d);
+      o = {tur, aile: null, d, sayilar: Array.from({length:6}, (_, i) => s + i * d)};
+    }
+    o.tip = k === 1 ? 'A' : sec(['A','B','C']);
+    o.bos = []; o.atla = []; o.hata = null;
+    if (o.tip === 'A'){
+      if (k === 1) o.bos = [5];
+      else if (k === 2) o.bos = [rastgele(1, 4)];
+      else { const a = rastgele(1, 3); o.bos = [a, rastgele(a + 2, 5)]; }   // yan yana değil
+    } else if (o.tip === 'C'){
+      o.bos = [5]; o.atla = [3, 4];
+    } else {
+      const i = rastgele(1, 5), dogru = o.sayilar[i];
+      if (tur === 'sekil'){                                   // şekilde bir parça fazla ya da eksik
+        const fazla = dogru <= 2 || Math.random() < .5;
+        o.hata = {i, deger: dogru + (fazla ? 1 : -1), mod: {tip: fazla ? 'fazla' : 'eksik', secim: Math.random()}};
+      } else {
+        const sapma = m => m >= 25 ? [10,-10,5,-5] : m >= 5 ? [1,-1,2,-2] : [1,-1];
+        let deger;
+        do { deger = dogru + sec(sapma(Math.abs(o.d))); } while (deger < 0 || deger > UST_SINIR[k] || deger === dogru);
+        o.hata = {i, deger, mod: null};
+      }
+    }
+    return o;
+  },
+  /* Kural kartları (Aşama 3): doğru kural + yön ters çeldiricisi + yakın sayı çeldiricisi */
+  YAKIN: {2:[3,4], 3:[2,4], 4:[3,5], 5:[4,10], 10:[5,20], 25:[10,50], 50:[25,100], 100:[10,50]},
+  kartlar(d){
+    const k = [d, -d, Math.sign(d) * sec(this.YAKIN[Math.abs(d)])];
+    for (let i = k.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [k[i], k[j]] = [k[j], k[i]]; }
+    return k;
+  }
+};
+
+/* =========================================================
+   1c. ŞEKİL ÖRÜNTÜLERİ (Aşama 4) — her adım sayıya dönüşür
+   ucgen  : çöpten yan yana üçgen  3, 5, 7, 9, 11, 13   (+2)
+   kare   : çöpten yan yana kare   4, 7, 10, 13, 16, 19 (+3)
+   besgen : çöpten yan yana ev     5, 9, 13, 17, 21, 25 (+4)
+   altigen: çöpten yan yana altıgen 6, 11, 16, 21, 26, 31 (+5)
+   nokta  : 2 sıra nokta           2, 4, 6, 8, 10, 12  (+2)
+   blok   : 2 sıra blok (azalan)   12, 10, 8, 6, 4, 2  (−2)
+   ========================================================= */
+const SEKILLER = {
+  ucgen:   {birim:'çöp',   sayi: i => 2*i + 1, birimSay: i => i},
+  kare:    {birim:'çöp',   sayi: i => 3*i + 1, birimSay: i => i},
+  besgen:  {birim:'çöp',   sayi: i => 4*i + 1, birimSay: i => i},
+  altigen: {birim:'çöp',   sayi: i => 5*i + 1, birimSay: i => i},
+  nokta:   {birim:'nokta', sayi: i => 2*i,     birimSay: i => i},
+  blok:    {birim:'blok',  sayi: i => 14 - 2*i, birimSay: i => 7 - i}
+};
+const SEKIL_AILE = {1:['ucgen','nokta','kare'], 2:['kare','besgen','blok','ucgen'], 3:['besgen','altigen','kare','blok']};
+
+const Sekil = {
+  L: 10,
+  /* n birimlik şeklin parçaları: c = çöpler [x1,y1,x2,y2], p = nokta/blok merkezleri */
+  parca(aile, n){
+    const L = this.L, c = [], p = [];
+    if (aile === 'ucgen'){
+      const h = L * .866, Z = j => j % 2 === 0 ? [j / 2 * L, h] : [(j - 1) / 2 * L + L / 2, 0];
+      for (let j = 0; j <= n; j++) c.push([...Z(j), ...Z(j + 1)]);       // eğik çöpler
+      for (let j = 0; j < n; j++) c.push([...Z(j), ...Z(j + 2)]);        // yatay çöpler
+      return {c, H: h};
+    }
+    if (aile === 'kare'){
+      for (let x = 0; x <= n; x++) c.push([x*L, 0, x*L, L]);
+      for (let x = 0; x < n; x++) c.push([x*L, 0, (x+1)*L, 0], [x*L, L, (x+1)*L, L]);
+      return {c, H: L};
+    }
+    if (aile === 'besgen'){
+      const R = L * .6;
+      for (let x = 0; x <= n; x++) c.push([x*L, R, x*L, R + L]);
+      for (let x = 0; x < n; x++) c.push([x*L, R + L, (x+1)*L, R + L], [x*L, R, x*L + L/2, 0], [x*L + L/2, 0, (x+1)*L, R]);
+      return {c, H: R + L};
+    }
+    if (aile === 'altigen'){
+      const w = L * 1.732;
+      for (let x = 0; x <= n; x++) c.push([x*w, L/2, x*w, 1.5*L]);
+      for (let x = 0; x < n; x++){
+        const m = x*w + w/2;
+        c.push([x*w, L/2, m, 0], [m, 0, (x+1)*w, L/2], [x*w, 1.5*L, m, 2*L], [m, 2*L, (x+1)*w, 1.5*L]);
+      }
+      return {c, H: 2*L};
+    }
+    const s = L * .9;                                    // nokta ve blok: n sütun × 2 sıra
+    for (let x = 0; x < n; x++) p.push([x*s, 0], [x*s, s]);
+    return {p, H: s, s};
+  },
+  /* Aile içinde tüm adımlar aynı ölçekle çizilir: genişlik en büyük adıma göre
+     (nokta/blokta fazla parça için 1 sütun pay) */
+  genislikler: {},
+  genislik(aile){
+    if (this.genislikler[aile] == null){
+      const f = this.parca(aile, (aile === 'nokta' || aile === 'blok') ? 7 : 6);
+      this.genislikler[aile] = Math.max(...(f.c ? f.c.flatMap(l => [l[0], l[2]]) : f.p.map(q => q[0])));
+    }
+    return this.genislikler[aile];
+  },
+  /* i. adımın SVG'si; mod = {tip:'fazla'|'eksik', secim} hatalı adım için */
+  ciz(aile, i, mod){
+    const L = this.L, f = this.parca(aile, SEKILLER[aile].birimSay(i));
+    let c = f.c, p = f.p;
+    const figW = Math.max(...(c ? c.flatMap(l => [l[0], l[2]]) : p.map(q => q[0])));
+    if (mod){
+      if (c){
+        if (mod.tip === 'eksik') c = c.filter((_, k) => k !== Math.floor(mod.secim * c.length));
+        else {                                           // son birimin içine çapraz fazla çöp
+          const bw = aile === 'altigen' ? L * 1.732 : L, x0 = figW - bw;
+          c = c.concat([[x0 + bw * .22, f.H * .3, x0 + bw * .78, f.H * .85]]);
+        }
+      } else if (mod.tip === 'eksik'){
+        const aday = aile === 'blok' ? p.filter(q => q[1] === 0) : p;
+        const sil = aday[Math.floor(mod.secim * aday.length)];
+        p = p.filter(q => q !== sil);
+      } else {
+        const sonX = Math.max(...p.map(q => q[0]));
+        p = p.concat([[sonX + f.s, f.s]]);
+      }
+    }
+    const en = this.genislik(aile), pay = L * .45, yan = pay;
+    const dx = (en - figW) / 2, r = v => +v.toFixed(2);
+    let g = '';
+    if (c){
+      g = c.map(l => `<line x1="${r(l[0])}" y1="${r(l[1])}" x2="${r(l[2])}" y2="${r(l[3])}"/>`).join('');
+      g = `<g stroke="#A8652F" stroke-width="${L*.17}" stroke-linecap="round">${g}</g>`
+        + `<g fill="#E5483B">${c.map(l => `<circle cx="${r(l[2])}" cy="${r(l[3])}" r="${L*.12}"/>`).join('')}</g>`;
+    } else if (aile === 'nokta'){
+      g = `<g fill="#3D8BF2">${p.map(q => `<circle cx="${r(q[0])}" cy="${r(q[1])}" r="${L*.32}"/>`).join('')}</g>`;
+    } else {
+      const b = L * .78;
+      g = `<g fill="#FF9F43" stroke="#D9761C" stroke-width="${L*.08}">${p.map(q =>
+        `<rect x="${r(q[0]-b/2)}" y="${r(q[1]-b/2)}" width="${b}" height="${b}" rx="${L*.15}"/>`).join('')}</g>`;
+    }
+    return `<svg viewBox="${r(-yan)} ${r(-pay)} ${r(en + 2*yan)} ${r(f.H + 2*pay)}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g transform="translate(${r(dx)} 0)">${g}</g></svg>`;
+  }
+};
+
+/* Geri bildirim metinleri (birim: şekil sorusunda 'çöp' / 'nokta' / 'blok') */
+const kuralMetni = (d, birim) => birim
+  ? (d > 0 ? `Her adımda ${d} ${birim} ekleniyor.` : `Her adımda ${-d} ${birim} eksiliyor.`)
+  : (d > 0 ? `Her adımda ${d} artıyor.` : `Her adımda ${-d} azalıyor.`);
+const islemMetni = (onceki, d) => d > 0 ? `${onceki} + ${d} = ${onceki + d}` : `${onceki} − ${-d} = ${onceki + d}`;
+
+/* =========================================================
+   2. YARDIMCILAR VE SVG PARÇALARI
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const kopya = o => JSON.parse(JSON.stringify(o));
+
+const YILDIZ_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z" fill="#FFD600" stroke="#E0A800" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+const KILIT_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="#6B6F80"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="#6B6F80" stroke-width="2.4"/></svg>`;
+const GERI_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#2B2D42" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const BAYRAK_SVG = `<svg viewBox="0 0 40 60" aria-hidden="true"><rect x="6" y="4" width="4" height="54" rx="2" fill="#8A5A2B"/><path d="M10 6 L36 14 L10 24 Z" fill="#FF6B35"/></svg>`;
+const OK_SVG = `<svg class="ok-duz" viewBox="0 0 60 24" aria-hidden="true"><path d="M5 12H47" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M40 4L53 12L40 20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+/* Dikey yerleşimde 3. taştan 4. taşa kıvrılan ok */
+const DONUS_SVG = `<div class="ok-donus" aria-hidden="true"><svg viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M261 2 C261 32 236 30 150 30 C64 30 40 30 40 54" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg><svg class="donus-uc" viewBox="0 0 22 16"><path d="M3 3L11 13L19 3" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+const SIL_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6-7z" fill="none" stroke="#D23C6E" stroke-width="2.4" stroke-linejoin="round"/><path d="M11 9.5l5 5M16 9.5l-5 5" stroke="#D23C6E" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+const TAMAM_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CATLAK_SVG =`<svg class="tas-catlak" viewBox="0 0 100 82" aria-hidden="true"><g fill="none" stroke="#4F5A68" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M57 4 L50 22 L60 34 L46 48 L54 62 L47 79"/><path d="M60 34 L74 38"/><path d="M46 48 L32 46"/></g></svg>`;
+
+/* Kâşif kurbağa (ayakları viewBox'ın alt kenarında) */
+function kurbagaSVG(){
+  return `<svg viewBox="0 0 120 112" aria-hidden="true">
+    <ellipse cx="60" cy="108" rx="36" ry="5" fill="rgba(0,0,0,.18)"/>
+    <ellipse cx="28" cy="94" rx="19" ry="12" fill="#2EA44F"/>
+    <ellipse cx="92" cy="94" rx="19" ry="12" fill="#2EA44F"/>
+    <ellipse cx="60" cy="80" rx="34" ry="27" fill="#3CC461"/>
+    <ellipse cx="60" cy="88" rx="20" ry="15" fill="#CFF7BE"/>
+    <path d="M30 70 Q60 84 90 70 L88 78 Q60 92 32 78 Z" fill="#FF6B35"/>
+    <ellipse cx="60" cy="52" rx="37" ry="25" fill="#3CC461"/>
+    <circle cx="39" cy="33" r="15" fill="#3CC461"/><circle cx="81" cy="33" r="15" fill="#3CC461"/>
+    <circle cx="39" cy="32" r="10.5" fill="#fff"/><circle cx="81" cy="32" r="10.5" fill="#fff"/>
+    <circle cx="41" cy="33" r="5.5" fill="#1F2430"/><circle cx="79" cy="33" r="5.5" fill="#1F2430"/>
+    <circle cx="43" cy="31" r="1.8" fill="#fff"/><circle cx="81" cy="31" r="1.8" fill="#fff"/>
+    <circle cx="33" cy="58" r="5" fill="#FF8FB1" opacity=".75"/><circle cx="87" cy="58" r="5" fill="#FF8FB1" opacity=".75"/>
+    <path d="M45 58 Q60 69 75 58" fill="none" stroke="#1E6B34" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="45" cy="105" rx="10" ry="5" fill="#2EA44F"/><ellipse cx="75" cy="105" rx="10" ry="5" fill="#2EA44F"/>
+  </svg>`;
+}
+
+/* Nehir süsleri: nilüfer yaprağı (isteğe bağlı çiçekli) ve kıyı sazlığı */
+const NILUFER_SVG = (cicek) => `<svg viewBox="-34 -34 68 68" aria-hidden="true">
+  <path d="M0 0 L31 -9 A32 32 0 1 0 31 9 Z" fill="#46B86B"/>
+  <path d="M0 0 L-22 -12 M0 0 L-25 4 M0 0 L-10 22 M0 0 L-8 -24" stroke="#2F9454" stroke-width="2" stroke-linecap="round"/>
+  ${cicek ? `<g transform="translate(-6 -2)"><g fill="#FF8FB8">${[0,60,120,180,240,300].map(a => `<ellipse rx="5" ry="11" transform="rotate(${a}) translate(0 -8)"/>`).join('')}</g><circle r="5" fill="#FFD600"/></g>` : ''}
+</svg>`;
+const SAZ_SVG = `<svg viewBox="0 0 60 70" aria-hidden="true"><g stroke="#3E8E3A" stroke-width="3" stroke-linecap="round" fill="none">
+  <path d="M14 70 Q12 40 8 18"/><path d="M28 70 Q30 36 30 8"/><path d="M44 70 Q46 44 52 22"/><path d="M22 70 Q14 54 4 48"/><path d="M38 70 Q48 56 58 54"/></g>
+  <g fill="#8A5A2B"><rect x="4.5" y="13" width="7" height="16" rx="3.5" transform="rotate(-8 8 21)"/><rect x="26.5" y="3" width="7" height="18" rx="3.5"/><rect x="48" y="17" width="7" height="15" rx="3.5" transform="rotate(10 52 24)"/></g></svg>`;
+
+/* Kademe kartı simgeleri: sakin dere, hızlı akıntı, büyük şelale */
+const KADEME_IKON = [
+  `<svg class="kart-ikon" viewBox="0 0 80 48" aria-hidden="true"><rect x="2" y="4" width="76" height="40" rx="14" fill="#DDF5EE"/>
+    <g stroke="#00C9A7" stroke-width="3.5" fill="none" stroke-linecap="round"><path d="M12 20 q7 -5 14 0 t14 0 t14 0 t14 0"/><path d="M12 32 q7 -5 14 0 t14 0 t14 0 t14 0"/></g></svg>`,
+  `<svg class="kart-ikon" viewBox="0 0 80 48" aria-hidden="true"><rect x="2" y="4" width="76" height="40" rx="14" fill="#DDEBFF"/>
+    <g stroke="#4D9FFF" stroke-width="3.5" fill="none" stroke-linecap="round"><path d="M10 16 q4 -5 8 0 t8 0 t8 0 t8 0 t8 0"/><path d="M10 26 q4 -5 8 0 t8 0 t8 0 t8 0 t8 0"/><path d="M10 36 q4 -5 8 0 t8 0 t8 0 t8 0 t8 0"/>
+    <path d="M58 26 h12 M64 20 l7 6 -7 6" stroke-linejoin="round"/></g></svg>`,
+  `<svg class="kart-ikon" viewBox="0 0 80 48" aria-hidden="true"><rect x="2" y="4" width="76" height="40" rx="14" fill="#EFE3FF"/>
+    <path d="M8 10 h30 v12 H8 z" fill="#B9A3D9"/><g stroke="#A855F7" stroke-width="3.5" stroke-linecap="round"><path d="M38 12 q8 2 8 12 v10"/><path d="M33 14 q9 3 9 13 v8"/><path d="M43 11 q8 2 8 13 v9"/></g>
+    <g fill="#A855F7"><circle cx="38" cy="39" r="2.4"/><circle cx="46" cy="38" r="2.4"/><circle cx="54" cy="39" r="2.4"/></g>
+    <path d="M30 41 q8 -4 16 0 t16 0 t12 0" stroke="#A855F7" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`
+];
+
+/* Süs taşları (kozmetik): 12 yıldızla biten her tur bir yenisini verir, oynanışa etkisi yok */
+const SUS_TASLARI = [
+  {ad:'Yakut', a:'#FF8FA8', b:'#C8174A'}, {ad:'Zümrüt', a:'#7BF0B5', b:'#0E9C5E'}, {ad:'Safir', a:'#9CC4FF', b:'#2459D6'},
+  {ad:'Kehribar', a:'#FFDD8C', b:'#E08A00'}, {ad:'Ametist', a:'#DDB8FF', b:'#7B3FD1'}, {ad:'Turkuaz', a:'#9AF5EE', b:'#11A8A0'},
+  {ad:'Mercan', a:'#FFC2AD', b:'#E5562F'}, {ad:'İnci', a:'#FFFFFF', b:'#BFC6D6'}, {ad:'Altın', a:'#FFF3A0', b:'#D9A400'},
+  {ad:'Opal', a:'#FFE3F5', b:'#7FC8FF'}, {ad:'Obsidyen', a:'#8A90A8', b:'#23263A'}, {ad:'Gül kuvars', a:'#FFDCE8', b:'#EE7FA8'}
+];
+let susSayac = 0;
+function susSVG(i, kilitli){
+  if (kilitli) return `<svg viewBox="0 0 40 32" aria-hidden="true"><ellipse cx="20" cy="17" rx="16" ry="11" fill="none" stroke="#C9CFDB" stroke-width="2.5" stroke-dasharray="5 4"/></svg>`;
+  const t = SUS_TASLARI[i], id = 'susG' + (++susSayac);
+  return `<svg viewBox="0 0 40 32" aria-label="${t.ad}"><defs><radialGradient id="${id}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="${t.a}"/><stop offset="1" stop-color="${t.b}"/></radialGradient></defs>
+    <ellipse cx="20" cy="20" rx="17" ry="10" fill="rgba(0,0,0,.18)"/><ellipse cx="20" cy="17" rx="17" ry="12" fill="url(#${id})"/>
+    <ellipse cx="14" cy="12" rx="5.5" ry="3" fill="#fff" opacity=".65"/></svg>`;
+}
+
+/* Başlangıç ekranı manzarası: sazlı kıyı, nilüferler, 3 → 5 → 7 → 9 → ? taşları, kurbağa 7'de */
+function basGorselSVG(){
+  const xs = [130, 315, 500, 685, 870], cy = 252, sayilar = ['3','5','7','9','?'];
+  const tas = (cx, yazi) => yazi === '?'
+    ? `<ellipse cx="${cx}" cy="${cy + 26}" rx="92" ry="26" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+       <ellipse cx="${cx}" cy="${cy}" rx="70" ry="40" fill="rgba(255,255,255,.16)" stroke="#fff" stroke-width="5" stroke-dasharray="14 10"/>
+       <text x="${cx}" y="${cy + 15}" text-anchor="middle" font-size="44" font-weight="900" fill="#fff">?</text>`
+    : `<ellipse cx="${cx}" cy="${cy + 26}" rx="92" ry="26" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.32)" stroke-width="3"/>
+       <ellipse cx="${cx}" cy="${cy + 10}" rx="72" ry="40" fill="#7F8FA0"/>
+       <ellipse cx="${cx}" cy="${cy}" rx="72" ry="40" fill="url(#tasG)"/>
+       <text x="${cx}" y="${cy + 15}" text-anchor="middle" font-size="44" font-weight="900" fill="#2B2D42">${yazi}</text>`;
+  const ok = (x) => `<path d="M${x - 18} ${cy} h30" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M${x + 4} ${cy - 10} l12 10 -12 10" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const fark = (x) => `<rect x="${x - 28}" y="${cy - 62}" width="56" height="32" rx="16" fill="#fff"/><text x="${x}" y="${cy - 39}" text-anchor="middle" font-size="22" font-weight="900" fill="#0E9C7E">+2</text>`;
+  const ped = (x, y, a, c) => `<g transform="translate(${x} ${y}) rotate(${a})">${NILUFER_SVG(c).replace(/^<svg[^>]*>|<\/svg>\s*$/g, '')}</g>`;
+  const saz = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})">${SAZ_SVG.replace(/^<svg[^>]*>|<\/svg>\s*$/g, '')}</g>`;
+  let oklar = '';
+  for (let k = 0; k < 4; k++){ const m = (xs[k] + xs[k + 1]) / 2; oklar += ok(m) + (k < 3 ? fark(m) : ''); }
+  return `<svg viewBox="0 0 1000 360" aria-hidden="true" font-family="Nunito,Trebuchet MS,sans-serif">
+    <defs>
+      <linearGradient id="suG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8EDBFF"/><stop offset=".6" stop-color="#45ADEE"/><stop offset="1" stop-color="#2484CB"/></linearGradient>
+      <radialGradient id="tasG" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#F1F4F8"/><stop offset="1" stop-color="#BCC7D3"/></radialGradient>
+    </defs>
+    <path d="M0 150 C120 92 260 112 380 102 S640 82 760 98 S930 92 1000 132 V170 H0Z" fill="#7AD06A"/>
+    ${saz(18, 66, 1.3)}${saz(905, 70, 1.25)}${saz(560, 58, .8)}
+    <path d="M0 150 C160 128 320 166 500 146 S840 126 1000 150 V328 Q1000 360 968 360 H32 Q0 360 0 328Z" fill="url(#suG)"/>
+    <path d="M60 320 q25 -10 50 0 t50 0 M420 334 q25 -10 50 0 t50 0 M760 318 q25 -10 50 0 t50 0" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/>
+    ${ped(44, 316, 20, false)}${ped(598, 334, -35, true)}${ped(965, 300, 70, false)}
+    ${xs.map((x, k) => tas(x, sayilar[k])).join('')}${oklar}
+    <g class="bob"><svg x="438" y="104" width="124" height="116" viewBox="0 0 120 112">${kurbagaSVG().replace(/^<svg[^>]*>|<\/svg>\s*$/g, '')}</svg></g>
+  </svg>`;
+}
+
+/* Süslerin yerleşimi: nehirde nilüferler, kıyılarda sazlar ve kazanılan süs taşları, başlangıçta koleksiyon */
+const Susler = {
+  NILUFERLER: [{l:11,t:12,a:20},{l:47,t:8,a:-30},{l:79,t:14,a:60},{l:23,t:82,a:-10,c:1},{l:61,t:86,a:40},{l:84,t:76,a:-50}],
+  kur(){
+    $('nehir').insertAdjacentHTML('afterbegin', this.NILUFERLER.map(n =>
+      `<div class="nilufer" style="left:${n.l}%;top:${n.t}%;--aci:${n.a}deg">${NILUFER_SVG(n.c)}</div>`).join(''));
+    ['kiyi-sol', 'kiyi-sag'].forEach(id => $(id).insertAdjacentHTML('beforeend',
+      `<div class="saz ust">${SAZ_SVG}</div><div class="saz alt">${SAZ_SVG}</div><div class="kiyi-sus"></div>`));
+  },
+  /* Kazanılan süs taşları iki kıyıya sırayla dağılır */
+  kiyilar(){
+    const sahip = Kayit.veri.susTaslari;
+    $('kiyi-sol').querySelector('.kiyi-sus').innerHTML = sahip.filter((_, k) => k % 2 === 0).map(i => susSVG(i)).join('');
+    $('kiyi-sag').querySelector('.kiyi-sus').innerHTML = sahip.filter((_, k) => k % 2 === 1).map(i => susSVG(i)).join('');
+  },
+  koleksiyon(){
+    const sahip = Kayit.veri.susTaslari;
+    $('bas-koleksiyon').innerHTML = `<div class="koleksiyon-baslik">${sahip.length
+        ? `Süs taşların: ${sahip.length} / ${SUS_TASLARI.length}`
+        : `${YILDIZ_ESIK} yıldızla biten her tur bir süs taşı kazandırır.`}</div>
+      <div class="koleksiyon-taslar">${SUS_TASLARI.map((_, i) => susSVG(i, !sahip.includes(i))).join('')}</div>`;
+  }
+};
+
+/* =========================================================
+   3. KAYIT (localStorage) — anahtar: oruntu_koprusu_v1
+   ========================================================= */
+const ANAHTAR = 'oruntu_koprusu_v1';
+const VARSAYILAN = {surum:1, ses:true, acikKademe:1, enIyi:{1:0,2:0,3:0}, susTaslari:[]};
+const Kayit = {
+  veri: null,
+  yukle(){
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem(ANAHTAR)); } catch(e) {}
+    this.veri = Object.assign(kopya(VARSAYILAN), (v && v.surum === 1) ? v : {});
+    this.veri.enIyi = Object.assign({1:0,2:0,3:0}, this.veri.enIyi);
+  },
+  kaydet(){ try { localStorage.setItem(ANAHTAR, JSON.stringify(this.veri)); } catch(e) {} },
+  sifirla(){ const ses = this.veri.ses; this.veri = kopya(VARSAYILAN); this.veri.ses = ses; this.kaydet(); }
+};
+
+/* İlerleme: tur sonucu kaydı ve kademe kilidi */
+const Ilerleme = {
+  turBitti(kademe, yildiz){
+    const v = Kayit.veri;
+    v.enIyi[kademe] = Math.max(v.enIyi[kademe] || 0, yildiz);
+    let yeniKademe = null, yeniSus = null;
+    if (yildiz >= YILDIZ_ESIK && kademe < KADEMELER.length && v.acikKademe < kademe + 1){
+      v.acikKademe = kademe + 1; yeniKademe = KADEMELER[kademe];
+    }
+    if (yildiz >= YILDIZ_ESIK && v.susTaslari.length < SUS_TASLARI.length){   // kozmetik ödül
+      yeniSus = v.susTaslari.length; v.susTaslari.push(yeniSus);
+    }
+    Kayit.kaydet();
+    return {yeniKademe, yeniSus};
+  }
+};
+
+/* =========================================================
+   4. SES (Web Audio API, dosya yok)
+   ========================================================= */
+const Ses = {
+  ctx: null,
+  ac(){
+    if (!this.ctx){ const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  ton(f, sure, tip='sine', gecikme=0, guc=.2, kayF=null){
+    if (!Kayit.veri.ses) return;
+    this.ac(); const c = this.ctx; if (!c) return;
+    const t = c.currentTime + gecikme;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = tip; o.frequency.setValueAtTime(f, t);
+    if (kayF) o.frequency.exponentialRampToValueAtTime(kayF, t + sure);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(guc, t + .015);
+    g.gain.exponentialRampToValueAtTime(.0001, t + sure);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + sure + .05);
+  },
+  tik(){ this.ton(680, .07, 'triangle', 0, .12); },
+  zipla(){ this.ton(320, .22, 'sine', 0, .25, 760); },
+  dogru(){ [523,659,784].forEach((f,i) => this.ton(f, .18, 'triangle', i*.09, .2)); },
+  yanlis(){ this.ton(230, .28, 'square', 0, .07, 150); },
+  basari(){ [523,659,784,1047].forEach((f,i) => this.ton(f, .26, 'triangle', i*.12, .2)); },
+  yildiz(n){ this.ton(1175, .14, 'triangle', .05, .13); if (n > 1) this.ton(1568, .16, 'triangle', .16, .13); },
+  parilti(){ [1568,1976,2349,3136].forEach((f,i) => this.ton(f, .12, 'sine', .6 + i*.07, .09)); },
+  kart(){ this.ton(520, .09, 'triangle', 0, .12, 780); }
+};
+
+/* =========================================================
+   5. SAHNE YÖNETİCİSİ
+   ========================================================= */
+const Sahne = {
+  aktif: null, kayit: {},
+  tanimla(ad, olaylar){ this.kayit[ad] = olaylar || {}; },
+  git(ad, param){
+    if (this.aktif){
+      const eski = this.kayit[this.aktif]; if (eski.cik) eski.cik();
+      $('s-' + this.aktif).classList.remove('aktif');
+    }
+    this.aktif = ad;
+    const yeni = this.kayit[ad]; if (yeni.gir) yeni.gir(param || {});
+    $('s-' + ad).classList.add('aktif');
+  }
+};
+
+/* =========================================================
+   6. ONAY PENCERESİ
+   ========================================================= */
+const Onay = {
+  sor(metin, evet='Evet', hayir='Vazgeç'){
+    return new Promise(coz => {
+      $('perde-metin').textContent = metin;
+      $('perde-evet').textContent = evet;
+      $('perde-hayir').textContent = hayir;
+      $('perde').hidden = false;
+      const bitir = sonuc => { $('perde').hidden = true; $('perde-evet').onclick = $('perde-hayir').onclick = null; coz(sonuc); };
+      $('perde-evet').onclick = () => bitir(true);
+      $('perde-hayir').onclick = () => bitir(false);
+    });
+  }
+};
+
+/* =========================================================
+   7. ÖRÜNTÜ ŞERİDİ (6 taş + 5 ok)
+   ========================================================= */
+const Serit = {
+  kur(){
+    const s = $('serit'); s.innerHTML = '';
+    for (let i = 0; i < 6; i++){
+      const t = document.createElement('div');
+      t.className = 'tas'; t.dataset.i = i;
+      t.innerHTML = `<div class="tas-yuzey"></div>${CATLAK_SVG}<div class="tas-icerik"><div class="tas-sekil"></div><span class="tas-sayi"></span></div><span class="tas-adim">${i+1}. adım</span>`;
+      s.appendChild(t);
+      if (i < 5){
+        const o = document.createElement('div');
+        o.className = 'ok'; o.dataset.i = i;
+        o.innerHTML = `${DONUS_SVG}<span class="ok-etiket"></span>${OK_SVG}`;
+        s.appendChild(o);
+      }
+    }
+  },
+  tas(i){ return $('serit').querySelector(`.tas[data-i="${i}"]`); },
+  ok(i){ return $('serit').querySelector(`.ok[data-i="${i}"]`); },
+  DURUMLAR: ['bos','catlak','secili','dogru','yanlis','yaziliyor','gosterildi','catliyor','atla'],
+  /* Taşın durum sınıflarını temizleyip verilenleri ekler */
+  durum(i, ...siniflar){
+    const t = this.tas(i);
+    t.classList.remove(...this.DURUMLAR);
+    if (siniflar.length) t.classList.add(...siniflar);
+  },
+  yaz(i, metin){ this.tas(i).querySelector('.tas-sayi').textContent = metin; },
+  salla(i){
+    const t = this.tas(i);
+    t.classList.remove('yanlis'); void t.offsetWidth; t.classList.add('yanlis');
+    setTimeout(() => t.classList.remove('yanlis'), 600);
+  },
+  /* gorunen: 6 değer, bilinmeyen = null
+     cizim: şekil sorusunda i. adımın SVG'sini veren işlev (sayı sorusunda null)
+     atla: genelleme görevinde gizlenen ara adımlar */
+  goster(gorunen, cizim, atla){
+    $('serit').classList.toggle('sekilli', !!cizim);
+    gorunen.forEach((v, i) => {
+      this.tas(i).classList.toggle('sekil', !!cizim);
+      if (atla && atla.includes(i)){ this.durum(i, 'atla'); this.yaz(i, '…'); }
+      else if (v === null){ this.durum(i, 'bos'); this.yaz(i, '?'); }
+      else { this.durum(i); this.yaz(i, v); }
+      this.sekil(i, cizim && v !== null ? cizim(i) : '');
+    });
+    this.farklariGizle();
+  },
+  sekil(i, svg){ this.tas(i).querySelector('.tas-sekil').innerHTML = svg || ''; },
+  farklariGizle(){
+    for (let i = 0; i < 5; i++) this.ok(i).classList.remove('etiketli', 'bozuk', 'uyuyor');
+  },
+  /* i. oka farkı yazar ve kurala göre ✓ (yeşil) / ✗ (pembe) işaretler; kurala uyuyorsa true döner */
+  okIsaretle(i, fark, kural){
+    const ok = this.ok(i), uyar = fark === kural;
+    ok.querySelector('.ok-etiket').innerHTML = `${fark >= 0 ? '+' : '−'}${Math.abs(fark)}<b>${uyar ? '✓' : '✗'}</b>`;
+    ok.classList.remove('etiketli'); void ok.offsetWidth;
+    ok.classList.add('etiketli');
+    ok.classList.toggle('bozuk', !uyar);
+    ok.classList.toggle('uyuyor', uyar);
+    return uyar;
+  },
+  /* İki tarafı bilinen her okta farkı gösterir (gerçek kurala göre) */
+  farklariGoster(gorunen, d){
+    for (let i = 0; i < 5; i++){
+      const a = gorunen[i], b = gorunen[i + 1];
+      if (a === null || b === null) this.ok(i).classList.remove('etiketli', 'bozuk', 'uyuyor');
+      else this.okIsaretle(i, b - a, d);
+    }
+  }
+};
+
+/* =========================================================
+   8. KURBAĞA (konum: -1 sol kıyı, 0–5 taşlar, 6 sağ kıyı)
+   ========================================================= */
+const Kurbaga = {
+  konum: -1,
+  hedef(k){ return k < 0 ? $('kiyi-sol') : k > 5 ? $('kiyi-sag') : Serit.tas(k); },
+  yerlestir(k, animasyonlu){
+    const el = $('kurbaga'), n = $('nehir').getBoundingClientRect();
+    const h = this.hedef(k).getBoundingClientRect();
+    const ref = Serit.tas(0).getBoundingClientRect();
+    const w = Math.max(48, Math.min(ref.width * .78, 130)), y0 = w * 112/120;
+    el.style.width = w + 'px'; el.style.height = y0 + 'px';
+    const x = h.left - n.left + h.width/2 - w/2;
+    const kiyida = k < 0 || k > 5;
+    const y = kiyida ? h.top - n.top + h.height/2 - y0/2 : h.top - n.top - y0 * .8;
+    el.classList.toggle('anim', !!animasyonlu);
+    el.style.transform = `translate(${x}px,${y}px)`;
+    if (animasyonlu){
+      const ic = el.firstElementChild;
+      ic.classList.remove('zipla'); void ic.offsetWidth; ic.classList.add('zipla');
+      Ses.zipla();
+    }
+    this.konum = k;
+  },
+  /* Bulunduğu yerden sağ kıyıya kadar taş taş zıplar, sonra bitince() çağrılır */
+  zamanlayici: null,
+  gec(bitince){
+    const el = $('kurbaga');
+    el.style.setProperty('--gecis', '.3s');
+    let k = this.konum;
+    const adim = () => {
+      k++; this.yerlestir(k, true);
+      this.zamanlayici = k < 6 ? setTimeout(adim, 340)
+        : setTimeout(() => { el.style.removeProperty('--gecis'); if (bitince) bitince(); }, 550);
+    };
+    adim();
+  },
+  durdur(){ clearTimeout(this.zamanlayici); $('kurbaga').style.removeProperty('--gecis'); }
+};
+
+/* =========================================================
+   9. EKRANLAR
+   ========================================================= */
+/* --- 9.1 Başlangıç --- */
+Sahne.tanimla('baslangic', {gir(){ Susler.koleksiyon(); }});
+$('bas-oyna').onclick = () => Sahne.git('kademe');
+$('bas-ayarlar').onclick = () => Sahne.git('ayarlar', {geri:'baslangic'});
+
+/* --- 9.2 Kademe seçimi --- */
+Sahne.tanimla('kademe', {
+  gir(){
+    $('kademe-liste').innerHTML = KADEMELER.map(kd => {
+      const acik = kd.no <= Kayit.veri.acikKademe;
+      const en = Kayit.veri.enIyi[kd.no] || 0;
+      const alt = acik ? `${YILDIZ_SVG}<span>${en} / ${YILDIZ_MAKS}</span>`
+                       : `${KILIT_SVG}<span>Önceki kademede ${YILDIZ_ESIK} yıldız topla</span>`;
+      return `<button class="kademe-kart${acik ? '' : ' kilitli'}" data-k="${kd.no}" style="--kart-renk:${kd.renk}">
+        <span class="kart-no">${kd.no}</span>
+        <span class="kart-yazi">${KADEME_IKON[kd.no - 1]}<span class="kart-ad">${kd.ad}</span><span class="kart-metin">${kd.metin}</span><span class="kart-alt">${alt}</span></span>
+      </button>`;
+    }).join('');
+  }
+});
+$('kademe-liste').onclick = e => {
+  const kart = e.target.closest('.kademe-kart'); if (!kart) return;
+  if (kart.classList.contains('kilitli')){
+    kart.classList.remove('salla'); void kart.offsetWidth; kart.classList.add('salla'); Ses.yanlis(); return;
+  }
+  Sahne.git('oyun', {kademe: +kart.dataset.k});
+};
+$('kademe-geri').onclick = () => Sahne.git('baslangic');
+
+/* --- 9.3 Oyun --- */
+/*  Tur durumu (d) ve soru durumu (s)
+    Soru akışı: kural kartı seç → kurbağa kuralı taş taş dener → eksik taş / hatalı taş
+    s.asama: 'kural'   → kural kartı bekleniyor (varsayım)
+             'kontrol' → kurbağa seçilen kuralı deniyor (doğrulama)
+             'bul'   → hatalı taşı arıyor (B tipi)
+             'yaz'   → seçili taşa sayı yazıyor
+             'devam' → gösterilen cevabı okuyor, Devam bekleniyor
+             'bitti' → kurbağa karşıya geçiyor
+    Yıldız: soruda 0 hata = 2, 1 hata = 1, 2+ hata = 0 (ve kural turun sonunda tekrar sorulur)
+    Yanlış kural kartı da 1 hata sayılır. */
+const Oyun = {
+  d: null, s: null, oturum: 0,
+  gir(p){
+    this.oturum++;
+    /* Tur planı: 4 sayı + 4 şekil sorusu, karışık sırada */
+    const plan = ['sayi','sayi','sayi','sayi','sekil','sekil','sekil','sekil'];
+    for (let i = plan.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [plan[i], plan[j]] = [plan[j], plan[i]]; }
+    this.d = {kademe: p.kademe, soru: 0, yildiz: 0, son: {}, tekrar: [], plan, gecmis: []};
+    const kd = KADEMELER[p.kademe - 1];
+    $('oyun-kademe').innerHTML = `<span class="kademe-rozet" style="--rozet:${kd.renk}" aria-label="${kd.no}. kademe">${kd.no}</span><span class="uzun">${kd.ad}</span>`;
+    Susler.kiyilar();
+    this.soruYukle();
+  },
+  cik(){ this.oturum++; Kurbaga.durdur(); },
+
+  soruYukle(){
+    const t = this.d, kalan = SORU_SAYISI - t.soru;
+    const zorunlu = (t.tekrar.length && kalan <= t.tekrar.length) ? t.tekrar.shift() : null;
+    const o = Uretici.soru(t.kademe, t.plan[t.soru], t.son, zorunlu);
+    if (o.tur === 'sekil') t.son.aile = o.aile; else t.son.d = o.d;
+    const gizli = i => o.bos.includes(i) || o.atla.includes(i);
+    const gorunen = o.sayilar.map((v, i) => gizli(i) ? null : (o.hata && o.hata.i === i ? o.hata.deger : v));
+    this.s = {o, gorunen, hata: 0, hedefHata: 0, hedef: null, yazi: '', asama: 'kural',
+              kartlar: Uretici.kartlar(o.d), denenen: [], secilen: null};
+    Serit.goster(gorunen, o.tur === 'sekil' ? i => this.cizim(i) : null, o.atla);
+    this.ilerlemeCiz();
+    $('oyun-yildiz').textContent = t.yildiz;
+    this.metin(o.tur === 'sekil' ? 'Kural ne? Şekillere ve sayılarına bak, bir kart seç.'
+                                 : 'Kural ne? Taşlara bak ve bir kart seç.');
+    this.girisModu('kartlar');
+    requestAnimationFrame(() => Kurbaga.yerlestir(-1, false));
+  },
+
+  /* --- Varsayım: kural kartı seçildi --- */
+  kartSec(d){
+    const s = this.s;
+    if (!s || s.asama !== 'kural' || s.denenen.includes(d)) return;
+    s.secilen = d;
+    Ses.kart();
+    this.kontrolEt(d);
+  },
+  /* --- Doğrulama: kurbağa bilinen taşlara sırayla zıplar, iki tarafı bilinen her oku kurala göre işaretler.
+         Yanlış kuralda ilk ✗'te durur. Doğru kuralda (B tipinde) ✗ olsa da sona kadar gider. --- */
+  kontrolEt(kural){
+    const s = this.s, o0 = this.oturum;
+    s.asama = 'kontrol';
+    this.girisModu('kartlar');
+    Serit.farklariGizle();
+    Kurbaga.durdur(); Kurbaga.yerlestir(-1, false);
+    this.metin(`Kurbağa kuralı deniyor: ${kuralMetni(kural)}`, 'ipucu');
+    const bilinen = [];
+    s.gorunen.forEach((v, i) => { if (v !== null) bilinen.push(i); });
+    $('kurbaga').style.setProperty('--gecis', '.32s');
+    let n = 0, bozukVar = false;
+
+    const bitir = tamam => {
+      if (o0 !== this.oturum) return;
+      $('kurbaga').style.removeProperty('--gecis');
+      if (tamam) return this.uygulamaBasla(bozukVar);
+      s.hata++; s.denenen.push(kural); s.secilen = null; s.asama = 'kural';
+      Ses.yanlis();
+      this.metin('Bu kural burada bozuldu. Başka bir kart dene.', 'uyari');
+      this.girisModu('kartlar');
+    };
+    const adim = () => {
+      if (o0 !== this.oturum) return;
+      const h = bilinen[n], a = n > 0 ? bilinen[n - 1] : null;
+      Kurbaga.yerlestir(h, true);
+      Kurbaga.zamanlayici = setTimeout(() => {          // kurbağa taşa konunca oku işaretle
+        if (o0 !== this.oturum) return;
+        if (a !== null && h === a + 1){
+          const uyar = Serit.okIsaretle(a, s.gorunen[h] - s.gorunen[a], kural);
+          if (uyar) Ses.ton(880, .12, 'triangle', 0, .12);
+          else {
+            Ses.ton(210, .22, 'square', 0, .07, 140);
+            bozukVar = true;
+            if (kural !== s.o.d){ Kurbaga.zamanlayici = setTimeout(() => bitir(false), 500); return; }
+          }
+        }
+        n++;
+        Kurbaga.zamanlayici = n < bilinen.length ? setTimeout(adim, 150) : setTimeout(() => bitir(true), 450);
+      }, 340);
+    };
+    Kurbaga.zamanlayici = setTimeout(adim, 300);
+  },
+  /* --- Kural doğrulandı: göreve geç --- */
+  uygulamaBasla(bozukVar){
+    const s = this.s, o = s.o, b = this.birim();
+    Ses.dogru();
+    if (o.tip === 'A'){
+      s.asama = 'yaz';
+      this.hedefSec(o.bos[0]);
+      const ne = b ? `adımda kaç ${b} olmalı?` : 'taşa hangi sayı gelmeli?';
+      this.metin(o.bos.length > 1 ? `Kural tutuyor! Şimdi eksik adımları doldur. İlk eksik ${ne}`
+                                  : `Kural tutuyor! Eksik ${ne}`, 'basari');
+      this.girisModu('tuslar');
+    } else if (o.tip === 'C'){
+      s.asama = 'yaz';
+      this.hedefSec(o.bos[0]);
+      this.metin(`Kural tutuyor! 4. ve 5. adım gizli. 6. adımda ${b ? `kaç ${b} olur?` : 'hangi sayı olur?'}`, 'basari');
+      this.girisModu('tuslar');
+    } else {
+      s.asama = 'bul';
+      const yer = b ? 'şekle' : 'taşa';
+      this.metin(bozukVar ? `Kural çoğu adımda tutuyor ama bir yerde bozuluyor. Kuralı bozan ${yer} dokun.`
+                          : `Kural tutuyor! Kuralı bozan ${yer} dokun.`, 'basari');
+      this.girisModu('bos');
+    }
+  },
+
+  /* --- Şekil yardımcıları --- */
+  birim(){ const o = this.s.o; return o.tur === 'sekil' ? SEKILLER[o.aile].birim : null; },
+  cizim(i){
+    const s = this.s, o = s.o;
+    const mod = (o.hata && o.hata.i === i && s.gorunen[i] !== o.sayilar[i]) ? o.hata.mod : null;
+    return Sekil.ciz(o.aile, i + 1, mod);
+  },
+  /* i. adımı doğru değeriyle doldurur (şekil sorusunda şeklini de çizer) */
+  doldur(i, ...siniflar){
+    const s = this.s, o = s.o;
+    s.gorunen[i] = o.sayilar[i];
+    Serit.durum(i, ...siniflar); Serit.yaz(i, o.sayilar[i]);
+    if (o.tur === 'sekil') Serit.sekil(i, this.cizim(i));
+  },
+
+  ilerlemeCiz(){
+    let h = '';
+    for (let i = 0; i < SORU_SAYISI; i++)
+      h += `<span class="nokta${i < this.d.soru ? ' bitti' : i === this.d.soru ? ' simdi' : ''}"></span>`;
+    $('oyun-ilerleme').innerHTML = h;
+  },
+  metin(yazi, tur){
+    const el = $('gorev-metin');
+    el.textContent = yazi;
+    el.className = 'gorev-metin' + (tur ? ' ' + tur : '');
+  },
+  /* mod: 'tuslar' | 'devam' | 'bos' */
+  girisModu(mod){
+    const g = $('giris-alani');
+    if (mod === 'tuslar'){
+      const r = ['1','2','3','4','5','6','7','8','9','0'].map(x => `<button class="tus" data-tus="${x}">${x}</button>`).join('');
+      g.innerHTML = `<div class="tuslar">${r}<button class="tus tus-sil" data-tus="sil" aria-label="Sil">${SIL_SVG}</button><button class="tus tus-tamam" data-tus="tamam" aria-label="Tamam">${TAMAM_SVG}</button></div>`;
+    } else if (mod === 'kartlar'){
+      const s = this.s, kilitli = s.asama !== 'kural';
+      g.innerHTML = `<div class="kural-kartlar">${s.kartlar.map(d => {
+        const den = s.denenen.includes(d), sec = s.secilen === d;
+        return `<button class="kural-kart${d < 0 ? ' azalan' : ''}${den ? ' denendi' : ''}${sec ? ' secilen' : ''}" data-kart="${d}"${kilitli || den ? ' disabled' : ''} aria-label="${kuralMetni(d)}">
+          <span class="kk-buyuk">${d > 0 ? '+' : '−'}${Math.abs(d)}</span>
+          <span class="kk-yazi">Her adımda ${Math.abs(d)} ${d > 0 ? 'artıyor' : 'azalıyor'}</span></button>`;
+      }).join('')}</div>`;
+    } else if (mod === 'devam'){
+      g.innerHTML = `<button class="btn btn-turuncu" data-tus="devam">Devam</button>`;
+    } else g.innerHTML = '';
+  },
+
+  /* --- Seçili taş ve yazma --- */
+  hedefSec(i){
+    const s = this.s;
+    if (s.hedef !== null && s.hedef !== i) this.tas(s.hedef).classList.remove('secili');
+    s.hedef = i; s.yazi = '';
+    this.tas(i).classList.add('secili');
+    this.yaziGoster();
+  },
+  tas(i){ return Serit.tas(i); },
+  yaziGoster(){
+    const s = this.s, i = s.hedef;
+    Serit.yaz(i, s.yazi || (s.gorunen[i] != null ? s.gorunen[i] : '?'));
+    this.tas(i).classList.toggle('yaziliyor', s.yazi !== '');
+  },
+  tus(v){
+    const s = this.s; if (!s) return;
+    if (v === 'devam' || (v === 'tamam' && s.asama === 'devam')) return this.devam();
+    if (s.asama !== 'yaz') return;
+    if (v === 'sil') s.yazi = s.yazi.slice(0, -1);
+    else if (v === 'tamam') return this.kontrol();
+    else if (s.yazi.length < 4) s.yazi = (s.yazi === '0' ? '' : s.yazi) + v;
+    this.yaziGoster();
+  },
+
+  /* --- Yazılan sayıyı denetle --- */
+  kontrol(){
+    const s = this.s, o = s.o, i = s.hedef;
+    if (s.yazi === ''){ this.metin('Önce taşa bir sayı yaz.', 'ipucu'); return; }
+    const girilen = +s.yazi, dogru = o.sayilar[i];
+    if (girilen === dogru) return this.hedefTamam(i);
+
+    s.hata++; s.hedefHata++;
+    Ses.yanlis(); Serit.salla(i);
+    if (s.hedefHata >= 2) return this.cevabiGoster(i);
+
+    const b = this.birim(), yon = `Yön ters! Sayılar her adımda ${o.d > 0 ? 'büyüyor' : 'küçülüyor'}.`;
+    let m;
+    if (o.tip === 'C'){                       // genelleme: 3. adımdan 6. adıma
+      const son = s.gorunen[2];
+      if (girilen === son + o.d) m = 'Bu sayı 4. adımın. 6. adıma kadar devam et.';
+      else if (girilen === son + 2 * o.d) m = 'Bu sayı 5. adımın. Bir adım daha!';
+      else if (girilen === son - 3 * o.d) m = yon;
+      else m = b ? `3. adımda ${son} ${b} var. 6. adıma 3 adım daha var.` : `3. adım: ${son}. 6. adıma 3 adım daha var.`;
+    } else {
+      const onceki = s.gorunen[i - 1];        // boşluklar yan yana değil, hata 1. adımda değil: hep bilinir
+      if (girilen === onceki - o.d) m = yon;
+      else if (girilen === onceki) m = 'Bu sayı önceki adımda var. Kuralı uygula.';
+      else m = b ? `Önceki adımda ${onceki} ${b} var. Oklara bak.` : `Önceki taş: ${onceki}. Oklara bak.`;
+    }
+    Serit.farklariGoster(s.gorunen, o.d);
+    this.metin(m + ' Bir daha dene.', 'uyari');
+    s.yazi = ''; this.yaziGoster();
+  },
+  hedefTamam(i){
+    const s = this.s, o = s.o;
+    this.doldur(i, 'dogru');
+    o.atla.forEach(j => this.doldur(j));      // genelleme: gizli ara adımları da göster
+    s.hedef = null; Ses.dogru();
+    const kalan = o.bos.filter(b => s.gorunen[b] === null);
+    if (kalan.length){
+      s.hedefHata = 0; this.hedefSec(kalan[0]);
+      this.metin('Doğru! Şimdi diğer eksik taş.', 'basari');
+      return;
+    }
+    this.soruTamam(false);
+  },
+  /* İkinci yanlışta doğru cevabı açıklamasıyla göster */
+  cevabiGoster(i){
+    const s = this.s, o = s.o, b = this.birim(), v = o.sayilar;
+    let m;
+    if (o.tip === 'C'){
+      o.atla.forEach(j => this.doldur(j, 'gosterildi'));
+      m = `Doğrusu: 4. adım ${v[3]}, 5. adım ${v[4]}, 6. adım ${v[5]}.`;
+    } else m = `Doğrusu: ${islemMetni(s.gorunen[i - 1], o.d)}.`;
+    this.doldur(i, 'gosterildi');
+    s.hedef = null; s.asama = 'devam';
+    Serit.farklariGoster(s.gorunen, o.d);
+    this.metin(`${m} ${kuralMetni(o.d, b)}`, 'ipucu');
+    this.girisModu('devam');
+  },
+  devam(){
+    const s = this.s; if (s.asama !== 'devam') return;
+    const kalan = s.o.bos.filter(b => s.gorunen[b] === null);
+    if (kalan.length){
+      s.asama = 'yaz'; s.hedefHata = 0; this.hedefSec(kalan[0]);
+      this.metin('Şimdi diğer eksik taşa hangi sayı gelmeli?');
+      this.girisModu('tuslar');
+    } else this.soruTamam(true);
+  },
+
+  /* --- B tipi: hatalı taşı bulma --- */
+  tasTiklandi(i){
+    const s = this.s;
+    if (!s || s.asama !== 'bul') return;
+    if (i === s.o.hata.i) return this.hataBulundu(false);
+    s.hata++; s.hedefHata++;
+    Ses.yanlis(); Serit.salla(i);
+    Serit.farklariGoster(s.gorunen, s.o.d);
+    if (s.hedefHata >= 2) return this.hataBulundu(true);
+    this.metin('Bu taş kurala uyuyor. Oklardaki farklara bak: kural nerede bozuluyor?', 'uyari');
+  },
+  hataBulundu(gosterildi){
+    const s = this.s, i = s.o.hata.i;
+    Serit.durum(i, 'catlak', 'catliyor');
+    Ses.ton(150, .18, 'square', 0, .09, 70);
+    s.asama = 'yaz'; s.hedefHata = 0; this.hedefSec(i);
+    const b = this.birim(), mod = s.o.hata.mod;
+    const neden = b ? ` Bu şekilde bir ${b} ${mod.tip === 'fazla' ? 'fazla' : 'eksik'}.` : '';
+    this.metin(gosterildi ? `Kuralı bozan adım bu.${neden} Doğru sayıyı yaz.`
+                          : `Buldun! Bu adım kuralı bozuyor.${neden} Doğru sayıyı yaz.`, gosterildi ? 'ipucu' : 'basari');
+    this.girisModu('tuslar');
+  },
+
+  /* --- Soru bitti: kurbağa karşıya geçer --- */
+  soruTamam(gosterildi){
+    const s = this.s; s.asama = 'bitti';
+    Serit.farklariGoster(s.gorunen, s.o.d);
+    const kazan = s.hata === 0 ? 2 : s.hata === 1 ? 1 : 0;
+    if (kazan === 0) this.d.tekrar.push(s.o.tur === 'sekil' ? {aile: s.o.aile} : {d: s.o.d});
+    this.d.gecmis.push({o: s.o, hata: s.hata, kazan});
+    if (!gosterildi) this.metin(`Doğru! ${kuralMetni(s.o.d, this.birim())}`, 'basari');
+    this.girisModu('bos');
+    const o0 = this.oturum;
+    Kurbaga.gec(() => { if (o0 === this.oturum) this.soruBitti(kazan); });
+  },
+  soruBitti(kazanilan){
+    this.d.yildiz += kazanilan; this.d.soru++;
+    if (kazanilan){
+      const ys = document.querySelector('#s-oyun .yildiz-sayac');
+      ys.classList.remove('pop'); void ys.offsetWidth; ys.classList.add('pop');
+      Ses.yildiz(kazanilan);
+    }
+    if (this.d.soru >= SORU_SAYISI) Sahne.git('sonuc', {kademe: this.d.kademe, yildiz: this.d.yildiz, gecmis: this.d.gecmis});
+    else this.soruYukle();
+  }
+};
+Sahne.tanimla('oyun', {gir: p => Oyun.gir(p), cik: () => Oyun.cik()});
+$('oyun-geri').onclick = () =>
+  Onay.sor('Tur bitmedi. Çıkmak istiyor musun?', 'Çık', 'Devam et').then(e => { if (e) Sahne.git('kademe'); });
+$('giris-alani').onclick = e => {
+  const b = e.target.closest('[data-tus]'); if (b) return Oyun.tus(b.dataset.tus);
+  const k = e.target.closest('[data-kart]'); if (k) Oyun.kartSec(+k.dataset.kart);
+};
+$('serit').onclick = e => { const t = e.target.closest('.tas'); if (t) Oyun.tasTiklandi(+t.dataset.i); };
+/* Klavye: rakamlar, Backspace, Enter */
+document.addEventListener('keydown', e => {
+  if (Sahne.aktif !== 'oyun' || !$('perde').hidden) return;
+  if (/^[0-9]$/.test(e.key)) Oyun.tus(e.key);
+  else if (e.key === 'Backspace'){ e.preventDefault(); Oyun.tus('sil'); }
+  else if (e.key === 'Enter'){ e.preventDefault(); Oyun.tus('tamam'); }
+});
+
+/* --- 9.4 Sonuç --- */
+Sahne.tanimla('sonuc', {
+  gir(p){
+    this.kademe = p.kademe;
+    const r = Ilerleme.turBitti(p.kademe, p.yildiz);
+    $('sonuc-sayi').textContent = `${p.yildiz} / ${YILDIZ_MAKS}`;
+    if (r.yeniKademe){
+      $('sonuc-baslik').textContent = 'Harika!';
+      $('sonuc-mesaj').textContent = `Yeni kademe açıldı: ${r.yeniKademe.ad}`;
+    } else if (p.yildiz >= YILDIZ_ESIK){
+      $('sonuc-baslik').textContent = 'Çok iyi!';
+      $('sonuc-mesaj').textContent = 'Köprüyü tamamladın.';
+    } else {
+      $('sonuc-baslik').textContent = 'İyi deneme!';
+      $('sonuc-mesaj').textContent = `${YILDIZ_ESIK} yıldız toplarsan yeni kademe açılır.`;
+    }
+    Ses.basari();
+
+    /* Kozmetik süs taşı */
+    const sus = $('sonuc-sus');
+    if (r.yeniSus !== null){
+      sus.innerHTML = `${susSVG(r.yeniSus)}<span>Yeni süs taşı: ${SUS_TASLARI[r.yeniSus].ad}! Kıyıları süslüyor.</span>`;
+      sus.hidden = false; Ses.parilti();
+    } else sus.hidden = true;
+    if (p.yildiz >= YILDIZ_ESIK) konfeti();
+
+    /* Özet ve "Kuralı hatırla": zorlanılan kurallar önce, en çok 3 kart */
+    const g = p.gecmis || [];
+    const ilk = g.filter(x => x.hata === 0).length;
+    $('sonuc-ozet').textContent = `${g.length} sorunun ${ilk} tanesini ilk denemede bildin.`;
+    const harita = new Map();
+    g.forEach(x => {
+      const k = x.o.tur === 'sekil' ? 'S' + x.o.aile : 'N' + x.o.d;
+      if (harita.has(k)) harita.get(k).hata += x.hata; else harita.set(k, {o: x.o, hata: x.hata});
+    });
+    const kartlar = [...harita.values()].sort((a, b) => b.hata - a.hata).slice(0, 3);
+    $('sonuc-kurallar').innerHTML = kartlar.map(x => {
+      const o = x.o, b = o.tur === 'sekil' ? SEKILLER[o.aile].birim : null;
+      return `<div class="hatirla-kart${x.hata ? ' zor' : ''}">
+        <span class="hk-etiket">${x.hata ? 'Bir daha bak' : 'Bildin'}</span>
+        <span class="hk-kural${o.d < 0 ? ' azalan' : ''}">${o.d > 0 ? '+' : '−'}${Math.abs(o.d)}</span>
+        ${b ? `<div class="hk-sekil">${Sekil.ciz(o.aile, 3, null)}</div>` : ''}
+        <span class="hk-ornek">${o.sayilar.slice(0, 4).join(' → ')}${b ? ' ' + b : ''}</span>
+        <span class="hk-metin">${kuralMetni(o.d, b)}</span></div>`;
+    }).join('');
+  }
+});
+/* Tur sonu konfetisi (hareket azaltma tercihinde gösterilmez) */
+function konfeti(){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const kap = document.createElement('div'), renk = ['#FF6B35','#FFD600','#FF4D8D','#00C9A7','#4D9FFF','#A855F7'];
+  kap.className = 'konfeti';
+  for (let i = 0; i < 60; i++){
+    const p = document.createElement('i');
+    p.style.cssText = `left:${Math.random() * 100}%;background:${renk[i % 6]};animation-delay:${(Math.random() * .6).toFixed(2)}s;` +
+      `animation-duration:${(1.8 + Math.random() * 1.4).toFixed(2)}s;--x:${Math.round((Math.random() - .5) * 180)}px;--r:${Math.round(Math.random() * 720 - 360)}deg`;
+    kap.appendChild(p);
+  }
+  $('s-sonuc').appendChild(kap);
+  setTimeout(() => kap.remove(), 4000);
+}
+$('sonuc-tekrar').onclick = () => Sahne.git('oyun', {kademe: Sahne.kayit.sonuc.kademe});
+$('sonuc-kademeler').onclick = () => Sahne.git('kademe');
+
+/* --- 9.5 Ayarlar --- */
+const sesAnahtariniCiz = () => $('ayar-ses').setAttribute('aria-checked', String(Kayit.veri.ses));
+Sahne.tanimla('ayarlar', {
+  gir(p){ this.geri = p.geri || 'baslangic'; sesAnahtariniCiz(); }
+});
+$('ayar-geri').onclick = () => Sahne.git(Sahne.kayit.ayarlar.geri);
+$('ayar-ses').onclick = () => { Kayit.veri.ses = !Kayit.veri.ses; Kayit.kaydet(); sesAnahtariniCiz(); Ses.tik(); };
+$('ayar-ac').onclick = () =>
+  Onay.sor('Tüm kademeler açılsın mı?', 'Aç').then(e => { if (e){ Kayit.veri.acikKademe = KADEMELER.length; Kayit.kaydet(); } });
+$('ayar-sifirla').onclick = () =>
+  Onay.sor('Tüm yıldızlar, açık kademeler ve süs taşları silinsin mi?', 'Sıfırla').then(e => { if (e) Kayit.sifirla(); });
+
+/* =========================================================
+   10. BAŞLAT
+   ========================================================= */
+Kayit.yukle();
+Serit.kur();
+$('bas-gorsel').innerHTML = basGorselSVG();
+document.querySelector('#kurbaga .kurbaga-ic').innerHTML = kurbagaSVG();
+document.querySelectorAll('.yildiz-ikon').forEach(e => e.innerHTML = YILDIZ_SVG);
+['kademe-geri','oyun-geri','ayar-geri'].forEach(id => $(id).innerHTML = GERI_SVG);
+$('kiyi-sag').innerHTML = `<div class="bayrak">${BAYRAK_SVG}</div>`;
+Susler.kur();
+
+/* Her düğmede kısa tık sesi (anahtar kendi sesini çalar) */
+document.addEventListener('pointerdown', () => Ses.ac(), {once:true});
+document.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (b && b.id !== 'ayar-ses' && b.id !== 'deneme-zipla' && !b.classList.contains('kilitli')) Ses.tik();
+}, true);
+
+/* Ekran boyutu değişince kurbağayı yerinde tut */
+window.addEventListener('resize', () => { if (Sahne.aktif === 'oyun') Kurbaga.yerlestir(Kurbaga.konum, false); });
+
+Sahne.git('baslangic');
+</script>
+</body>
+</html>
