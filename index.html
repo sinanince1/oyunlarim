@@ -630,22 +630,6 @@
       100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
     }
 
-    /* ---- Gizli kategori: şifre penceresi ---- */
-    .category-icon { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
-    .gizli-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(20,20,40,.55); align-items: center; justify-content: center; padding: 16px; }
-    .gizli-overlay.active { display: flex; animation: fadeIn .2s ease; }
-    .gizli-kutu { background: #fff; border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,.15); }
-    .gizli-kutu.salla { animation: gizliSalla .4s; }
-    @keyframes gizliSalla { 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
-    .gizli-ikon { font-size: 2.6rem; }
-    .gizli-kutu h3 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.5rem; color: #2D2D2D; margin: 6px 0 14px; }
-    .gizli-kutu input { width: 100%; font-family: 'Nunito', sans-serif; font-size: 1.6rem; font-weight: 900; text-align: center; letter-spacing: 4px; padding: 12px; border-radius: 14px; border: 3px solid #E8DFF5; outline: none; }
-    .gizli-kutu input:focus { border-color: #A855F7; }
-    .gizli-hata { color: #FF4D8D; font-weight: 800; min-height: 1.3em; margin: 8px 0; }
-    .gizli-butonlar { display: flex; gap: 10px; }
-    .gizli-btn { flex: 1; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.1rem; padding: 12px; border-radius: 99px; border: none; cursor: pointer; }
-    .gizli-iptal { background: #F0ECF7; color: #2D2D2D; }
-    .gizli-tamam { background: linear-gradient(135deg, #4D9FFF, #A855F7); color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.15); }
     /* ---- Kasa Ustası kart animasyonu: rakamlar çözümlenir, çark döner, kasa açılır ---- */
     .kasa-ustasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .ku-sahne { width: 100%; height: 100%; }
@@ -1047,6 +1031,320 @@
     @media (prefers-reduced-motion: reduce) {
       .kk-kedi, .kk-soru, .kk-cevap, .kk-yildiz { animation: none; }
     }
+
+    /* ---- Sınıf seçme çubuğu ---- */
+    .sinif-bar {
+      display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+      gap: 12px; padding: 4px 16px 26px; position: relative; z-index: 5;
+    }
+    .sinif-btn {
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.2rem;
+      padding: 14px 28px; border-radius: 99px; border: 3px solid; background: #fff;
+      cursor: pointer; transition: transform .18s, box-shadow .18s, background .18s, color .18s;
+      box-shadow: 0 4px 0 rgba(0,0,0,.08);
+    }
+    .sinif-btn:hover { transform: translateY(-2px); }
+    .sinif-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+    .sinif-btn.secili { transform: translateY(-3px) scale(1.07); box-shadow: 0 7px 0 rgba(0,0,0,.14); }
+    .sinif-btn.sinif-tumu { font-size: 1rem; padding: 12px 20px; }
+    @media (max-width: 600px) {
+      .sinif-bar { gap: 8px; padding-bottom: 20px; }
+      .sinif-btn { font-size: 1rem; padding: 11px 18px; border-width: 2.5px; }
+      .sinif-btn.sinif-tumu { font-size: .9rem; padding: 10px 14px; }
+    }
+    .sinif-bos {
+      text-align: center; font-family: 'Nunito', sans-serif; font-weight: 900;
+      font-size: 1.5rem; color: #B9AEA0; padding: 70px 20px;
+    }
+
+    /* ---- Kazanım filtresi ---- */
+    .filtre-alan {
+      max-width: 860px; margin: -8px auto 18px; padding: 0 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      position: relative; z-index: 5; font-family: 'Nunito', sans-serif;
+    }
+    .filtre-btn {
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+      padding: 11px 22px; border-radius: 99px; border: 3px dashed #C7B8E8;
+      background: #fff; color: #7A4FD1; cursor: pointer;
+      transition: transform .18s, box-shadow .18s, border .18s;
+      box-shadow: 0 3px 0 rgba(0,0,0,.06);
+    }
+    .filtre-btn:hover { transform: translateY(-2px); }
+    .filtre-btn.aktif, .filtre-btn.dolu {
+      border-style: solid; border-color: transparent; color: #fff;
+      background: linear-gradient(135deg, #A855F7, #FF4D8D);
+      box-shadow: 0 5px 0 rgba(0,0,0,.12);
+    }
+    .filtre-panel {
+      width: 100%; background: #fff; border: 3px solid #EADFD3; border-radius: 24px;
+      box-shadow: 0 8px 0 rgba(0,0,0,.06); overflow: hidden;
+      animation: filtreAcil .25s ease;
+    }
+    @keyframes filtreAcil { from { opacity: 0; transform: translateY(-10px); } }
+    .filtre-ust {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px; border-bottom: 3px dashed #F0E8DC;
+    }
+    .filtre-baslik { font-weight: 900; font-size: 1.1rem; color: #2D2D2D; margin-right: auto; }
+    .filtre-temizle {
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .9rem;
+      padding: 8px 16px; border-radius: 99px; border: none; cursor: pointer;
+      background: #FFF1E8; color: #FF6B35; transition: background .15s;
+    }
+    .filtre-temizle:hover { background: #FFE3D2; }
+    .filtre-kapat {
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+      width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+      background: #F0ECF7; color: #2D2D2D;
+    }
+    .filtre-icerik { display: flex; min-height: 200px; }
+    .filtre-dersler {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 16px; background: #FBF6EE; min-width: 200px;
+    }
+    .filtre-ders-btn {
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+      text-align: left; padding: 11px 16px; border-radius: 14px;
+      border: 2.5px solid transparent; background: #fff; color: #2D2D2D;
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 2px 0 rgba(0,0,0,.05); white-space: nowrap;
+    }
+    .filtre-ders-btn:hover { transform: translateX(3px); }
+    .filtre-ders-btn.aktif { color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.12); }
+    .filtre-beceriler {
+      flex: 1; display: flex; flex-direction: column; align-items: flex-start;
+      gap: 8px; padding: 16px 18px;
+    }
+    .filtre-beceri-btn {
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .98rem;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 99px;
+      border: 2.5px solid #EADFD3; background: #fff; color: #2D2D2D;
+      cursor: pointer; transition: transform .15s, background .15s, border .15s;
+    }
+    .filtre-beceri-btn:hover { transform: translateY(-2px); border-color: #C7B8E8; }
+    .filtre-beceri-btn.secili {
+      border-color: transparent; color: #fff;
+      background: linear-gradient(135deg, #A855F7, #FF4D8D);
+    }
+    .filtre-beceri-sayi {
+      font-size: .8rem; font-weight: 900; padding: 2px 9px; border-radius: 99px;
+      background: #F0ECF7; color: #7A4FD1;
+    }
+    .filtre-beceri-btn.secili .filtre-beceri-sayi { background: rgba(255,255,255,.25); color: #fff; }
+    @media (max-width: 640px) {
+      .filtre-icerik { flex-direction: column; }
+      .filtre-dersler { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+      .filtre-ders-btn:hover { transform: none; }
+    }
+
+
+    /* ---- Oyun kartı sahne animasyonları ---- */
+    .hikaye-sehri-thumb, .yarisma-thumb, .dnk-thumb, .hece-thumb, .nokta-thumb,
+    .zoxi-thumb, .tren-thumb, .dusler-thumb, .sorf-thumb, .dusler2-thumb,
+    .penalti-thumb, .balon-thumb, .kopru-thumb, .roket-thumb, .terazi-thumb,
+    .sunger-thumb, .timsah-thumb, .zipzip-thumb, .yak-thumb, .atm-thumb,
+    .orman-thumb, .gdn-thumb, .pyp-thumb, .portfolio-thumb, .satranc-thumb {
+      position: absolute; inset: 0; overflow: hidden;
+    }
+    .hikaye-sehri-thumb svg, .yarisma-thumb svg, .dnk-thumb svg, .hece-thumb svg, .nokta-thumb svg,
+    .zoxi-thumb svg, .tren-thumb svg, .dusler-thumb svg, .sorf-thumb svg, .dusler2-thumb svg,
+    .penalti-thumb svg, .balon-thumb svg, .kopru-thumb svg, .roket-thumb svg, .terazi-thumb svg,
+    .sunger-thumb svg, .timsah-thumb svg, .zipzip-thumb svg, .yak-thumb svg, .atm-thumb svg,
+    .orman-thumb svg, .gdn-thumb svg, .pyp-thumb svg, .portfolio-thumb svg, .satranc-thumb svg {
+      width: 100%; height: 100%; display: block;
+    }
+    .hsr-bulut { animation: thumbKay 9s ease-in-out infinite alternate; }
+    .hsr-blok { animation: hsrBlok 3.4s ease-in-out infinite alternate; }
+    .hsr-isik { animation: thumbYanSon 2.4s ease-in-out infinite; }
+    .hsr-isik2 { animation-delay: 1.2s; }
+    @keyframes hsrBlok { to { transform: translateY(26px); } }
+    .yrs-spot { transform-box: fill-box; transform-origin: top center; animation: yrsSpot 4s ease-in-out infinite alternate; }
+    .yrs-spot2 { animation-delay: 2s; }
+    @keyframes yrsSpot { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+    .yrs-kupa { transform-box: fill-box; transform-origin: center bottom; animation: thumbNabiz 2.2s ease-in-out infinite; }
+    .yrs-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.2s ease-in-out infinite; }
+    .yrs-konfeti { animation: yrsKonfeti 3.2s linear infinite; }
+    .yrs-konfeti2 { animation-duration: 4.1s; animation-delay: 1.2s; }
+    @keyframes yrsKonfeti { to { transform: translateY(170px); } }
+    .dnk-mercek { animation: dnkMercek 4s ease-in-out infinite alternate; }
+    @keyframes dnkMercek { to { transform: translate(52px, -18px); } }
+    .dnk-s1, .dnk-s2, .dnk-s3 { transform-box: fill-box; transform-origin: center; animation: thumbPop 4.5s ease-in-out infinite; }
+    .dnk-s2 { animation-delay: 1.5s; } .dnk-s3 { animation-delay: 3s; }
+    .hcl-b1 { animation: hclSol 2.8s ease-in-out infinite alternate; }
+    .hcl-b2 { animation: hclSag 2.8s ease-in-out infinite alternate; }
+    .hcl-arti { animation: thumbYanSon 2.8s ease-in-out infinite; }
+    .hcl-kelime, .hcl-kedi { transform-box: fill-box; transform-origin: center; animation: thumbPop 2.8s ease-in-out infinite; }
+    .hcl-kedi { animation-delay: .4s; }
+    @keyframes hclSol { from { transform: translateX(-22px); } 60%, 100% { transform: translateX(16px); } }
+    @keyframes hclSag { from { transform: translateX(22px); } 60%, 100% { transform: translateX(-16px); } }
+    .npr-tuy { transform-box: fill-box; transform-origin: bottom left; animation: nprTuy 2.6s ease-in-out infinite; }
+    @keyframes nprTuy { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg) translateX(-6px); } }
+    .npr-soru { animation: thumbYanSon 2.6s ease-in-out infinite; }
+    .npr-nokta { animation: thumbYanSon 2.6s ease-in-out infinite; animation-delay: 1.3s; }
+    .zxi-ufo { animation: thumbSuzul 3s ease-in-out infinite alternate; }
+    .zxi-isin { animation: zxiIsin 3s ease-in-out infinite alternate; }
+    @keyframes zxiIsin { from { opacity: .08; } to { opacity: .3; } }
+    .zxi-lamba { animation: thumbYanSon 1.6s linear infinite; }
+    .zxi-y { animation: thumbPirilti 2.6s ease-in-out infinite; }
+    .zxi-y2 { animation-delay: .9s; } .zxi-y3 { animation-delay: 1.7s; }
+    .ntr-tren { animation: ntrTren 1.1s ease-in-out infinite alternate; }
+    @keyframes ntrTren { to { transform: translateY(-2.5px); } }
+    .ntr-slot { animation: thumbYanSon 2s ease-in-out infinite; }
+    .ntr-d1 { animation: ntrDuman 2.4s ease-out infinite; }
+    .ntr-d2 { animation: ntrDuman 2.4s ease-out infinite .8s; }
+    .ntr-d3 { animation: ntrDuman 2.4s ease-out infinite 1.6s; }
+    @keyframes ntrDuman { from { transform: translate(6px, 10px); opacity: .9; } to { transform: translate(-14px, -22px); opacity: 0; } }
+    .dsa-y { animation: thumbPirilti 2.8s ease-in-out infinite; }
+    .dsa-y2 { animation-delay: 1s; } .dsa-y3 { animation-delay: 1.9s; }
+    .dsa-pencere { animation: thumbYanSon 3s ease-in-out infinite; }
+    .dsa-p2 { animation-delay: 1.5s; }
+    .dsa-bayrak { transform-box: fill-box; transform-origin: bottom left; animation: dsaBayrak 1.8s ease-in-out infinite alternate; }
+    @keyframes dsaBayrak { to { transform: skewY(7deg); } }
+    .dsa-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 3.2s ease-in-out infinite; }
+    .srf-cocuk { animation: srfSurf 2.4s ease-in-out infinite alternate; }
+    @keyframes srfSurf { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-8px) rotate(5deg); } }
+    .srf-dalga { animation: srfDalga 2.4s ease-in-out infinite alternate; }
+    @keyframes srfDalga { to { transform: translateX(14px); } }
+    .ds2-lolipop { transform-box: fill-box; transform-origin: center; animation: ds2Don 7s linear infinite; }
+    .ds2-lol2 { animation-direction: reverse; }
+    @keyframes ds2Don { to { transform: rotate(360deg); } }
+    .ds2-piril path { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.4s ease-in-out infinite; }
+    .ds2-p2 { animation-delay: 1.2s; }
+    .pnl-top { animation: pnlTop 2.2s cubic-bezier(.3,.6,.4,1) infinite; }
+    @keyframes pnlTop { 0% { transform: translate(120px, 128px) scale(1); opacity: 1; } 55%, 78% { transform: translate(168px, 58px) scale(.82); opacity: 1; } 86% { opacity: 0; } 100% { transform: translate(120px, 128px) scale(1); opacity: 0; } }
+    .pnl-ag { transform-box: fill-box; transform-origin: center; animation: pnlAg 2.2s ease-in-out infinite; }
+    @keyframes pnlAg { 0%, 50%, 100% { transform: skewX(0); } 60% { transform: skewX(2deg); } 70% { transform: skewX(-1.4deg); } }
+    .pnl-iz { animation: thumbYanSon 2.2s linear infinite; }
+    .bln-b1 { animation: thumbSuzul 2.8s ease-in-out infinite alternate; }
+    .bln-b2 { animation: thumbSuzul 3.4s ease-in-out infinite alternate .6s; }
+    .bln-b3 { animation: thumbSuzul 2.5s ease-in-out infinite alternate 1.1s; }
+    .bln-pat { transform-box: fill-box; transform-origin: center; animation: blnPat 2.6s ease-in-out infinite; }
+    @keyframes blnPat { 0%, 55% { transform: scale(0); opacity: 0; } 65%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
+    .kpo-cocuk { animation: kpoHop 1.6s ease-in-out infinite; }
+    @keyframes kpoHop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-12px); } 60% { transform: translateY(-11px); } }
+    .kpo-soru { animation: thumbYanSon 2s ease-in-out infinite; }
+    .kpo-su { animation: thumbKay 3.5s ease-in-out infinite alternate; }
+    .rkt-roket { animation: rktTitre .35s linear infinite alternate; }
+    @keyframes rktTitre { from { transform: translate(-.8px, 0); } to { transform: translate(.8px, -2px); } }
+    .rkt-alev { transform-box: fill-box; transform-origin: top center; animation: rktAlev .3s linear infinite alternate; }
+    @keyframes rktAlev { from { transform: scaleY(.65); } to { transform: scaleY(1.15); } }
+    .rkt-yakit { transform-box: fill-box; transform-origin: bottom center; animation: rktYakit 3.5s ease-in-out infinite; }
+    @keyframes rktYakit { 0% { transform: scaleY(.15); } 70%, 100% { transform: scaleY(1); } }
+    .trz-kol { transform-box: fill-box; transform-origin: 50% 4px; animation: trzDenge 4s ease-in-out infinite; }
+    @keyframes trzDenge { 0% { transform: rotate(-7deg); } 35% { transform: rotate(5deg); } 65% { transform: rotate(-2deg); } 85%, 100% { transform: rotate(0deg); } }
+    .trz-esit { animation: thumbYanSon 4s ease-in-out infinite; }
+    .sgr-balik { animation: thumbSuzul 3s ease-in-out infinite alternate; }
+    .sgr-kuyruk { transform-box: fill-box; transform-origin: right center; animation: sgrKuyruk .7s ease-in-out infinite alternate; }
+    @keyframes sgrKuyruk { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+    .sgr-yosun { transform-box: fill-box; transform-origin: bottom center; animation: sgrYosun 3.2s ease-in-out infinite alternate; }
+    .sgr-y2 { animation-delay: 1.4s; }
+    @keyframes sgrYosun { from { transform: rotate(-5deg); } to { transform: rotate(6deg); } }
+    .sgr-hava { animation: sgrHava 3.4s ease-in infinite; }
+    .sgr-h2 { animation-delay: 1.1s; } .sgr-h3 { animation-delay: 2.2s; }
+    @keyframes sgrHava { from { transform: translateY(14px); opacity: .8; } to { transform: translateY(-34px); opacity: 0; } }
+    .sgr-k1, .sgr-k3 { transform-box: fill-box; transform-origin: center; animation: thumbNabiz 2.8s ease-in-out infinite; }
+    .sgr-k3 { animation-delay: 1.2s; }
+    .sgr-k2 { animation: thumbYanSon 2.8s ease-in-out infinite; }
+    .tmd-elma { animation: tmdElma 2.8s cubic-bezier(.5,.1,.8,.5) infinite; }
+    @keyframes tmdElma { 0% { transform: translateY(-14px); opacity: 1; } 70% { transform: translateY(92px); opacity: 1; } 82%, 100% { transform: translateY(100px); opacity: 0; } }
+    .tmd-cene { transform-box: fill-box; transform-origin: 14% 92%; animation: tmdCene 2.8s ease-in-out infinite; }
+    @keyframes tmdCene { 0%, 55% { transform: rotate(0deg); } 72% { transform: rotate(-9deg); } 84%, 100% { transform: rotate(0deg); } }
+    .zzp-kurbaga { animation: zzpHop 2.4s ease-in-out infinite; }
+    @keyframes zzpHop { 0%, 18%, 100% { transform: translate(0, 0); } 38% { transform: translate(18px, -24px); } 58% { transform: translate(36px, 0); } 70% { transform: translate(36px, 0); } 85% { transform: translate(12px, -10px); } }
+    .zzp-a1 { animation: zzpAtes 2.2s ease-in-out infinite; }
+    .zzp-a2 { animation: zzpAtes 2.6s ease-in-out infinite .8s; }
+    .zzp-a3 { animation: zzpAtes 1.9s ease-in-out infinite 1.4s; }
+    @keyframes zzpAtes { 0%, 100% { opacity: .25; transform: translate(0, 0); } 50% { opacity: 1; transform: translate(4px, -5px); } }
+    .pyk-halo { transform-box: fill-box; transform-origin: center; animation: thumbNabiz 2.4s ease-in-out infinite; }
+    .pyk-isin { animation: thumbYanSon 2.4s ease-in-out infinite; }
+    .pyk-harf { transform-box: fill-box; transform-origin: center; animation: thumbPop 3.6s ease-in-out infinite; }
+    .pyk-h2 { animation-delay: 1.2s; } .pyk-h3 { animation-delay: 2.4s; }
+    .atm-ekran { animation: thumbYanSon 2.2s steps(2) infinite; }
+    .atm-kart { animation: atmKart 3s ease-in-out infinite alternate; }
+    @keyframes atmKart { from { transform: translateX(0); } to { transform: translateX(14px); } }
+    .atm-para { animation: atmPara 3s ease-in-out infinite alternate; }
+    @keyframes atmPara { from { transform: translateY(0); } to { transform: translateY(9px); } }
+    .atm-coin { animation: atmCoin 2.4s cubic-bezier(.5,.1,.8,.5) infinite; }
+    @keyframes atmCoin { 0% { transform: translateY(66px); opacity: 0; } 12% { opacity: 1; } 78% { transform: translateY(126px); opacity: 1; } 88%, 100% { transform: translateY(130px); opacity: 0; } }
+    .orm-kus { animation: ormKus 1.6s ease-in-out infinite alternate; }
+    @keyframes ormKus { to { transform: translateY(-5px); } }
+    .orm-kulak { transform-box: fill-box; transform-origin: bottom center; animation: ormKulak 2.6s ease-in-out infinite; }
+    @keyframes ormKulak { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-7deg); } 90% { transform: rotate(5deg); } }
+    .orm-kelebek { animation: ormKelebek 7s ease-in-out infinite alternate; }
+    @keyframes ormKelebek { 0% { transform: translate(28px, 92px) rotate(8deg); } 35% { transform: translate(70px, 60px) rotate(-10deg); } 70% { transform: translate(120px, 78px) rotate(10deg); } 100% { transform: translate(150px, 52px) rotate(-6deg); } }
+    .gdn-ok { transform-box: fill-box; transform-origin: center; animation: gdnOk 6s linear infinite; }
+    @keyframes gdnOk { to { transform: rotate(360deg); } }
+    .gdn-bant { animation: gdnBant .9s linear infinite; }
+    @keyframes gdnBant { to { transform: translateX(24px); } }
+    .gdn-sise { animation: gdnSise 3s ease-in infinite; }
+    @keyframes gdnSise { 0% { transform: translate(40px, 36px); opacity: 1; } 45% { transform: translate(118px, 36px) rotate(0deg); opacity: 1; } 80% { transform: translate(124px, 92px) rotate(70deg); opacity: 1; } 90%, 100% { transform: translate(124px, 100px) rotate(70deg); opacity: 0; } }
+    .pyp-orbit { transform-box: fill-box; transform-origin: center; animation: pypOrbit 14s linear infinite; }
+    @keyframes pypOrbit { to { transform: rotate(360deg); } }
+    .pyp-dunya { animation: thumbSuzul 3.4s ease-in-out infinite alternate; }
+    .pyp-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.6s ease-in-out infinite; }
+    .por-damga { animation: porDamga 2.8s ease-in-out infinite; }
+    @keyframes porDamga { 0%, 55%, 100% { transform: translate(0, 0); } 68% { transform: translate(-58px, 6px); } 78% { transform: translate(-58px, 14px); } 88% { transform: translate(-58px, 6px); } }
+    .por-yildiz { animation: thumbYanSon 2.8s ease-in-out infinite; }
+    .por-kagit { animation: thumbSuzul 3.2s ease-in-out infinite alternate; }
+    .stn-at { animation: stnAt 4s ease-in-out infinite; }
+    @keyframes stnAt { 0%, 12% { transform: translate(0, 0); } 42%, 62% { transform: translate(80px, 40px); } 92%, 100% { transform: translate(0, 0); } }
+    .stn-kale { animation: stnKale 4s ease-in-out infinite; }
+    @keyframes stnKale { 0%, 12% { transform: translate(0, 0); } 42%, 62% { transform: translate(-80px, -40px); } 92%, 100% { transform: translate(0, 0); } }
+    .stn-ok { animation: thumbYanSon 4s ease-in-out infinite; }
+    .stn-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.8s ease-in-out infinite; }
+
+    /* Ortak kart animasyonları */
+    @keyframes thumbKay { to { transform: translateX(16px); } }
+    @keyframes thumbSuzul { to { transform: translateY(-7px); } }
+    @keyframes thumbYanSon { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
+    @keyframes thumbNabiz { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    @keyframes thumbPop { 0%, 8% { transform: scale(.4); opacity: 0; } 18%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes thumbPirilti { 0%, 100% { transform: scale(.5) rotate(0deg); opacity: .3; } 50% { transform: scale(1.2) rotate(25deg); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) {
+      .hsr-bulut, .hsr-blok, .hsr-isik, .yrs-spot, .yrs-kupa, .yrs-parla, .yrs-konfeti,
+      .dnk-mercek, .dnk-s1, .dnk-s2, .dnk-s3, .hcl-b1, .hcl-b2, .hcl-arti, .hcl-kelime, .hcl-kedi,
+      .npr-tuy, .npr-soru, .npr-nokta, .zxi-ufo, .zxi-isin, .zxi-lamba, .zxi-y,
+      .ntr-tren, .ntr-slot, .ntr-d1, .ntr-d2, .ntr-d3, .dsa-y, .dsa-pencere, .dsa-bayrak, .dsa-parla,
+      .srf-cocuk, .srf-dalga, .ds2-lolipop, .ds2-piril path, .pnl-top, .pnl-ag, .pnl-iz,
+      .bln-b1, .bln-b2, .bln-b3, .bln-pat, .kpo-cocuk, .kpo-soru, .kpo-su,
+      .rkt-roket, .rkt-alev, .rkt-yakit, .trz-kol, .trz-esit,
+      .sgr-balik, .sgr-kuyruk, .sgr-yosun, .sgr-hava, .sgr-k1, .sgr-k2, .sgr-k3,
+      .tmd-elma, .tmd-cene, .zzp-kurbaga, .zzp-a1, .zzp-a2, .zzp-a3,
+      .pyk-halo, .pyk-isin, .pyk-harf, .atm-ekran, .atm-kart, .atm-para, .atm-coin,
+      .orm-kus, .orm-kulak, .orm-kelebek, .gdn-ok, .gdn-bant, .gdn-sise,
+      .pyp-orbit, .pyp-dunya, .pyp-parla, .por-damga, .por-yildiz, .por-kagit,
+      .stn-at, .stn-kale, .stn-ok, .stn-parla { animation: none; }
+      .bln-pat, .hcl-kelime, .hcl-kedi, .dnk-s1, .dnk-s2, .dnk-s3, .pyk-harf { opacity: 1; transform: none; }
+      .tmd-elma { transform: translateY(20px); }
+      .atm-coin { transform: translateY(100px); }
+      .gdn-sise { transform: translate(40px, 36px); }
+    }
+
+    /* ---- Emoji kartlarına canlılık ---- */
+    .thumb-canli { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .thumb-emoji {
+      font-size: 4rem; line-height: 1;
+      animation: thumbZipla 2.6s ease-in-out infinite;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.18));
+    }
+    .game-card:nth-child(2n) .thumb-emoji { animation-name: thumbSalla; animation-duration: 3.1s; }
+    .game-card:nth-child(3n) .thumb-emoji { animation-name: thumbNefes; animation-duration: 2.3s; }
+    .game-card:nth-child(5n) .thumb-emoji { animation-delay: .7s; }
+    @keyframes thumbZipla { 0%, 100% { transform: translateY(5px); } 50% { transform: translateY(-9px); } }
+    @keyframes thumbSalla { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+    @keyframes thumbNefes { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    .ts { position: absolute; font-size: 1rem; opacity: 0; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,.9); animation: tsPiril 3.2s ease-in-out infinite; pointer-events: none; }
+    .ts1 { top: 18%; left: 18%; }
+    .ts2 { top: 28%; right: 16%; animation-delay: 1.1s; font-size: 1.2rem; }
+    .ts3 { bottom: 20%; left: 30%; animation-delay: 2.2s; font-size: .85rem; }
+    @keyframes tsPiril { 0%, 100% { opacity: 0; transform: scale(.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1.15) rotate(30deg); } }
+    @media (max-width: 768px) { .thumb-emoji { font-size: 3rem; } }
+    @media (prefers-reduced-motion: reduce) {
+      .thumb-emoji, .ts { animation: none; }
+      .ts { opacity: .5; }
+    }
   </style>
 </head>
 <body>
@@ -1070,7 +1368,31 @@
 <!-- HERO -->
 <div class="hero">
   <h2>Merhaba! <em>Hadi Oynayalım</em> 🎉</h2>
-  <p>Favori oyununu seç ve anında başla!</p>
+  <p id="hero-alt">Favori oyununu seç ve anında başla!</p>
+</div>
+
+<!-- SINIF SEÇİMİ -->
+<nav class="sinif-bar" id="sinif-bar" aria-label="Sınıf seçimi">
+  <button class="sinif-btn" data-sinif="1" onclick="sinifSec(1)">1. Sınıf</button>
+  <button class="sinif-btn" data-sinif="2" onclick="sinifSec(2)">2. Sınıf</button>
+  <button class="sinif-btn" data-sinif="3" onclick="sinifSec(3)">3. Sınıf</button>
+  <button class="sinif-btn" data-sinif="4" onclick="sinifSec(4)">4. Sınıf</button>
+</nav>
+
+<!-- KAZANIM FİLTRESİ -->
+<div class="filtre-alan">
+  <button class="filtre-btn" id="filtre-btn" onclick="filtreAcKapa()" aria-expanded="false" aria-controls="filtre-panel">🎯 Kazanım Filtrele</button>
+  <div class="filtre-panel" id="filtre-panel" hidden>
+    <div class="filtre-ust">
+      <span class="filtre-baslik">Kazanıma göre filtrele</span>
+      <button class="filtre-temizle" onclick="filtreTemizle()">🧹 Filtreyi Temizle</button>
+      <button class="filtre-kapat" onclick="filtreAcKapa(false)" title="Kapat">✕</button>
+    </div>
+    <div class="filtre-icerik">
+      <div class="filtre-dersler" id="filtre-dersler" aria-label="Ders seç"></div>
+      <div class="filtre-beceriler" id="filtre-beceriler" aria-label="Kazanım seç"></div>
+    </div>
+  </div>
 </div>
 
 <!-- MAIN -->
@@ -1084,20 +1406,6 @@
   <div class="modal">
     <div class="modal-body">
       <iframe id="game-frame" src="" allowfullscreen></iframe>
-    </div>
-  </div>
-</div>
-
-<!-- GİZLİ KATEGORİ ŞİFRE PENCERESİ (Matematik ikonuna 3 kez dokununca açılır) -->
-<div class="gizli-overlay" id="gizli-overlay" role="dialog" aria-modal="true" aria-labelledby="gizli-baslik">
-  <div class="gizli-kutu" id="gizli-kutu">
-    <div class="gizli-ikon">🔐</div>
-    <h3 id="gizli-baslik">Öğretmen Şifresi</h3>
-    <input id="gizli-sifre" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="••••••">
-    <p class="gizli-hata" id="gizli-hata"></p>
-    <div class="gizli-butonlar">
-      <button class="gizli-btn gizli-iptal" onclick="gizliKapat()">Vazgeç</button>
-      <button class="gizli-btn gizli-tamam" onclick="gizliKontrol()">Aç</button>
     </div>
   </div>
 </div>
@@ -1326,88 +1634,363 @@ const categories = [
       {
         name: "Hikaye Şehri",
         file: "hikayesehri.html",
+        beceri: "Okuduğunu anlama",
         desc: "Hikayeleri okuyarak şehrini istediğin gibi inşa et!",
         sinif: "1. - 2. Sınıf",
         emoji: "🏙️",
-        thumbBg: "linear-gradient(135deg, #E0F7FA, #B2EBF2)"
+        thumbBg: "linear-gradient(180deg,#BFE7FF,#EAF7FF)",
+        customThumb: `
+<div class="hikaye-sehri-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="hsrGok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE7FF"/><stop offset="1" stop-color="#EAF7FF"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#hsrGok)"/>
+  <circle cx="214" cy="24" r="12" fill="#FFD600"/>
+  <g class="hsr-bulut" fill="#fff" opacity=".9"><ellipse cx="52" cy="26" rx="18" ry="8"/><ellipse cx="66" cy="22" rx="12" ry="9"/></g>
+  <g fill="#D4E6F5"><rect x="0" y="86" width="26" height="44"/><rect x="150" y="92" width="22" height="38"/><rect x="176" y="100" width="18" height="30"/></g>
+  <rect y="126" width="240" height="24" fill="#9CD08C"/>
+  <g stroke="#2B2340" stroke-width="2">
+    <rect x="18" y="66" width="42" height="60" rx="3" fill="#FF6B35"/>
+    <rect x="70" y="50" width="46" height="76" rx="3" fill="#4D9FFF"/>
+    <rect x="126" y="80" width="38" height="46" rx="3" fill="#00C9A7"/>
+  </g>
+  <g fill="#FFF3C4">
+    <rect x="25" y="74" width="10" height="10" rx="2"/><rect class="hsr-isik" x="43" y="74" width="10" height="10" rx="2"/><rect x="25" y="92" width="10" height="10" rx="2"/><rect x="43" y="92" width="10" height="10" rx="2"/>
+    <rect class="hsr-isik hsr-isik2" x="78" y="58" width="10" height="10" rx="2"/><rect x="96" y="58" width="10" height="10" rx="2"/><rect x="78" y="76" width="10" height="10" rx="2"/><rect class="hsr-isik" x="96" y="76" width="10" height="10" rx="2"/><rect x="78" y="94" width="10" height="10" rx="2"/><rect x="96" y="94" width="10" height="10" rx="2"/>
+    <rect x="133" y="88" width="9" height="9" rx="2"/><rect class="hsr-isik hsr-isik2" x="148" y="88" width="9" height="9" rx="2"/><rect x="133" y="104" width="9" height="9" rx="2"/>
+  </g>
+  <g stroke="#F2A900" stroke-width="5" stroke-linecap="round"><line x1="206" y1="126" x2="206" y2="28"/><line x1="206" y1="30" x2="152" y2="30"/></g>
+  <line x1="206" y1="28" x2="228" y2="50" stroke="#F2A900" stroke-width="3"/>
+  <g class="hsr-blok">
+    <line x1="164" y1="30" x2="164" y2="58" stroke="#2B2340" stroke-width="2"/>
+    <rect x="152" y="58" width="24" height="16" rx="3" fill="#A855F7" stroke="#2B2340" stroke-width="2"/>
+  </g>
+  <g stroke="#2B2340" stroke-width="2">
+    <path d="M96 146V132Q108 126 120 132Q132 126 144 132V146Q132 141 120 146Q108 141 96 146Z" fill="#fff"/>
+    <line x1="120" y1="132" x2="120" y2="146"/>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "1. Sınıflar Yarışması",
         file: "yarisma.html",
+        beceri: "Genel tekrar",
         desc: "Sınıfta bilgimizi yarıştıralım!",
         sinif: "1. Sınıf",
         emoji: "🏆",
-        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE9A8)",
+        thumbBg: "linear-gradient(180deg,#2A2145,#4A3A7A)",
+        customThumb: `
+<div class="yarisma-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="yrsFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A2145"/><stop offset="1" stop-color="#4A3A7A"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#yrsFon)"/>
+  <g class="yrs-spot" fill="#FFF8D0" opacity=".14"><polygon points="40,0 10,150 100,150"/></g>
+  <g class="yrs-spot yrs-spot2" fill="#FFF8D0" opacity=".14"><polygon points="200,0 140,150 230,150"/></g>
+  <g class="yrs-konfeti"><rect x="30" y="-10" width="7" height="7" rx="2" fill="#FF6B35"/><circle cx="120" cy="-18" r="4" fill="#00C9A7"/><rect x="200" y="-6" width="6" height="6" rx="2" fill="#FFD600"/></g>
+  <g class="yrs-konfeti yrs-konfeti2"><circle cx="70" cy="-12" r="4" fill="#FF4D8D"/><rect x="160" y="-20" width="7" height="7" rx="2" fill="#4D9FFF"/><circle cx="222" cy="-8" r="3.5" fill="#A855F7"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle" stroke-width="2.5">
+    <rect x="66" y="104" width="36" height="46" fill="#C9D3E6" stroke="#2B2340"/>
+    <rect x="102" y="86" width="36" height="64" fill="#FFD600" stroke="#2B2340"/>
+    <rect x="138" y="116" width="36" height="34" fill="#E0955A" stroke="#2B2340"/>
+    <text x="84" y="130" font-size="18" fill="#2B2340" stroke="none">2</text>
+    <text x="120" y="116" font-size="20" fill="#2B2340" stroke="none">1</text>
+    <text x="156" y="140" font-size="16" fill="#2B2340" stroke="none">3</text>
+  </g>
+  <g class="yrs-kupa">
+    <path d="M106 48Q106 70 120 72Q134 70 134 48Z" fill="#FFD600" stroke="#B8860B" stroke-width="2.5"/>
+    <path d="M106 50Q96 52 102 62M134 50Q144 52 138 62" fill="none" stroke="#B8860B" stroke-width="3"/>
+    <rect x="114" y="72" width="12" height="6" fill="#B8860B"/><rect x="108" y="78" width="24" height="5" rx="2" fill="#FFD600" stroke="#B8860B" stroke-width="1.5"/>
+  </g>
+  <path class="yrs-parla" d="M142 40 L144.5 46 L151 48 L144.5 50 L142 56 L139.5 50 L133 48 L139.5 46 Z" fill="#fff"/>
+</svg>
+</div>
+`,
       },
       {
         name: "5N1K Dedektifi",
         file: "5n1k.html",
+        beceri: "5N1K soruları",
         desc: "Dedektif ol ve cümlelerdeki soruların cevaplarını bul.",
         sinif: "1. - 2. Sınıf",
         emoji: "🕵️",
-        thumbBg: "linear-gradient(135deg, #FFF3E0, #FFD9A0)",
+        thumbBg: "linear-gradient(180deg,#FBF3E6,#F1E4CE)",
+        customThumb: `
+<div class="dnk-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#F7EFE0"/>
+  <g fill="#E4D5BB"><circle cx="18" cy="134" r="8"/><circle cx="224" cy="18" r="6"/></g>
+  <g transform="rotate(-3 95 80)">
+    <rect x="34" y="46" width="124" height="74" rx="8" fill="#fff" stroke="#E0D2B8" stroke-width="2.5"/>
+    <g fill="#CBBFa8"><rect x="46" y="60" width="98" height="6" rx="3"/><rect x="46" y="74" width="80" height="6" rx="3"/><rect x="46" y="88" width="92" height="6" rx="3"/><rect x="46" y="102" width="60" height="6" rx="3"/></g>
+    <rect x="46" y="74" width="34" height="6" rx="3" fill="#FFD600"/>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <g class="dnk-s1"><rect x="160" y="34" width="56" height="22" rx="11" fill="#FF4D8D"/><text x="188" y="50" font-size="13" fill="#fff">Kim?</text></g>
+    <g class="dnk-s2"><rect x="168" y="66" width="52" height="22" rx="11" fill="#4D9FFF"/><text x="194" y="82" font-size="13" fill="#fff">Ne?</text></g>
+    <g class="dnk-s3"><rect x="152" y="98" width="76" height="22" rx="11" fill="#00C9A7"/><text x="190" y="114" font-size="13" fill="#fff">Nerede?</text></g>
+  </g>
+  <g class="dnk-mercek">
+    <line x1="88" y1="96" x2="112" y2="124" stroke="#2B2340" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="76" cy="82" r="20" fill="rgba(255,255,255,.35)" stroke="#2B2340" stroke-width="5"/>
+    <circle cx="76" cy="82" r="20" fill="none" stroke="#4D9FFF" stroke-width="2"/>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Hecelerden Kelimelere",
         file: "hece.html",
+        beceri: "Hece birleştirme",
         desc: "Heceleri birleştirerek kelimeler oluştur! 🔤",
         sinif: "1. Sınıf",
         emoji: "🔤",
-        thumbBg: "linear-gradient(135deg, #E0FFF7, #B8FFF0)"
+        thumbBg: "linear-gradient(180deg,#E6FFF6,#D8F6EA)",
+        customThumb: `
+<div class="hece-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="hclFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6FFF6"/><stop offset="1" stop-color="#D8F6EA"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#hclFon)"/>
+  <g fill="#fff" opacity=".8"><ellipse cx="40" cy="22" rx="16" ry="7"/><ellipse cx="196" cy="30" rx="18" ry="8"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <g class="hcl-b1"><rect x="48" y="62" width="52" height="42" rx="12" fill="#FFD600" stroke="#2B2340" stroke-width="3"/><text x="74" y="92" font-size="24" fill="#2B2340">ke</text></g>
+    <g class="hcl-b2"><rect x="140" y="62" width="52" height="42" rx="12" fill="#00C9A7" stroke="#2B2340" stroke-width="3"/><text x="166" y="92" font-size="24" fill="#fff">di</text></g>
+    <text class="hcl-arti" x="120" y="92" font-size="24" fill="#FF6B35">+</text>
+    <g class="hcl-kelime"><rect x="84" y="16" width="72" height="30" rx="10" fill="#fff" stroke="#FF4D8D" stroke-width="3"/><text x="120" y="38" font-size="19" fill="#2B2340">kedi</text></g>
+  </g>
+  <g class="hcl-kedi">
+    <path d="M96 130 L104 114 L112 128 Z" fill="#F2A35C"/><path d="M144 130 L136 114 L128 128 Z" fill="#F2A35C"/>
+    <circle cx="120" cy="134" r="18" fill="#F7B977"/>
+    <circle cx="113" cy="131" r="2.2" fill="#2B2340"/><circle cx="127" cy="131" r="2.2" fill="#2B2340"/>
+    <path d="M117 137Q120 140 123 137" stroke="#2B2340" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g stroke="#2B2340" stroke-width="1.2" stroke-linecap="round"><line x1="98" y1="134" x2="108" y2="135"/><line x1="142" y1="134" x2="132" y2="135"/></g>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Noktalama Parşomeni",
         file: "nokta.html",
+        beceri: "Noktalama işaretleri",
         desc: "Noktalama işaretlerini doğru yerlere yerleştir! 📜",
         sinif: "1. Sınıf",
         emoji: "📜",
-        thumbBg: "linear-gradient(135deg, #FFF9E0, #FFEDB8)"
+        thumbBg: "linear-gradient(180deg,#FFF6E3,#F7E8C8)",
+        customThumb: `
+<div class="nokta-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#F6E9CE"/>
+  <rect x="30" y="34" width="156" height="86" rx="6" fill="#FBEFD4" stroke="#D9BC85" stroke-width="2.5"/>
+  <g fill="#E8CD9C" stroke="#C9A05A" stroke-width="2"><rect x="22" y="24" width="172" height="14" rx="7"/><rect x="22" y="114" width="172" height="14" rx="7"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" fill="#5B4A2E">
+    <text x="44" y="64" font-size="15">Okula geldin mi</text>
+    <text x="44" y="92" font-size="15">Evet geldim</text>
+  </g>
+  <rect x="172" y="50" width="16" height="18" rx="4" fill="none" stroke="#FF6B35" stroke-width="2" stroke-dasharray="4 3"/>
+  <text class="npr-soru" x="180" y="65" font-size="17" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" fill="#FF4D8D">?</text>
+  <circle class="npr-nokta" cx="138" cy="90" r="3" fill="#FF6B35"/>
+  <g class="npr-tuy">
+    <path d="M196 96Q214 60 232 44Q222 72 206 100Z" fill="#9FD6F0" stroke="#4D9FFF" stroke-width="2"/>
+    <path d="M196 96L190 110" stroke="#2B2340" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <ellipse cx="206" cy="128" rx="16" ry="9" fill="#2B2340"/><ellipse cx="206" cy="124" rx="11" ry="4" fill="#4D9FFF"/>
+</svg>
+</div>
+`,
       },
       {
         name: "Zoxi'ye Türkçe Öğretiyoruz",
         file: "zoxi.html",
+        beceri: "Kelime bilgisi",
         desc: "Uzaylı arkadaşımız Zoxi'ye Türkçe kelimeler öğret! 👽",
         sinif: "1. Sınıf",
         emoji: "👽",
-        thumbBg: "linear-gradient(135deg, #E0FFF5, #D8EEFF)"
+        thumbBg: "linear-gradient(180deg,#141432,#232355)",
+        customThumb: `
+<div class="zoxi-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="zxiFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141432"/><stop offset="1" stop-color="#232355"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#zxiFon)"/>
+  <g fill="#fff"><circle class="zxi-y" cx="28" cy="26" r="2"/><circle class="zxi-y zxi-y2" cx="70" cy="14" r="1.6"/><circle class="zxi-y zxi-y3" cx="210" cy="20" r="2"/><circle class="zxi-y zxi-y2" cx="226" cy="58" r="1.5"/><circle class="zxi-y" cx="16" cy="70" r="1.6"/></g>
+  <path d="M0 132Q60 120 120 130T240 128V150H0Z" fill="#8D93A8"/>
+  <g fill="#6E7488"><ellipse cx="60" cy="140" rx="12" ry="4"/><ellipse cx="180" cy="144" rx="14" ry="4.5"/></g>
+  <polygon class="zxi-isin" points="86,86 134,86 150,150 70,150" fill="#FFE27A" opacity=".2"/>
+  <g class="zxi-ufo">
+    <path d="M92 70A28 20 0 0 1 148 70Z" fill="#9FE8FF" opacity=".85"/>
+    <g>
+      <circle cx="120" cy="60" r="13" fill="#7BD389"/>
+      <circle cx="120" cy="57" r="5.5" fill="#fff"/><circle cx="121" cy="57.5" r="3" fill="#2B2340"/>
+      <line x1="120" y1="47" x2="120" y2="40" stroke="#7BD389" stroke-width="2.5"/><circle cx="120" cy="38" r="3" fill="#FF4D8D"/>
+    </g>
+    <ellipse cx="120" cy="78" rx="42" ry="13" fill="#A855F7" stroke="#2B2340" stroke-width="2.5"/>
+    <g class="zxi-lamba"><circle cx="92" cy="78" r="3.5" fill="#FFD600"/><circle cx="120" cy="84" r="3.5" fill="#FFD600"/><circle cx="148" cy="78" r="3.5" fill="#FFD600"/></g>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900">
+    <path d="M160 44H224Q230 44 230 50V72Q230 78 224 78H182L170 90L174 78H166Q160 78 160 72V50Q160 44 166 44Z" fill="#fff"/>
+    <text x="183" y="66" font-size="15" fill="#2B2340">elma</text>
+    <circle cx="218" cy="61" r="7" fill="#FF4D4D"/><path d="M218 54Q221 50 224 52" stroke="#2FA85A" stroke-width="2.5" fill="none"/>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Noktalama Treni",
         file: "tren.html",
+        beceri: "Noktalama işaretleri",
         desc: "Trendeki eksik noktalama vagonlarını tamamla! 🚂",
         sinif: "1. Sınıf",
         emoji: "🚂",
-        thumbBg: "linear-gradient(135deg, #E8F5FF, #C8E6FF)"
+        thumbBg: "linear-gradient(180deg,#CDEBFF,#E8F6FF)",
+        customThumb: `
+<div class="tren-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#CDEBFF"/>
+  <circle cx="30" cy="26" r="12" fill="#FFD600"/>
+  <path d="M0 100Q60 84 120 96T240 92V150H0Z" fill="#A9DCB4"/>
+  <g class="ntr-d1" fill="#fff" opacity=".9"><circle cx="48" cy="56" r="7"/></g>
+  <g class="ntr-d2" fill="#fff" opacity=".7"><circle cx="58" cy="42" r="9"/></g>
+  <g class="ntr-d3" fill="#fff" opacity=".5"><circle cx="72" cy="28" r="11"/></g>
+  <rect y="124" width="240" height="7" fill="#8A6A4A"/>
+  <g fill="#6B4A2B"><rect x="6" y="131" width="12" height="4" rx="2"/><rect x="36" y="131" width="12" height="4" rx="2"/><rect x="66" y="131" width="12" height="4" rx="2"/><rect x="96" y="131" width="12" height="4" rx="2"/><rect x="126" y="131" width="12" height="4" rx="2"/><rect x="156" y="131" width="12" height="4" rx="2"/><rect x="186" y="131" width="12" height="4" rx="2"/><rect x="216" y="131" width="12" height="4" rx="2"/></g>
+  <g class="ntr-tren" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <g stroke="#2B2340" stroke-width="2.5">
+      <rect x="20" y="78" width="30" height="34" rx="5" fill="#FF6B35"/>
+      <rect x="44" y="92" width="26" height="20" rx="4" fill="#FF6B35"/>
+      <rect x="26" y="66" width="10" height="14" rx="2" fill="#2B2340" stroke="none"/>
+      <rect x="24" y="84" width="14" height="12" rx="3" fill="#9FE8FF"/>
+      <rect x="84" y="82" width="40" height="30" rx="5" fill="#4D9FFF"/>
+      <rect x="138" y="82" width="40" height="30" rx="5" fill="#FFD600"/>
+      <rect x="192" y="82" width="40" height="30" rx="5" fill="#00C9A7"/>
+    </g>
+    <line x1="70" y1="102" x2="84" y2="98" stroke="#2B2340" stroke-width="3"/>
+    <line x1="124" y1="98" x2="138" y2="98" stroke="#2B2340" stroke-width="3"/>
+    <line x1="178" y1="98" x2="192" y2="98" stroke="#2B2340" stroke-width="3"/>
+    <text x="104" y="105" font-size="22" fill="#fff">.</text>
+    <text x="158" y="105" font-size="20" fill="#2B2340">?</text>
+    <rect x="203" y="88" width="18" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>
+    <text class="ntr-slot" x="212" y="104" font-size="20" fill="#fff">,</text>
+    <g class="ntr-teker" fill="#2B2340"><circle cx="32" cy="116" r="7"/><circle cx="56" cy="116" r="7"/><circle cx="96" cy="116" r="6"/><circle cx="114" cy="116" r="6"/><circle cx="150" cy="116" r="6"/><circle cx="168" cy="116" r="6"/><circle cx="204" cy="116" r="6"/><circle cx="222" cy="116" r="6"/></g>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Düşler Şatosu",
         file: "duslersatosu.html",
+        beceri: "Okuduğunu anlama",
         desc: "Metinleri okuyup anlayarak şatodaki bölümleri keşfet! 🏰",
         sinif: "1. - 2. Sınıf",
         emoji: "🏰",
-        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)"
+        thumbBg: "linear-gradient(180deg,#3A2A6A,#6A4A9A)",
+        customThumb: `
+<div class="dusler-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="dsaFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A2A6A"/><stop offset="1" stop-color="#6A4A9A"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#dsaFon)"/>
+  <path d="M206 18A15 15 0 1 0 220 42A12 12 0 1 1 206 18Z" fill="#FFF2B8"/>
+  <g fill="#fff"><circle class="dsa-y" cx="30" cy="24" r="2"/><circle class="dsa-y dsa-y2" cx="66" cy="40" r="1.6"/><circle class="dsa-y dsa-y3" cx="176" cy="20" r="2"/><circle class="dsa-y dsa-y2" cx="22" cy="64" r="1.5"/></g>
+  <path d="M0 136Q60 126 120 134T240 130V150H0Z" fill="#4A3580"/>
+  <g stroke="#2B2340" stroke-width="2.5">
+    <rect x="62" y="56" width="18" height="78" fill="#B79BE8"/>
+    <rect x="160" y="56" width="18" height="78" fill="#B79BE8"/>
+    <rect x="80" y="78" width="80" height="56" fill="#CBB6F0"/>
+    <polygon points="62,56 71,34 80,56" fill="#FF4D8D"/>
+    <polygon points="160,56 169,34 178,56" fill="#FF4D8D"/>
+    <path d="M104 134V106A16 16 0 0 1 136 106V134Z" fill="#5B3E8C"/>
+  </g>
+  <g fill="#FFE27A"><rect class="dsa-pencere" x="67" y="66" width="8" height="12" rx="4"/><rect class="dsa-pencere dsa-p2" x="165" y="66" width="8" height="12" rx="4"/><rect class="dsa-pencere dsa-p2" x="90" y="88" width="9" height="13" rx="4"/><rect class="dsa-pencere" x="141" y="88" width="9" height="13" rx="4"/></g>
+  <g class="dsa-bayrak"><line x1="120" y1="78" x2="120" y2="54" stroke="#2B2340" stroke-width="2.5"/><path d="M120 54L140 59L120 64Z" fill="#FFD600"/></g>
+  <path class="dsa-parla" d="M42 96 L44.5 102 L51 104 L44.5 106 L42 112 L39.5 106 L33 104 L39.5 102 Z" fill="#FFE27A"/>
+</svg>
+</div>
+`,
       },
       {
         name: "Lilo & Stitch Sörf Yarışması",
         file: "sorf.html",
+        beceri: "Eş ve zıt anlam",
         desc: "Eş anlam ve zıt anlam sahillerinde sörf yarışmasına katılın! 🏄",
         sinif: "1. - 2. Sınıf",
         emoji: "🏄",
-        thumbBg: "linear-gradient(135deg, #B3E5FC, #80DEEA)"
+        thumbBg: "linear-gradient(180deg,#BFE7FF,#8ED8EC)",
+        customThumb: `
+<div class="sorf-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#BFE7FF"/>
+  <circle cx="30" cy="26" r="13" fill="#FFD600"/>
+  <g fill="#fff" opacity=".9"><ellipse cx="170" cy="24" rx="18" ry="8"/><ellipse cx="184" cy="20" rx="12" ry="9"/></g>
+  <path class="srf-dalga" d="M-20 96Q10 70 40 92Q58 64 86 84Q82 100 100 108L-20 150Z" fill="#2EB8D9"/>
+  <path d="M0 108Q60 96 120 106T240 102V150H0Z" fill="#2E9FD6"/>
+  <g stroke="#fff" stroke-opacity=".5" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M30 126q8-5 16 0"/><path d="M120 134q8-5 16 0"/><path d="M190 122q8-5 16 0"/></g>
+  <g class="srf-cocuk"><g transform="translate(-6 12)">
+    <path d="M86 96Q120 88 154 96L150 102Q120 96 90 102Z" fill="#fff" opacity=".8"/>
+    <ellipse cx="120" cy="92" rx="30" ry="7" fill="#FF4D4D" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M110 88L106 70M128 88L132 72" stroke="#2B6A8F" stroke-width="6" stroke-linecap="round"/>
+    <rect x="104" y="48" width="26" height="26" rx="9" fill="#FFD600"/>
+    <path d="M104 58L90 50M130 56L146 46" stroke="#E8B27A" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="117" cy="38" r="11" fill="#F1C27D"/>
+    <path d="M106 36Q108 26 118 27Q128 27 128 35Q120 30 106 36Z" fill="#4A2C1A"/>
+    <circle cx="113" cy="38" r="1.7" fill="#2B2340"/><circle cx="121" cy="38" r="1.7" fill="#2B2340"/>
+    <path d="M114 43Q117 45.5 120 43" stroke="#2B2340" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  </g></g>
+  <path d="M152 150Q178 118 240 112V150Z" fill="#F2DBA8"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <line x1="206" y1="144" x2="206" y2="96" stroke="#8A5A2B" stroke-width="5"/>
+    <rect x="184" y="92" width="44" height="19" rx="6" fill="#00C9A7" stroke="#2B2340" stroke-width="2"/>
+    <text x="206" y="106" font-size="12" fill="#fff">eş</text>
+    <rect x="184" y="116" width="44" height="19" rx="6" fill="#FF6B35" stroke="#2B2340" stroke-width="2"/>
+    <text x="206" y="130" font-size="12" fill="#fff">zıt</text>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Düşler Şatosu 2",
         file: "duslersatosu2.html",
+        beceri: "Okuduğunu anlama",
         desc: "Metinleri okuyup anlayarak şekerden şatolar yap!",
         sinif: "1. - 2. Sınıf",
         emoji: "🍬",
-        thumbBg: "linear-gradient(135deg, #FFE0F0, #FFB8D9)",
+        thumbBg: "linear-gradient(180deg,#FFE3F2,#FFD1E8)",
+        customThumb: `
+<div class="dusler2-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="ds2Fon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE3F2"/><stop offset="1" stop-color="#FFD1E8"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#ds2Fon)"/>
+  <g fill="#fff" opacity=".85"><ellipse cx="44" cy="26" rx="18" ry="8"/><ellipse cx="200" cy="34" rx="16" ry="7"/></g>
+  <path d="M0 136Q60 128 120 134T240 130V150H0Z" fill="#FFB8D9"/>
+  <g stroke="#2B2340" stroke-width="2.5">
+    <g fill="#fff"><rect x="62" y="62" width="14" height="72"/><rect x="164" y="62" width="14" height="72"/></g>
+    <g fill="#FF4D8D" stroke="none"><rect x="62" y="68" width="14" height="8"/><rect x="62" y="86" width="14" height="8"/><rect x="62" y="104" width="14" height="8"/><rect x="164" y="68" width="14" height="8"/><rect x="164" y="86" width="14" height="8"/><rect x="164" y="104" width="14" height="8"/></g>
+    <rect x="76" y="84" width="88" height="50" fill="#FFF4E0"/>
+    <path d="M76 84H164V90Q153 98 142 90Q131 98 120 90Q109 98 98 90Q87 98 76 90Z" fill="#FF9EC0" stroke="none"/>
+    <path d="M106 134V112A14 14 0 0 1 134 112V134Z" fill="#8A5A3B"/>
+    <path d="M92 112 C86 106 89 100 93 103 C97 100 100 106 94 112 Q93 113 92 112Z" fill="#FF4D8D" stroke="none"/>
+    <path d="M147 112 C141 106 144 100 148 103 C152 100 155 106 149 112 Q148 113 147 112Z" fill="#FF4D8D" stroke="none"/>
+  </g>
+  <g class="ds2-lolipop">
+    <circle cx="69" cy="48" r="14" fill="#FFD600" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M69 48m-9 0a9 9 0 0 1 9 -9a5 5 0 0 1 0 10a3 3 0 0 1 -3 -3" fill="none" stroke="#FF6B35" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g class="ds2-lolipop ds2-lol2">
+    <circle cx="171" cy="48" r="14" fill="#9FE8FF" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M171 48m-9 0a9 9 0 0 1 9 -9a5 5 0 0 1 0 10a3 3 0 0 1 -3 -3" fill="none" stroke="#A855F7" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g stroke="#2B2340" stroke-width="2"><path d="M28 136a11 11 0 0 1 22 0Z" fill="#00C9A7"/><path d="M196 136a10 10 0 0 1 20 0Z" fill="#FFD600"/><path d="M218 140a8 8 0 0 1 16 0Z" fill="#FF6B35"/></g>
+  <g class="ds2-piril" fill="#fff"><path d="M100 60 L102 65 L107 67 L102 69 L100 74 L98 69 L93 67 L98 65 Z"/><path class="ds2-p2" d="M146 66 L147.5 70 L151.5 71.5 L147.5 73 L146 77 L144.5 73 L140.5 71.5 L144.5 70 Z"/></g>
+</svg>
+</div>
+`,
       }
     ]
   },
   {
     name: "➕ Matematik",
-    gizliTetik: 'mat', // ikona 3 kez dokununca gizli kategori şifresi sorulur
     color: "#FF6B35",
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
@@ -1760,6 +2343,7 @@ const categories = [
       {
         name: "Şekil Robotu",
         file: "sekil_robotu.html",
+        beceri: "Geometrik şekiller",
         desc: "Geometrik şekilleri öğren ve onlardan robotunu yap!",
         sinif: "1. ve 2. Sınıf",
         thumbBg: "linear-gradient(160deg, #eef4fd 0%, #d7e5f7 55%, #bcd3f0 100%)",
@@ -1861,96 +2445,421 @@ const categories = [
       {
         name: "Matematik Penaltı Kupası",
         file: "penalti.html",
+        beceri: "Toplama ve çıkarma",
         desc: "Takımını kur. Turnuvaya katıl ve şampiyon ol!",
         sinif: "1. - 2. Sınıf",
         emoji: "⚽",
-        thumbBg: "linear-gradient(135deg, #E8FFE8, #B8F5C8)",
+        thumbBg: "linear-gradient(180deg,#2A2145,#3E9C4A)",
+        customThumb: `
+<div class="penalti-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#2A2145"/>
+  <g fill="#4A3A7A"><circle cx="16" cy="14" r="5"/><circle cx="38" cy="18" r="5"/><circle cx="60" cy="13" r="5"/><circle cx="82" cy="17" r="5"/><circle cx="104" cy="13" r="5"/><circle cx="126" cy="17" r="5"/><circle cx="148" cy="13" r="5"/><circle cx="170" cy="17" r="5"/><circle cx="192" cy="13" r="5"/><circle cx="214" cy="17" r="5"/></g>
+  <rect y="28" width="240" height="122" fill="#3E9C4A"/>
+  <g fill="#48AA54"><rect y="48" width="240" height="18"/><rect y="86" width="240" height="18"/><rect y="124" width="240" height="18"/></g>
+  <g stroke="#fff" stroke-width="4" fill="none"><path d="M42 118V38H198V118"/></g>
+  <g class="pnl-ag" stroke="#fff" stroke-width="1.3" opacity=".75">
+    <line x1="42" y1="52" x2="198" y2="52"/><line x1="42" y1="68" x2="198" y2="68"/><line x1="42" y1="84" x2="198" y2="84"/><line x1="42" y1="100" x2="198" y2="100"/>
+    <line x1="60" y1="38" x2="60" y2="118"/><line x1="82" y1="38" x2="82" y2="118"/><line x1="104" y1="38" x2="104" y2="118"/><line x1="126" y1="38" x2="126" y2="118"/><line x1="148" y1="38" x2="148" y2="118"/><line x1="170" y1="38" x2="170" y2="118"/>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900"><rect x="168" y="4" width="66" height="22" rx="6" fill="#16234A" stroke="#FFD600" stroke-width="2"/><text x="201" y="20" font-size="13" text-anchor="middle" fill="#FFD600">3+4=?</text></g>
+  <g>
+    <rect x="108" y="64" width="22" height="26" rx="7" fill="#FF6B35" stroke="#2B2340" stroke-width="2"/>
+    <circle cx="119" cy="56" r="9" fill="#F1C27D"/><path d="M110 54Q112 46 120 47Q128 47 128 53Q120 49 110 54Z" fill="#2B2340"/>
+    <path d="M108 70L92 58M130 70L146 58" stroke="#F1C27D" stroke-width="5" stroke-linecap="round"/>
+    <path d="M112 90L106 106M126 90L132 106" stroke="#2B2340" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g class="pnl-top">
+    <circle r="11" fill="#fff" stroke="#2B2340" stroke-width="2.5"/>
+    <polygon points="0,-5 4.8,-1.5 2.9,4 -2.9,4 -4.8,-1.5" fill="#2B2340"/>
+  </g>
+  <g class="pnl-iz" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".6"><line x1="128" y1="132" x2="140" y2="138"/><line x1="134" y1="124" x2="148" y2="131"/></g>
+</svg>
+</div>
+`,
       },
       {
         name: "Balon Patlatma",
         file: "balon.html",
+        beceri: "Toplama ve çıkarma",
         desc: "Toplama ve çıkarma işlemleriyle balonları patlat! 🎈",
         sinif: "1. Sınıf",
         emoji: "🎈",
-        thumbBg: "linear-gradient(135deg, #FFF0E0, #FFD6B8)"
+        thumbBg: "linear-gradient(180deg,#BFE7FF,#E8F6FF)",
+        customThumb: `
+<div class="balon-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#BFE7FF"/>
+  <g fill="#fff" opacity=".9"><ellipse cx="52" cy="120" rx="20" ry="8"/><ellipse cx="190" cy="132" rx="24" ry="9"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <g class="bln-b1">
+      <path d="M58 92Q58 100 62 104" stroke="#2B2340" stroke-width="1.8" fill="none"/>
+      <ellipse cx="58" cy="66" rx="22" ry="27" fill="#FF6B35" stroke="#2B2340" stroke-width="2.5"/>
+      <ellipse cx="50" cy="56" rx="6" ry="9" fill="#fff" opacity=".4"/>
+      <text x="58" y="75" font-size="22" fill="#fff">7</text>
+    </g>
+    <g class="bln-b2">
+      <path d="M122 84Q122 92 118 96" stroke="#2B2340" stroke-width="1.8" fill="none"/>
+      <ellipse cx="122" cy="58" rx="22" ry="27" fill="#00C9A7" stroke="#2B2340" stroke-width="2.5"/>
+      <ellipse cx="114" cy="48" rx="6" ry="9" fill="#fff" opacity=".4"/>
+      <text x="122" y="67" font-size="22" fill="#fff">4</text>
+    </g>
+    <g class="bln-b3">
+      <path d="M186 96Q186 104 190 108" stroke="#2B2340" stroke-width="1.8" fill="none"/>
+      <ellipse cx="186" cy="70" rx="22" ry="27" fill="#FF4D8D" stroke="#2B2340" stroke-width="2.5"/>
+      <ellipse cx="178" cy="60" rx="6" ry="9" fill="#fff" opacity=".4"/>
+      <text x="186" y="79" font-size="22" fill="#fff">9</text>
+    </g>
+    <g class="bln-pat">
+      <path d="M122 124 L127 113 L138 117 L131 126 L140 134 L128 133 L124 145 L119 133 L107 135 L115 125 L106 116 L118 114 Z" fill="#FFD600" stroke="#FF6B35" stroke-width="2.5" stroke-linejoin="round"/>
+      <text x="123" y="132" font-size="12" fill="#2B2340">PAT!</text>
+    </g>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Köprü Oyunu",
         file: "kopru.html",
+        beceri: "Toplama ve çıkarma",
         desc: "Toplama ve çıkarma yaparak köprüyü tamamla! 🌉",
         sinif: "1. Sınıf",
         emoji: "🌉",
-        thumbBg: "linear-gradient(135deg, #FFF8E0, #FFE8A0)"
+        thumbBg: "linear-gradient(180deg,#CDEBFF,#9FD6F0)",
+        customThumb: `
+<div class="kopru-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#CDEBFF"/>
+  <g fill="#fff" opacity=".9"><ellipse cx="60" cy="22" rx="16" ry="7"/><ellipse cx="186" cy="28" rx="18" ry="8"/></g>
+  <path d="M0 150V96Q14 90 24 96L34 150Z" fill="#B07A4A"/>
+  <path d="M240 150V96Q226 90 216 96L206 150Z" fill="#B07A4A"/>
+  <path d="M34 150Q60 134 120 140T206 150Z" fill="#4D9FFF"/>
+  <g class="kpo-su" stroke="#fff" stroke-opacity=".6" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M70 142q7-4 14 0"/><path d="M120 146q7-4 14 0"/><path d="M164 142q7-4 14 0"/></g>
+  <g stroke="#6B4A2B" stroke-width="2.5" fill="none"><path d="M20 76Q120 60 220 76"/><path d="M20 102Q120 88 220 102"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <rect x="46" y="88" width="34" height="18" rx="4" fill="#C8874A" stroke="#6B4A2B" stroke-width="2.5"/>
+    <rect x="96" y="84" width="34" height="18" rx="4" fill="#C8874A" stroke="#6B4A2B" stroke-width="2.5"/>
+    <rect x="146" y="86" width="34" height="18" rx="4" fill="none" stroke="#FF6B35" stroke-width="2.5" stroke-dasharray="5 4"/>
+    <text x="63" y="102" font-size="14" fill="#fff">2</text>
+    <text x="113" y="98" font-size="14" fill="#fff">4</text>
+    <text class="kpo-soru" x="163" y="100" font-size="15" fill="#FF6B35">?</text>
+  </g>
+  <g class="kpo-cocuk">
+    <circle cx="113" cy="58" r="10" fill="#F1C27D"/>
+    <path d="M103 56Q104 47 113 48Q122 47 123 55Q114 50 103 56Z" fill="#4A2C1A"/>
+    <circle cx="109.5" cy="58" r="1.6" fill="#2B2340"/><circle cx="116.5" cy="58" r="1.6" fill="#2B2340"/>
+    <path d="M110 62.5Q113 65 116 62.5" stroke="#2B2340" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    <rect x="103" y="66" width="20" height="17" rx="6" fill="#00C9A7"/>
+  </g>
+  <path d="M40 30l5 2-5 2M52 34l5 2-5 2" stroke="#2B2340" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</svg>
+</div>
+`,
       },
       {
         name: "Roket Yakıtı",
         file: "roket.html",
+        beceri: "Toplama ve çıkarma",
         desc: "Doğru hesapla roketi uzaya fırlat! 🚀",
         sinif: "1. Sınıf",
         emoji: "🚀",
-        thumbBg: "linear-gradient(135deg, #E8F4FF, #C0DCFF)"
+        thumbBg: "linear-gradient(180deg,#CDEBFF,#E8F6FF)",
+        customThumb: `
+<div class="roket-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#CDEBFF"/>
+  <circle cx="208" cy="24" r="12" fill="#FFD600"/>
+  <g fill="#fff" opacity=".9"><ellipse cx="50" cy="28" rx="18" ry="8"/><ellipse cx="64" cy="24" rx="12" ry="9"/></g>
+  <rect y="132" width="240" height="18" fill="#9CD08C"/>
+  <g stroke="#8D93A8" stroke-width="3"><line x1="76" y1="132" x2="76" y2="52"/><line x1="76" y1="60" x2="96" y2="60"/><line x1="76" y1="84" x2="96" y2="84"/><line x1="76" y1="108" x2="96" y2="108"/></g>
+  <g class="rkt-roket">
+    <path d="M120 30Q136 48 136 80L136 104H104L104 80Q104 48 120 30Z" fill="#fff" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M120 30Q131 43 134 62H106Q109 43 120 30Z" fill="#FF6B35" stroke="#2B2340" stroke-width="2.5"/>
+    <circle cx="120" cy="76" r="9" fill="#9FE8FF" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M104 86Q92 94 92 110L104 104Z" fill="#FF6B35" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M136 86Q148 94 148 110L136 104Z" fill="#FF6B35" stroke="#2B2340" stroke-width="2.5"/>
+  </g>
+  <g class="rkt-alev">
+    <path d="M110 106Q120 134 130 106Z" fill="#FF6B35"/>
+    <path d="M114 106Q120 124 126 106Z" fill="#FFD600"/>
+  </g>
+  <g fill="#E6EDF5"><ellipse cx="98" cy="130" rx="12" ry="6"/><ellipse cx="142" cy="130" rx="12" ry="6"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900">
+    <rect x="174" y="58" width="26" height="66" rx="8" fill="#fff" stroke="#2B2340" stroke-width="2.5"/>
+    <rect class="rkt-yakit" x="179" y="63" width="16" height="56" rx="5" fill="#00C9A7"/>
+    <text x="187" y="52" font-size="11" text-anchor="middle" fill="#2B2340">YAKIT</text>
+    <text x="187" y="140" font-size="12" text-anchor="middle" fill="#2B2340">2+3</text>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Terazi Dengeleme Oyunu",
         file: "terazi.html",
+        beceri: "Eşitlik ve denge",
         desc: "Teraziyi dengele, eşitlik kavramını öğren! ⚖️",
         sinif: "1. Sınıf",
         emoji: "⚖️",
-        thumbBg: "linear-gradient(135deg, #E8FFE8, #B8F0C0)"
+        thumbBg: "linear-gradient(180deg,#FFF8F0,#FFECD9)",
+        customThumb: `
+<div class="terazi-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#FFF8F0"/>
+  <g fill="#FFE9CF"><circle cx="30" cy="30" r="14"/><circle cx="212" cy="118" r="18"/><circle cx="208" cy="26" r="9"/></g>
+  <path d="M94 138H146L138 124H102Z" fill="#A855F7" stroke="#2B2340" stroke-width="2.5"/>
+  <rect x="116" y="56" width="8" height="70" rx="3" fill="#A855F7" stroke="#2B2340" stroke-width="2.5"/>
+  <g class="trz-kol">
+    <rect x="40" y="52" width="160" height="8" rx="4" fill="#FF9E2C" stroke="#2B2340" stroke-width="2.5"/>
+    <g stroke="#2B2340" stroke-width="2" fill="none"><path d="M56 60L44 80M56 60L68 80"/><path d="M184 60L172 80M184 60L196 80"/></g>
+    <path d="M38 80A18 9 0 0 0 74 80Z" fill="#4D9FFF" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M166 80A18 9 0 0 0 202 80Z" fill="#00C9A7" stroke="#2B2340" stroke-width="2.5"/>
+    <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+      <rect x="44" y="60" width="24" height="20" rx="4" fill="#FF6B35" stroke="#2B2340" stroke-width="2"/>
+      <text x="56" y="75" font-size="14" fill="#fff">5</text>
+      <rect x="168" y="60" width="15" height="20" rx="4" fill="#FFD600" stroke="#2B2340" stroke-width="2"/>
+      <rect x="186" y="60" width="15" height="20" rx="4" fill="#FF4D8D" stroke="#2B2340" stroke-width="2"/>
+      <text x="175.5" y="75" font-size="12" fill="#2B2340">2</text>
+      <text x="193.5" y="75" font-size="12" fill="#fff">3</text>
+    </g>
+  </g>
+  <circle cx="120" cy="56" r="6" fill="#FFD600" stroke="#2B2340" stroke-width="2.5"/>
+  <g class="trz-esit" font-family="Nunito, Segoe UI, sans-serif" font-weight="900"><text x="120" y="36" font-size="22" text-anchor="middle" fill="#00C9A7">=</text></g>
+</svg>
+</div>
+`,
       },
       {
         name: "Sünger Bob",
         file: "sungerbob.html",
+        beceri: "Toplama ve çıkarma",
         desc: "Toplama ve çıkarma işlemi 🧽",
         sinif: "1. Sınıf",
         emoji: "🧽",
-        thumbBg: "linear-gradient(135deg, #FFF9C4, #FFE082)"
+        thumbBg: "linear-gradient(180deg,#7FD8E8,#2E8FD6)",
+        customThumb: `
+<div class="sunger-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="sgrFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD8E8"/><stop offset="1" stop-color="#2E8FD6"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#sgrFon)"/>
+  <path d="M0 132Q60 122 120 130T240 126V150H0Z" fill="#F2DBA8"/>
+  <g class="sgr-yosun"><path d="M30 134Q24 116 32 100Q38 114 34 134Z" fill="#2FA85A"/></g>
+  <g class="sgr-yosun sgr-y2"><path d="M208 136Q202 114 212 96Q218 112 214 136Z" fill="#2FA85A"/></g>
+  <path d="M190 138 L196 128 L202 138 L208 130 L213 139" stroke="#FF9EC0" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <g class="sgr-balik">
+    <path d="M86 78L64 64Q70 80 64 94Z" fill="#FFB020" stroke="#2B2340" stroke-width="2.5" stroke-linejoin="round" class="sgr-kuyruk"/>
+    <ellipse cx="112" cy="79" rx="30" ry="21" fill="#FFD600" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M104 62Q112 52 122 60L114 68Z" fill="#FFB020" stroke="#2B2340" stroke-width="2"/>
+    <circle cx="126" cy="74" r="4.5" fill="#fff" stroke="#2B2340" stroke-width="1.5"/><circle cx="127.5" cy="74.5" r="2.2" fill="#2B2340"/>
+    <path d="M130 86Q135 89 139 85" stroke="#2B2340" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M104 74Q110 82 104 88" stroke="#E8A000" stroke-width="2.5" fill="none"/>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <g class="sgr-k1"><circle cx="170" cy="56" r="14" fill="rgba(255,255,255,.3)" stroke="#fff" stroke-width="2"/><text x="170" y="62" font-size="15" fill="#fff">3</text></g>
+    <text class="sgr-k2" x="198" y="46" font-size="17" fill="#fff">+</text>
+    <g class="sgr-k3"><circle cx="222" cy="64" r="13" fill="rgba(255,255,255,.3)" stroke="#fff" stroke-width="2"/><text x="222" y="70" font-size="14" fill="#fff">2</text></g>
+  </g>
+  <g fill="rgba(255,255,255,.55)"><circle class="sgr-hava" cx="58" cy="44" r="4"/><circle class="sgr-hava sgr-h2" cx="44" cy="68" r="3"/><circle class="sgr-hava sgr-h3" cx="146" cy="40" r="3.5"/></g>
+</svg>
+</div>
+`,
       },
       {
         name: "Timsahı Doyur",
         file: "timsah.html",
+        beceri: "Sayıları karşılaştırma",
         desc: "Toplamada ve çıkarmada bilinmeyeni bulma 🐊",
         sinif: "1. Sınıf",
         emoji: "🐊",
-        thumbBg: "linear-gradient(135deg, #DFFFD6, #A5D6A7)"
+        thumbBg: "linear-gradient(180deg,#E6F5FF,#BFE7FF)",
+        customThumb: `
+<div class="timsah-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#E6F5FF"/>
+  <circle cx="34" cy="26" r="12" fill="#FFD600"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900">
+    <rect x="140" y="16" width="86" height="26" rx="9" fill="#fff" stroke="#4D9FFF" stroke-width="2.5"/>
+    <text x="183" y="35" font-size="15" text-anchor="middle" fill="#2B2340">3 + ? = 7</text>
+  </g>
+  <g class="tmd-elma" font-family="Nunito, Segoe UI, sans-serif" font-weight="900">
+    <circle cx="96" cy="0" r="12" fill="#FF4D4D" stroke="#2B2340" stroke-width="2"/>
+    <path d="M96 -12Q99 -17 103 -15" stroke="#2FA85A" stroke-width="2.5" fill="none"/>
+    <text x="96" y="5" font-size="13" text-anchor="middle" fill="#fff">4</text>
+  </g>
+  <rect y="112" width="240" height="38" fill="#6FD3F2"/>
+  <path d="M0 112Q15 108 30 112T60 112T90 112T120 112T150 112T180 112T210 112T240 112V118H0Z" fill="#9FE2F8"/>
+  <g>
+    <ellipse cx="100" cy="112" rx="56" ry="18" fill="#3DBE6B" stroke="#24894A" stroke-width="2"/>
+    <g class="tmd-cene">
+      <path d="M58 100Q56 70 78 66Q118 60 140 72Q150 78 146 90L142 100Z" fill="#3DBE6B" stroke="#24894A" stroke-width="2"/>
+      <g fill="#fff"><path d="M70 98l5-9 5 9z"/><path d="M86 96l5-9 5 9z"/><path d="M102 95l5-9 5 9z"/><path d="M118 96l5-9 5 9z"/></g>
+      <circle cx="78" cy="68" r="9" fill="#3DBE6B" stroke="#24894A" stroke-width="2"/>
+      <circle cx="80" cy="66" r="5.5" fill="#fff"/><ellipse cx="81" cy="66.5" rx="2" ry="4" fill="#1E1E2E"/>
+      <circle cx="140" cy="74" r="3" fill="#24894A"/>
+    </g>
+    <path d="M56 104Q100 96 148 102Q150 110 144 112Q100 120 60 112Q54 110 56 104Z" fill="#FCEFB4" stroke="#24894A" stroke-width="2"/>
+    <g fill="#fff"><path d="M72 104l4 8 4-8z"/><path d="M90 102l4 8 4-8z"/><path d="M108 102l4 8 4-8z"/><path d="M126 103l4 8 4-8z"/></g>
+  </g>
+  <g transform="translate(206 124)"><path d="M0 0 5-9A16 9 0 1 1-5-9Z" fill="#3DBE6B"/><circle cx="6" cy="-6" r="3" fill="#FF9EC0"/></g>
+</svg>
+</div>
+`,
       },
       {
         name: "Zıpzıp Ateşböceği Avlıyor",
         file: "zipzip.html",
+        beceri: "Toplama ve çıkarma",
         desc: "Sayı doğrusunda toplama ve çıkarma işlemi yaparak ateşböceklerini yakala! 🐸",
         sinif: "1. - 2. Sınıf",
         emoji: "🐸",
-        thumbBg: "linear-gradient(135deg, #D4F5D4, #A8E6A3)"
+        thumbBg: "linear-gradient(180deg,#1E2A4A,#2A3A5E)",
+        customThumb: `
+<div class="zipzip-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="zzpFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E2A4A"/><stop offset="1" stop-color="#2A3A5E"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#zzpFon)"/>
+  <circle cx="206" cy="26" r="14" fill="#FFF2B8"/><circle cx="200" cy="22" r="3" fill="#E8DCA0"/><circle cx="212" cy="30" r="2.2" fill="#E8DCA0"/>
+  <path d="M0 136Q60 126 120 132T240 128V150H0Z" fill="#2F5D3A"/>
+  <g class="zzp-a1"><circle cx="60" cy="48" r="8" fill="#FFE27A" opacity=".3"/><circle cx="60" cy="48" r="3.5" fill="#FFE27A"/></g>
+  <g class="zzp-a2"><circle cx="150" cy="34" r="8" fill="#FFE27A" opacity=".3"/><circle cx="150" cy="34" r="3.5" fill="#FFE27A"/></g>
+  <g class="zzp-a3"><circle cx="112" cy="62" r="7" fill="#FFE27A" opacity=".3"/><circle cx="112" cy="62" r="3" fill="#FFE27A"/></g>
+  <g stroke="#fff" stroke-width="3" stroke-linecap="round">
+    <line x1="20" y1="112" x2="220" y2="112"/>
+    <line x1="40" y1="106" x2="40" y2="118"/><line x1="80" y1="106" x2="80" y2="118"/><line x1="120" y1="106" x2="120" y2="118"/><line x1="160" y1="106" x2="160" y2="118"/><line x1="200" y1="106" x2="200" y2="118"/>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" fill="#fff" text-anchor="middle" font-size="11">
+    <text x="40" y="132">2</text><text x="80" y="132">3</text><text x="120" y="132">4</text><text x="160" y="132">5</text><text x="200" y="132">6</text>
+  </g>
+  <path d="M84 100Q100 76 116 100" stroke="#FFE27A" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+  <g class="zzp-kurbaga">
+    <ellipse cx="80" cy="104" rx="13" ry="3" fill="rgba(0,0,0,.3)"/>
+    <ellipse cx="72" cy="98" rx="6" ry="4" fill="#2EA44F"/><ellipse cx="88" cy="98" rx="6" ry="4" fill="#2EA44F"/>
+    <ellipse cx="80" cy="92" rx="11" ry="9" fill="#3CC461"/><ellipse cx="80" cy="95" rx="6" ry="4.5" fill="#CFF7BE"/>
+    <circle cx="74" cy="84" r="4.5" fill="#3CC461"/><circle cx="86" cy="84" r="4.5" fill="#3CC461"/>
+    <circle cx="74" cy="84" r="3" fill="#fff"/><circle cx="86" cy="84" r="3" fill="#fff"/>
+    <circle cx="74.6" cy="84.3" r="1.6" fill="#1F2430"/><circle cx="85.4" cy="84.3" r="1.6" fill="#1F2430"/>
+    <path d="M76 90Q80 92.5 84 90" stroke="#1E6B34" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Problem Işığını Yak",
         file: "yak.html",
+        beceri: "Problem çözme",
         desc: "''YAK'' tekniği ile problemlerin ışığını yakalım! 🔥",
         sinif: "1. Sınıf",
         emoji: "🔥",
-        thumbBg: "linear-gradient(135deg, #FFE8D6, #FFB088)"
+        thumbBg: "linear-gradient(180deg,#241B3E,#3A2C5E)",
+        customThumb: `
+<div class="yak-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="pykFon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241B3E"/><stop offset="1" stop-color="#3A2C5E"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#pykFon)"/>
+  <circle class="pyk-halo" cx="120" cy="52" r="42" fill="#FFE27A" opacity=".16"/>
+  <g class="pyk-isin" stroke="#FFE27A" stroke-width="3.5" stroke-linecap="round">
+    <line x1="120" y1="2" x2="120" y2="14"/><line x1="78" y1="18" x2="87" y2="27"/><line x1="162" y1="18" x2="153" y2="27"/>
+    <line x1="64" y1="52" x2="78" y2="52"/><line x1="176" y1="52" x2="162" y2="52"/>
+  </g>
+  <circle cx="120" cy="52" r="24" fill="#FFF4C2" stroke="#F2A900" stroke-width="3"/>
+  <path d="M112 58Q116 48 120 58Q124 48 128 58" stroke="#F2A900" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M112 72H128L126 80H114Z" fill="#B8C2D0" stroke="#2B2340" stroke-width="2"/>
+  <g stroke="#8D93A8" stroke-width="2.5"><line x1="113" y1="83" x2="127" y2="83"/><line x1="114" y1="87" x2="126" y2="87"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <rect x="52" y="98" width="136" height="30" rx="10" fill="#fff" stroke="#2B2340" stroke-width="2.5"/>
+    <text x="120" y="119" font-size="15" fill="#2B2340">Problemi çöz!</text>
+    <g class="pyk-harf"><rect x="60" y="134" width="24" height="14" rx="6" fill="#FF6B35"/><text x="72" y="145" font-size="10" fill="#fff">Y</text></g>
+    <g class="pyk-harf pyk-h2"><rect x="108" y="134" width="24" height="14" rx="6" fill="#FFD600"/><text x="120" y="145" font-size="10" fill="#2B2340">A</text></g>
+    <g class="pyk-harf pyk-h3"><rect x="156" y="134" width="24" height="14" rx="6" fill="#00C9A7"/><text x="168" y="145" font-size="10" fill="#fff">K</text></g>
+  </g>
+</svg>
+</div>
+`,
       },
       {
         name: "Kral Şakir ATM",
         file: "atm.html",
+        beceri: "Paralarımız",
         desc: "ATM olup Kral Şakir karakterlerine istedikleri paraları verebilir misin?",
         sinif: "1. - 2. Sınıf",
         emoji: "🏧",
-        thumbBg: "linear-gradient(135deg, #E8F4FF, #B0D4FF)"
+        thumbBg: "linear-gradient(180deg,#E8F1FA,#D6E6F5)",
+        customThumb: `
+<div class="atm-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#E8F1FA"/>
+  <rect y="132" width="240" height="18" fill="#C4D4E4"/>
+  <g stroke="#2B2340" stroke-width="2.5">
+    <rect x="70" y="14" width="100" height="122" rx="12" fill="#4D9FFF"/>
+    <rect x="82" y="26" width="76" height="40" rx="6" fill="#16234A"/>
+    <rect x="82" y="92" width="44" height="26" rx="5" fill="#2B2340" stroke="none"/>
+    <rect x="136" y="74" width="22" height="7" rx="3" fill="#2B2340" stroke="none"/>
+  </g>
+  <g fill="#9FC4E8"><rect x="88" y="96" width="9" height="5" rx="2"/><rect x="100" y="96" width="9" height="5" rx="2"/><rect x="112" y="96" width="9" height="5" rx="2"/><rect x="88" y="104" width="9" height="5" rx="2"/><rect x="100" y="104" width="9" height="5" rx="2"/><rect x="112" y="104" width="9" height="5" rx="2"/><rect x="88" y="112" width="9" height="4" rx="2"/><rect x="100" y="112" width="9" height="4" rx="2"/><rect x="112" y="112" width="9" height="4" rx="2"/></g>
+  <text class="atm-ekran" x="120" y="52" font-size="16" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" fill="#7BFFB0">50 TL</text>
+  <g class="atm-kart"><rect x="134" y="72" width="26" height="16" rx="3" fill="#FFD600" stroke="#2B2340" stroke-width="2"/><rect x="138" y="76" width="8" height="6" rx="1.5" fill="#FF6B35"/></g>
+  <g class="atm-para"><rect x="92" y="120" width="56" height="18" rx="3" fill="#7BD389" stroke="#2B2340" stroke-width="2"/><circle cx="120" cy="129" r="6" fill="none" stroke="#2FA85A" stroke-width="2"/><text x="120" y="133" font-size="9" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" fill="#1E6B34">20</text></g>
+  <g class="atm-coin"><circle cx="196" cy="0" r="9" fill="#FFD600" stroke="#B8860B" stroke-width="2.5"/><text x="196" y="4" font-size="10" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" fill="#8A6A08">1</text></g>
+  <path d="M184 136a12 7 0 0 0 24 0Z" fill="#8D93A8" stroke="#2B2340" stroke-width="2"/>
+</svg>
+</div>
+`,
       },
       {
         name: "Sevimli Orman Sayımı",
         file: "sevimliorman.html",
+        beceri: "Sayma",
         desc: "Ormanda sayılması ve tablolanması gerekenler var! Yardımın lazım.",
         sinif: "1. - 2. Sınıf",
         emoji: "🌲",
-        thumbBg: "linear-gradient(135deg, #D4F5D4, #A8E6A3)",
+        thumbBg: "linear-gradient(180deg,#CDEBFF,#E0F6D8)",
+        customThumb: `
+<div class="orman-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#CDEBFF"/>
+  <circle cx="214" cy="22" r="11" fill="#FFD600"/>
+  <rect y="118" width="240" height="32" fill="#8FD08A"/>
+  <g stroke="#2B2340" stroke-width="2">
+    <rect x="30" y="96" width="9" height="26" fill="#8A5A2B"/>
+    <polygon points="34.5,28 10,100 59,100" fill="#2FA05A"/>
+    <rect x="86" y="102" width="8" height="20" fill="#8A5A2B"/>
+    <polygon points="90,48 70,106 110,106" fill="#3CB56B"/>
+  </g>
+  <g class="orm-kus">
+    <ellipse cx="34" cy="60" rx="8" ry="6.5" fill="#FF4D4D" stroke="#2B2340" stroke-width="1.8"/>
+    <circle cx="40" cy="56" r="4.5" fill="#FF4D4D" stroke="#2B2340" stroke-width="1.8"/>
+    <polygon points="44,56 50,57 44,59" fill="#FFB020"/>
+    <circle cx="41.5" cy="55" r="1.1" fill="#2B2340"/>
+  </g>
+  <g>
+    <g class="orm-kulak"><ellipse cx="128" cy="96" rx="4" ry="11" fill="#fff" stroke="#2B2340" stroke-width="1.8"/><ellipse cx="138" cy="96" rx="4" ry="11" fill="#fff" stroke="#2B2340" stroke-width="1.8"/></g>
+    <circle cx="133" cy="112" r="11" fill="#fff" stroke="#2B2340" stroke-width="2"/>
+    <ellipse cx="133" cy="130" rx="13" ry="10" fill="#fff" stroke="#2B2340" stroke-width="2"/>
+    <circle cx="129" cy="110" r="1.6" fill="#2B2340"/><circle cx="137" cy="110" r="1.6" fill="#2B2340"/>
+    <ellipse cx="133" cy="115" rx="2" ry="1.4" fill="#FF9EC0"/>
+  </g>
+  <g stroke="#2B2340" stroke-width="1.8"><path d="M58 128a8 8 0 0 1 16 0Z" fill="#FF4D4D"/><rect x="63" y="128" width="6" height="8" fill="#FFF4E0"/><circle cx="62" cy="124" r="1.5" fill="#fff" stroke="none"/><circle cx="69" cy="123" r="1.5" fill="#fff" stroke="none"/></g>
+  <g stroke="#2B2340" stroke-width="1.8"><path d="M44 134a7 7 0 0 1 14 0Z" fill="#FF4D4D"/><rect x="48.5" y="134" width="5" height="7" fill="#FFF4E0"/><circle cx="49" cy="130" r="1.3" fill="#fff" stroke="none"/></g>
+  <g class="orm-kelebek"><path d="M0 0Q-6 -7 -9 -2Q-7 4 0 2Q7 4 9 -2Q6 -7 0 0Z" fill="#A855F7" stroke="#2B2340" stroke-width="1.3"/></g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900">
+    <rect x="166" y="54" width="62" height="74" rx="8" fill="#fff" stroke="#2B2340" stroke-width="2.5" transform="rotate(4 197 91)"/>
+    <g transform="rotate(4 197 91)">
+      <rect x="186" y="48" width="22" height="12" rx="4" fill="#FF6B35"/>
+      <circle cx="180" cy="74" r="6" fill="#fff" stroke="#2B2340" stroke-width="1.6"/><path d="M177 69q-2-5 1-6M183 69q2-5-1-6" stroke="#2B2340" stroke-width="1.6" fill="none"/>
+      <g stroke="#2B2340" stroke-width="2.4" stroke-linecap="round"><line x1="194" y1="68" x2="194" y2="80"/><line x1="201" y1="68" x2="201" y2="80"/><line x1="208" y1="68" x2="208" y2="80"/></g>
+      <circle cx="180" cy="100" r="6" fill="#FF4D4D"/><g stroke="#2B2340" stroke-width="2.4" stroke-linecap="round"><line x1="194" y1="94" x2="194" y2="106"/><line x1="201" y1="94" x2="201" y2="106"/></g>
+    </g>
+  </g>
+</svg>
+</div>
+`,
       }
     ]
   },
   {
     name: "🌱 Hayat Bilgisi",
-    gizliTetik: 'hb', // ikona 3 kez dokununca gizli 4. sınıf Fen kategorisi şifresi sorulur
     color: "#4CAF50",
     iconBg: "linear-gradient(135deg, #4CAF50, #00C9A7)",
     lineColor: "linear-gradient(90deg, #4CAF50, #00C9A7)",
@@ -2006,10 +2915,37 @@ const categories = [
       {
         name: "Geri Dönüşüm Fabrikası",
         file: "geridonusum.html",
+        beceri: "Geri dönüşüm",
         desc: "Geri dönüşüm fabrikamızda atıkları ayırmaya yardım eder misin?",
         sinif: "1. - 2. Sınıf",
         emoji: "♻️",
-        thumbBg: "linear-gradient(135deg, #E8F5E9, #B9F6CA)"
+        thumbBg: "linear-gradient(180deg,#EAF2F8,#D8E8F2)",
+        customThumb: `
+<div class="gdn-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#EAF2F8"/>
+  <g class="gdn-ok" stroke="#2FA85A" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M196 26A16 16 0 0 1 212 42"/><path d="M212 42A16 16 0 0 1 196 58"/><path d="M196 58A16 16 0 0 1 182 36"/>
+    <path d="M212 36l2 7-7 1Z" fill="#2FA85A" stroke="none"/><path d="M198 60l-7 2 1-7Z" fill="#2FA85A" stroke="none"/><path d="M184 32l1-7 6 4Z" fill="#2FA85A" stroke="none"/>
+  </g>
+  <rect x="10" y="48" width="130" height="12" rx="6" fill="#5B5470" stroke="#2B2340" stroke-width="2"/>
+  <g class="gdn-bant" stroke="#C9D3E6" stroke-width="3" stroke-linecap="round"><line x1="22" y1="54" x2="30" y2="54"/><line x1="46" y1="54" x2="54" y2="54"/><line x1="70" y1="54" x2="78" y2="54"/><line x1="94" y1="54" x2="102" y2="54"/><line x1="118" y1="54" x2="126" y2="54"/></g>
+  <g fill="#8D93A8"><circle cx="24" cy="66" r="6"/><circle cx="74" cy="66" r="6"/><circle cx="126" cy="66" r="6"/></g>
+  <rect x="18" y="26" width="30" height="20" rx="4" fill="#C8874A" stroke="#2B2340" stroke-width="2"/>
+  <g class="gdn-sise">
+    <path d="M0 -10h8v6l3 4v12a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-12l3 -4z" fill="#9FE8FF" stroke="#2B6A8F" stroke-width="2"/>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle" stroke-width="2.5">
+    <path d="M26 100H74L68 144H32Z" fill="#4D9FFF" stroke="#2B2340"/>
+    <path d="M96 100H144L138 144H102Z" fill="#FFD600" stroke="#2B2340"/>
+    <path d="M166 100H214L208 144H172Z" fill="#2FA85A" stroke="#2B2340"/>
+    <text x="50" y="128" font-size="11" fill="#fff" stroke="none">KAĞIT</text>
+    <text x="120" y="128" font-size="10" fill="#2B2340" stroke="none">PLASTİK</text>
+    <text x="190" y="128" font-size="11" fill="#fff" stroke="none">CAM</text>
+  </g>
+</svg>
+</div>
+`,
       }
     ]
   },
@@ -2022,18 +2958,65 @@ const categories = [
       {
         name: "Öğrenen Profilleri",
         file: "pyp.html",
+        beceri: "Öğrenen profilleri",
         desc: "PYP öğrenen profillerini keşfet ve öğren! 🌟",
         sinif: "1-4. Sınıf",
         emoji: "🌟",
-        thumbBg: "linear-gradient(135deg, #F3E8FF, #E0C8FF)"
+        thumbBg: "linear-gradient(180deg,#E8F4FF,#D6EBFF)",
+        customThumb: `
+<div class="pyp-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#E8F4FF"/>
+  <g fill="#fff" opacity=".9"><ellipse cx="40" cy="26" rx="16" ry="7"/><ellipse cx="206" cy="124" rx="18" ry="8"/></g>
+  <ellipse cx="120" cy="78" rx="86" ry="34" fill="none" stroke="#A855F7" stroke-width="2" stroke-dasharray="6 6" opacity=".5"/>
+  <g class="pyp-dunya">
+    <circle cx="120" cy="78" r="36" fill="#4D9FFF" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M100 62Q112 52 124 60Q120 72 106 74Q98 70 100 62Z" fill="#7BD389"/>
+    <path d="M128 84Q142 78 146 90Q138 102 126 96Q124 88 128 84Z" fill="#7BD389"/>
+    <path d="M106 92Q114 90 116 98Q110 104 104 100Z" fill="#7BD389"/>
+    <ellipse cx="108" cy="62" rx="10" ry="5" fill="#fff" opacity=".35"/>
+  </g>
+  <g class="pyp-orbit">
+    <g transform="translate(120 78)">
+      <g transform="translate(-86 0)"><circle r="12" fill="#FFD600" stroke="#2B2340" stroke-width="2"/><path d="M0 -6 L1.8 -1.8 L6 -1.5 L2.8 1.4 L3.8 6 L0 3.4 L-3.8 6 L-2.8 1.4 L-6 -1.5 L-1.8 -1.8 Z" fill="#fff"/></g>
+      <g transform="translate(86 0)"><circle r="12" fill="#FF4D8D" stroke="#2B2340" stroke-width="2"/><path d="M0 5 C-7 -1 -4 -7 0 -3 C4 -7 7 -1 0 5Z" fill="#fff"/></g>
+      <g transform="translate(0 -40)"><circle r="12" fill="#00C9A7" stroke="#2B2340" stroke-width="2"/><circle cx="0" cy="-1.5" r="4" fill="#FFF4C2"/><rect x="-2" y="2.5" width="4" height="3.5" rx="1" fill="#fff"/></g>
+    </g>
+  </g>
+  <path class="pyp-parla" d="M196 44 L198.5 50 L205 52 L198.5 54 L196 60 L193.5 54 L187 52 L193.5 50 Z" fill="#FFD600"/>
+</svg>
+</div>
+`,
       },
       {
         name: "2. Portfolyo Etkinliği",
         file: "portfolio.html",
+        beceri: "Portfolyo etkinliği",
         desc: "1. Sınıflar 2. Portfolyo Etkinliği",
         sinif: "1. Sınıf",
         emoji: "📁",
-        thumbBg: "linear-gradient(135deg, #EDE0FF, #D4B8FF)",
+        thumbBg: "linear-gradient(180deg,#FFF3E0,#FFE4C2)",
+        customThumb: `
+<div class="portfolio-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#FFF3E0"/>
+  <rect y="118" width="240" height="32" fill="#C8874A"/>
+  <path d="M46 118V54Q46 48 52 48H88L98 60H176Q182 60 182 66V118Z" fill="#FF9E2C" stroke="#2B2340" stroke-width="2.5"/>
+  <g class="por-kagit">
+    <rect x="60" y="34" width="86" height="60" rx="4" fill="#fff" stroke="#E0D2B8" stroke-width="2" transform="rotate(-4 103 64)"/>
+    <g fill="#CBBFA8" transform="rotate(-4 103 64)"><rect x="70" y="48" width="60" height="5" rx="2.5"/><rect x="70" y="60" width="48" height="5" rx="2.5"/><rect x="70" y="72" width="56" height="5" rx="2.5"/></g>
+    <path class="por-yildiz" d="M138 44 L141 51 L149 52 L143 57 L145 65 L138 61 L131 65 L133 57 L127 52 L135 51 Z" fill="#FFD600" stroke="#B8860B" stroke-width="1.6" transform="rotate(-4 103 64)"/>
+  </g>
+  <path d="M40 124V76Q40 70 46 70H188Q194 70 194 76V124Q194 118 188 118H46Q40 118 40 124Z" fill="#FFB84D" stroke="#2B2340" stroke-width="2.5"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900"><rect x="86" y="88" width="64" height="20" rx="10" fill="#fff" stroke="#2B2340" stroke-width="2"/><text x="118" y="103" font-size="12" text-anchor="middle" fill="#2B2340">2A</text></g>
+  <g class="por-damga">
+    <rect x="198" y="46" width="12" height="22" rx="4" fill="#A855F7" stroke="#2B2340" stroke-width="2"/>
+    <rect x="192" y="66" width="24" height="10" rx="3" fill="#7A4FD1" stroke="#2B2340" stroke-width="2"/>
+  </g>
+  <g stroke="#2B2340" stroke-width="2"><rect x="24" y="130" width="46" height="7" rx="3.5" fill="#FFD600"/><polygon points="70,130 80,133.5 70,137" fill="#F1C27D"/></g>
+</svg>
+</div>
+`,
         isSpecial: true
       }
     ]
@@ -2047,9 +3030,36 @@ const categories = [
       {
         name: "Değiştirme Satrancı",
         file: "satranc.html",
+        beceri: "Satranç",
         desc: "Ya satranç taşlarının kuralları değişseydi nasıl olurdu?",
         emoji: "♟️",
-        thumbBg: "linear-gradient(135deg, #E8E8F0, #C8C8E8)",
+        thumbBg: "linear-gradient(180deg,#EDE6F7,#D9CCF0)",
+        customThumb: `
+<div class="satranc-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#EDE6F7"/>
+  <g stroke="#2B2340" stroke-width="2.5"><rect x="20" y="58" width="200" height="80" rx="6" fill="#F5E6C8"/></g>
+  <g fill="#8A6AAE">
+    <rect x="20" y="58" width="40" height="40"/><rect x="100" y="58" width="40" height="40"/><rect x="180" y="58" width="40" height="40"/>
+    <rect x="60" y="98" width="40" height="40"/><rect x="140" y="98" width="40" height="40"/>
+  </g>
+  <path class="stn-ok" d="M84 44Q120 16 156 44" fill="none" stroke="#FF6B35" stroke-width="3.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+  <path class="stn-ok" d="M158 40l0 9-9-2Z" fill="#FF6B35"/>
+  <g class="stn-at">
+    <ellipse cx="80" cy="96" rx="17" ry="4.5" fill="rgba(0,0,0,.2)"/>
+    <path d="M68 94Q66 86 72 84L70 66Q70 52 82 48Q80 42 86 42Q96 46 96 58L90 60Q94 70 92 84Q96 86 94 94Z" fill="#FFFDF6" stroke="#2B2340" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="84" cy="52" r="1.8" fill="#2B2340"/>
+    <path d="M82 48L78 56" stroke="#2B2340" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g class="stn-kale">
+    <ellipse cx="160" cy="136" rx="17" ry="4.5" fill="rgba(0,0,0,.2)"/>
+    <path d="M148 134L151 106H169L172 134Z" fill="#5B4A7E" stroke="#2B2340" stroke-width="2.5"/>
+    <path d="M148 106V92H153V98H158V92H162V98H167V92H172V106Z" fill="#5B4A7E" stroke="#2B2340" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
+  <path class="stn-parla" d="M208 24 L210.5 30 L217 32 L210.5 34 L208 40 L205.5 34 L199 32 L205.5 30 Z" fill="#A855F7"/>
+</svg>
+</div>
+`,
       }
     ]
   }
@@ -2057,10 +3067,8 @@ const categories = [
 ];
 
 // ============================================================
-// GİZLİ KATEGORİLER — normal sitede görünmez. (Matematik: 3. ve 4. Sınıflar birlikte açılır)
-// Matematik ya da Hayat Bilgisi başlığındaki ikona üst üste 3 kez dokun, şifreyi gir.
-// Her gizli kategori, "tetik" alanındaki kategorinin hemen altında açılır.
-// Açık kalma süresi: tarayıcı sekmesi kapanana kadar (sessionStorage).
+// 3. ve 4. SINIF KATEGORİLERİ — sınıf görünümünde "Matematik" ve
+// "Fen Bilimleri" başlıklarıyla birleşerek gösterilirler.
 // ============================================================
 const hiddenCategories = [
   {
@@ -2345,22 +3353,185 @@ const hiddenCategories = [
 ];
 
 // ============================================================
+// SINIF SEÇİMİ
+// Her oyunun sınıfı, "sinif" metnindeki sayılardan otomatik okunur
+// ("1. - 2. Sınıf" → 1 ve 2). Gerekirse oyuna grades: [2,3] yazarak
+// elle de belirtilebilir. "sinif" alanı olmayan oyun her sınıfta görünür.
+// ============================================================
+const SINIF_RENK = {
+  1: { renk: '#F2A900', grad: 'linear-gradient(135deg,#FFD600,#FF9E2C)' },
+  2: { renk: '#FF6B35', grad: 'linear-gradient(135deg,#FF6B35,#FF4D8D)' },
+  3: { renk: '#00C9A7', grad: 'linear-gradient(135deg,#00C9A7,#4D9FFF)' },
+  4: { renk: '#4D9FFF', grad: 'linear-gradient(135deg,#4D9FFF,#A855F7)' }
+};
+const KONU_SIRASI = ['Türkçe', 'Matematik', 'Fen Bilimleri', 'Hayat Bilgisi', 'PYP', 'Diğer Oyunlar'];
+
+let seciliSinif = 2; // ilk girişte 2. sınıf açılır
+try {
+  const s = parseInt(localStorage.getItem('seciliSinif') || '2');
+  if (s >= 1 && s <= 4) seciliSinif = s;
+} catch (e) {}
+
+function oyunSiniflari(oyun) {
+  if (oyun.grades) return oyun.grades;
+  const s = (oyun.sinif || '').split('—')[0];
+  const sayilar = (s.match(/[1-4]/g) || []).map(Number);
+  if (!sayilar.length) return [1, 2, 3, 4];
+  if (s.includes('-') && sayilar.length >= 2) {
+    const a = Math.min(...sayilar), b = Math.max(...sayilar), r = [];
+    for (let i = a; i <= b; i++) r.push(i);
+    return r;
+  }
+  return [...new Set(sayilar)];
+}
+
+// 3.-4. sınıf kategorileri sınıf görünümünde normal ders adlarıyla gösterilir
+function konuAdi(cat) {
+  if (cat.tetik) return cat.name.includes('Fen') ? '🔬 Fen Bilimleri' : '➕ Matematik';
+  return cat.name;
+}
+
+// Oyunun kazanımı: önce oyundaki "beceri" alanı, yoksa sinif metninin
+// "—" sonrası ("2. Sınıf — Hikâye unsurları" → "Hikâye unsurları")
+function oyunBecerisi(o) {
+  if (o.beceri) return o.beceri;
+  const p = (o.sinif || '').split('—')[1];
+  if (p) return p.replace(/\(.*?\)/g, '').trim();
+  return 'Diğer';
+}
+
+function sinifSec(g) {
+  seciliSinif = g;
+  try { localStorage.setItem('seciliSinif', seciliSinif); } catch (e) {}
+  filtreTemizle(true); // sınıf değişince kazanım filtresi sıfırlanır
+  buildPage();
+}
+
+function sinifBarGuncelle() {
+  document.querySelectorAll('.sinif-btn').forEach(btn => {
+    const g = parseInt(btn.dataset.sinif);
+    const r = SINIF_RENK[g];
+    const secili = g === seciliSinif;
+    btn.classList.toggle('secili', secili);
+    btn.style.background = secili ? r.grad : '#fff';
+    btn.style.borderColor = secili ? 'transparent' : r.renk;
+    btn.style.color = secili ? '#fff' : r.renk;
+  });
+  const alt = document.getElementById('hero-alt');
+  if (alt) alt.textContent = seciliSinif + '. sınıf oyunları — favorini seç ve başla!';
+  filtreBtnGuncelle();
+}
+
+// ============================================================
 // SAYFA OLUŞTURMA
 // ============================================================
+const konuSira = n => { const i = KONU_SIRASI.findIndex(k => n.includes(k)); return i < 0 ? 99 : i; };
+
+// Seçilen sınıfın oyunları, derslere ayrılmış gruplar halinde
+function sinifGruplari(g) {
+  const gruplar = new Map();
+  categories.concat(hiddenCategories).forEach(cat => {
+    const oyunlar = cat.games.filter(o => oyunSiniflari(o).includes(g));
+    if (!oyunlar.length) return;
+    const ad = konuAdi(cat);
+    if (!gruplar.has(ad)) gruplar.set(ad, Object.assign({}, cat, { name: ad, games: [] }));
+    gruplar.get(ad).games.push(...oyunlar);
+  });
+  return [...gruplar.values()].sort((a, b) => konuSira(a.name) - konuSira(b.name));
+}
+
 function buildPage() {
   const main = document.getElementById('main-content');
   main.innerHTML = '';
+  let liste = sinifGruplari(seciliSinif);
+  if (seciliBeceriler.size) {
+    liste = liste
+      .map(cat => Object.assign({}, cat, { games: cat.games.filter(o => seciliBeceriler.has(oyunBecerisi(o))) }))
+      .filter(cat => cat.games.length);
+  }
+  liste.forEach((cat, ci) => main.appendChild(makeSection(cat, ci)));
+  if (!liste.length) {
+    const bos = document.createElement('div');
+    bos.className = 'sinif-bos';
+    bos.textContent = '🚧 Bu sınıf için oyunlar çok yakında!';
+    main.appendChild(bos);
+  }
+  sinifBarGuncelle();
+}
 
-  categories.forEach((cat, ci) => {
-    main.appendChild(makeSection(cat, ci));
-    // Gizli kategoriler tetik kategorisinin hemen altında açılır
-    if (cat.gizliTetik) {
-      const alan = document.createElement('div');
-      alan.id = 'gizli-alan-' + cat.gizliTetik;
-      main.appendChild(alan);
-    }
+// ============================================================
+// KAZANIM FİLTRESİ
+// ============================================================
+let seciliDers = null;
+const seciliBeceriler = new Set();
+
+function filtreAcikMi() { return !document.getElementById('filtre-panel').hidden; }
+
+function filtreAcKapa(zorla) {
+  const panel = document.getElementById('filtre-panel');
+  const ac = (typeof zorla === 'boolean') ? zorla : panel.hidden;
+  panel.hidden = !ac;
+  const btn = document.getElementById('filtre-btn');
+  btn.classList.toggle('aktif', ac);
+  btn.setAttribute('aria-expanded', ac);
+  if (ac) filtrePanelCiz();
+}
+
+function filtreTemizle(sessiz) {
+  seciliBeceriler.clear();
+  seciliDers = null;
+  if (!sessiz) {
+    buildPage();
+    if (filtreAcikMi()) filtrePanelCiz();
+  }
+}
+
+function filtreBtnGuncelle() {
+  const btn = document.getElementById('filtre-btn');
+  if (!btn) return;
+  btn.classList.toggle('dolu', seciliBeceriler.size > 0);
+  btn.textContent = seciliBeceriler.size ? `🎯 Kazanım (${seciliBeceriler.size} seçili)` : '🎯 Kazanım Filtrele';
+}
+
+function filtrePanelCiz() {
+  const dersler = sinifGruplari(seciliSinif);
+  if (seciliDers && !dersler.some(d => d.name === seciliDers)) seciliDers = null;
+  if (!seciliDers && dersler.length) seciliDers = dersler[0].name;
+
+  // Sol: dersler
+  const dEl = document.getElementById('filtre-dersler');
+  dEl.innerHTML = '';
+  dersler.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'filtre-ders-btn' + (d.name === seciliDers ? ' aktif' : '');
+    b.textContent = d.name;
+    if (d.name === seciliDers) b.style.background = d.iconBg;
+    else { b.style.borderColor = d.color + '55'; }
+    b.onclick = () => { seciliDers = d.name; filtrePanelCiz(); };
+    dEl.appendChild(b);
   });
-  gizliCiz();
+
+  // Sağ: seçili dersin bu sınıftaki kazanımları
+  const bEl = document.getElementById('filtre-beceriler');
+  bEl.innerHTML = '';
+  const grup = dersler.find(d => d.name === seciliDers);
+  if (!grup) return;
+  const beceriler = new Map();
+  grup.games.forEach(o => {
+    const b = oyunBecerisi(o);
+    beceriler.set(b, (beceriler.get(b) || 0) + 1);
+  });
+  [...beceriler.entries()].sort((a, b) => a[0].localeCompare(b[0], 'tr')).forEach(([ad, sayi]) => {
+    const b = document.createElement('button');
+    b.className = 'filtre-beceri-btn' + (seciliBeceriler.has(ad) ? ' secili' : '');
+    b.innerHTML = `${seciliBeceriler.has(ad) ? '✅ ' : ''}${ad} <span class="filtre-beceri-sayi">${sayi} oyun</span>`;
+    b.onclick = () => {
+      seciliBeceriler.has(ad) ? seciliBeceriler.delete(ad) : seciliBeceriler.add(ad);
+      buildPage();
+      filtrePanelCiz();
+    };
+    bEl.appendChild(b);
+  });
 }
 
 function makeSection(cat, ci) {
@@ -2391,7 +3562,7 @@ function makeSection(cat, ci) {
       card.style.animationDelay = `${ci * 0.1 + gi * 0.08}s`;
       card.innerHTML = `
         <div class="game-thumb" style="background:${game.thumbBg}">
-          ${game.customThumb || game.emoji}
+          ${game.customThumb || `<div class="thumb-canli"><span class="ts ts1">✦</span><span class="ts ts2">✨</span><span class="ts ts3">✧</span><span class="thumb-emoji">${game.emoji || '🎮'}</span></div>`}
           ${game.isNew ? '<div class="new-badge">✨ Yeni!</div>' : ''}
           ${game.isSpecial ? '<div class="special-badge">⭐ ÖZEL ETKİNLİK</div>' : ''}
         </div>
@@ -2407,81 +3578,21 @@ function makeSection(cat, ci) {
       grid.appendChild(card);
     });
 
-    if (cat.gizliTetik) header.querySelector('.category-icon').addEventListener('click', () => gizliDokunus(cat.gizliTetik));
-
     section.appendChild(header);
     section.appendChild(grid);
     return section;
 }
 
-// ============================================================
-// GİZLİ KATEGORİ — 3 dokunuş + şifre
-// ============================================================
-const GIZLI_OZET = '2d3f9867'; // şifrenin özeti; şifrenin kendisi kodda yazmaz
-function gizliOzet(s) {
-  let h = 0x811c9dc5; s = 'sinanince:' + s;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
-  return h.toString(16);
-}
-// Her tetiğin kendi açık/kapalı kaydı var (Matematik eski anahtarını korur)
-function gizliAnahtar(t) { return t === 'mat' ? 'gizliKategori' : 'gizliKategori_' + t; }
-function gizliAcikMi(t) { try { return sessionStorage.getItem(gizliAnahtar(t)) === '1'; } catch (e) { return false; } }
-function gizliCiz() {
-  document.querySelectorAll('[id^="gizli-alan-"]').forEach(alan => {
-    const t = alan.id.slice('gizli-alan-'.length);
-    alan.innerHTML = '';
-    if (!gizliAcikMi(t)) return;
-    hiddenCategories.filter(cat => cat.tetik === t).forEach((cat, i) => alan.appendChild(makeSection(cat, i)));
-  });
-}
-let gizliSayac = 0, gizliZaman = 0, gizliSonTetik = null, gizliAktif = null;
-function gizliDokunus(t) {
-  const simdi = Date.now();
-  if (simdi - gizliZaman > 800 || t !== gizliSonTetik) gizliSayac = 0;
-  gizliZaman = simdi; gizliSonTetik = t;
-  if (++gizliSayac < 3) return;
-  gizliSayac = 0;
-  if (gizliAcikMi(t)) { // açıkken yine 3 dokunuş → gizle
-    try { sessionStorage.removeItem(gizliAnahtar(t)); } catch (e) {}
-    gizliCiz();
-  } else {
-    gizliAc(t);
-  }
-}
-function gizliAc(t) {
-  gizliAktif = t;
-  const inp = document.getElementById('gizli-sifre');
-  inp.value = '';
-  document.getElementById('gizli-hata').textContent = '';
-  document.getElementById('gizli-overlay').classList.add('active');
-  setTimeout(() => inp.focus(), 50);
-}
-function gizliKapat() { document.getElementById('gizli-overlay').classList.remove('active'); }
-function gizliKontrol() {
-  const inp = document.getElementById('gizli-sifre');
-  if (gizliOzet(inp.value.trim()) === GIZLI_OZET) {
-    try { sessionStorage.setItem(gizliAnahtar(gizliAktif), '1'); } catch (e) {}
-    gizliKapat();
-    gizliCiz();
-    const alan = document.getElementById('gizli-alan-' + gizliAktif);
-    if (alan && alan.firstChild) alan.firstChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else {
-    document.getElementById('gizli-hata').textContent = 'Şifre yanlış.';
-    inp.value = '';
-    const k = document.getElementById('gizli-kutu');
-    k.classList.remove('salla'); void k.offsetWidth; k.classList.add('salla');
-    inp.focus();
-  }
-}
-document.getElementById('gizli-sifre').addEventListener('keydown', e => { if (e.key === 'Enter') gizliKontrol(); });
-document.getElementById('gizli-overlay').addEventListener('click', function(e) { if (e.target === this) gizliKapat(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') gizliKapat(); });
 
 // ============================================================
 // MODAL
 // ============================================================
+// Site dışında (ör. önizlemede) açılırsa oyunları ve logoyu canlı siteden yükle
+const OYUN_KOK = /(^|\.)sinanince\.com$|github\.io$|^localhost$/.test(location.hostname) ? '' : 'https://sinanince.com/';
+if (OYUN_KOK) { const l = document.querySelector('.logo-img'); if (l) l.src = OYUN_KOK + 'logo.png'; }
+
 function openGame(file, name) {
-  document.getElementById('game-frame').src = file;
+  document.getElementById('game-frame').src = OYUN_KOK + file;
   document.getElementById('modal-overlay').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
