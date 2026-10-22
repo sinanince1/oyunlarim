@@ -661,6 +661,21 @@
       .ku-teker, .ku-kapi, .ku-p1, .ku-p2 { animation: none; }
       .ku-p1, .ku-p2 { opacity: 1; }
     }
+    /* ---- Kızak Pisti kart animasyonu: penguen tepeden 4.400 istasyonuna kayar ---- */
+    .kizak-pisti-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .kizak-pisti-thumb svg { width: 100%; height: 100%; }
+    .kp-kizak { animation: kpKay 5s ease-in-out infinite; }
+    @keyframes kpKay {
+      0%, 18%  { transform: translate(128px, 52px) rotate(0deg); }
+      40%      { transform: translate(160px, 82px) rotate(28deg); }
+      55%, 100% { transform: translate(188px, 108px) rotate(0deg); }
+    }
+    .kp-bayrak { animation: kpBayrak 5s linear infinite; }
+    @keyframes kpBayrak { 0%, 52% { fill: #9DB3CF; } 58%, 100% { fill: #00C9A7; } }
+    @media (prefers-reduced-motion: reduce) {
+      .kp-kizak { animation: none; transform: translate(188px, 108px); }
+      .kp-bayrak { animation: none; fill: #00C9A7; }
+    }
     /* ---- Maden Kâşifi kart animasyonu: kazma vurur, kaya çatlar, altın parlar ---- */
     .maden-kasifi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .maden-kasifi-thumb svg { width: 100%; height: 100%; }
@@ -2037,6 +2052,54 @@ const hiddenCategories = [
     <text x="180" y="80" font-size="20" fill="#FFD34D">482 316</text>
     <text class="ku-p1" x="180" y="108" font-size="9.5" fill="#fff">400 000 + 80 000 +</text>
     <text class="ku-p2" x="180" y="122" font-size="9.5" fill="#fff">2 000 + 300 + 10 + 6</text>
+  </g>
+</svg>
+</div>
+`
+      },
+      {
+        name: "Kızak Pisti",
+        file: "kizak_pisti.html",
+        desc: "Kızağı doğru istasyona kaydır, sayıları en yakın onluğa ve yüzlüğe yuvarla!",
+        sinif: "4. Sınıf — Doğal sayıları yuvarlama",
+        isNew: true,
+        thumbBg: "linear-gradient(180deg, #CFE9FF, #F4FBFF)",
+        customThumb: `
+<div class="kizak-pisti-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="240" height="150" fill="#DDEFFF"/>
+  <circle cx="212" cy="26" r="13" fill="#FFE27A"/>
+  <polygon points="0,112 40,62 90,104 150,50 205,100 240,70 240,112" fill="#C9E4FB"/>
+  <!-- dağ sırtı: çukurlar istasyon, tepe tam orta -->
+  <path d="M0 112 L18 112 Q60 112 74 82 Q88 44 128 44 Q168 44 182 82 Q196 112 210 112 L240 112 L240 150 L0 150 Z" fill="#fff"/>
+  <path d="M0 112 L18 112 Q60 112 74 82 Q88 44 128 44 Q168 44 182 82 Q196 112 210 112 L240 112" fill="none" stroke="#9CCBF0" stroke-width="3"/>
+  <line x1="128" y1="44" x2="128" y2="112" stroke="#7FA8D6" stroke-width="2" stroke-dasharray="4 4"/>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle">
+    <text x="128" y="32" font-size="10" fill="#5B7BA6">4.350</text>
+    <!-- istasyonlar -->
+    <line x1="40" y1="112" x2="40" y2="84" stroke="#5A3A1A" stroke-width="3"/>
+    <path d="M40 84 L56 89 L40 94 Z" fill="#9DB3CF"/>
+    <rect x="18" y="118" width="44" height="18" rx="6" fill="#fff" stroke="#4D9FFF" stroke-width="2"/>
+    <text x="40" y="132" font-size="12" fill="#1E2A44">4.300</text>
+    <line x1="200" y1="112" x2="200" y2="84" stroke="#5A3A1A" stroke-width="3"/>
+    <path class="kp-bayrak" d="M200 84 L216 89 L200 94 Z" fill="#9DB3CF"/>
+    <rect x="178" y="118" width="44" height="18" rx="6" fill="#fff" stroke="#00C9A7" stroke-width="2"/>
+    <text x="200" y="132" font-size="12" fill="#1E2A44">4.400</text>
+    <text x="120" y="141" font-size="11" fill="#A855F7">4.3<tspan fill="#E0A800">6</tspan>7</text>
+  </g>
+  <!-- penguen + kızak -->
+  <g class="kp-kizak">
+    <g transform="scale(.42)">
+      <path d="M-46 -2 L40 -2 Q55 -2 52 -15" fill="none" stroke="#5A3A1A" stroke-width="5" stroke-linecap="round"/>
+      <rect x="-42" y="-22" width="84" height="12" rx="5" fill="#FF4D4D"/>
+      <ellipse cx="-2" cy="-46" rx="22" ry="26" fill="#22304A"/>
+      <ellipse cx="3" cy="-42" rx="14" ry="19" fill="#fff"/>
+      <circle cx="4" cy="-78" r="16" fill="#22304A"/>
+      <ellipse cx="9" cy="-77" rx="10" ry="9" fill="#fff"/>
+      <circle cx="6" cy="-79" r="2.5" fill="#22304A"/><circle cx="14" cy="-79" r="2.5" fill="#22304A"/>
+      <path d="M18 -75 L29 -72 L18 -69 Z" fill="#FF9F1C"/>
+      <rect x="-15" y="-65" width="34" height="8" rx="4" fill="#4D9FFF"/>
+    </g>
   </g>
 </svg>
 </div>

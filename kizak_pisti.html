@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Kızak Pisti — 4. sınıf: Doğal sayıları en yakın onluğa veya yüzlüğe yuvarla (M.4.1.1.4).">
+<title>Kızak Pisti</title>
+<style>
+/* =========================================================
+   1. TEMEL DEĞİŞKENLER VE SIFIRLAMA
+   ========================================================= */
+:root{
+  --tur:#FF6B35; --sari:#FFD600; --pembe:#FF4D8D; --yesil:#00C9A7;
+  --mavi:#4D9FFF; --mor:#A855F7; --zemin:#FFF8F0; --koyu:#1E2A44;
+  --gok1:#CFE9FF; --gok2:#F4FBFF; --gri:#B9C7DC;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Nunito','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  color:var(--koyu);
+  background:linear-gradient(180deg,var(--gok1) 0%,var(--gok2) 70%,#fff 100%);
+  user-select:none;-webkit-user-select:none;
+}
+button{font-family:inherit;color:inherit}
+button:focus-visible{outline:4px solid var(--mor);outline-offset:3px}
+
+/* =========================================================
+   2. ARKA PLAN KAR TANELERİ
+   ========================================================= */
+#karlar{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.kt{position:absolute;top:-20px;width:10px;height:10px;border-radius:50%;background:#fff;
+  box-shadow:0 0 6px rgba(77,159,255,.35);opacity:.9;animation:dus linear infinite}
+@keyframes dus{to{transform:translate3d(30px,110vh,0)}}
+
+/* =========================================================
+   3. EKRANLAR (SAHNE YÖNETİCİSİ)
+   ========================================================= */
+.ekran{position:fixed;inset:0;display:none;flex-direction:column;z-index:1}
+.ekran.aktif{display:flex}
+.icerik{flex:1;overflow-y:auto;padding:12px 16px 8px;-webkit-overflow-scrolling:touch}
+.icerik.dar{max-width:720px;width:100%;margin:0 auto}
+.alt{text-align:center;font-size:12px;font-weight:700;opacity:.55;padding:4px 0 6px}
+
+/* Üst çubuk */
+.ust{display:flex;align-items:center;gap:10px;padding:10px 14px 6px}
+.ust h2{font-size:clamp(20px,3vw,30px);font-weight:900;flex:1;line-height:1.1}
+.yuvarlak-btn{width:52px;height:52px;min-width:52px;border-radius:50%;border:none;background:#fff;
+  font-size:26px;font-weight:900;box-shadow:0 4px 0 var(--gri);cursor:pointer}
+.yuvarlak-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gri)}
+.kar-cip{background:#fff;border-radius:999px;padding:8px 14px;font-weight:900;font-size:clamp(16px,2vw,22px);
+  box-shadow:0 4px 0 var(--gri);white-space:nowrap}
+.kar-cip.pop{animation:pop .4s}
+@keyframes pop{50%{transform:scale(1.25)}}
+
+/* Düğmeler */
+.btn{font-weight:900;font-size:clamp(18px,2.4vw,26px);border:none;border-radius:20px;padding:12px 26px;
+  min-height:64px;background:var(--tur);color:#fff;box-shadow:0 6px 0 #C94D1E;cursor:pointer;
+  transition:transform .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #C94D1E}
+.btn.mavi{background:var(--mavi);box-shadow:0 6px 0 #2C74CC}
+.btn.yesil{background:var(--yesil);box-shadow:0 6px 0 #00957C}
+.btn.pembe{background:var(--pembe);box-shadow:0 6px 0 #C92E66}
+.btn.beyaz{background:#fff;color:var(--koyu);box-shadow:0 6px 0 var(--gri)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* =========================================================
+   4. GİRİŞ EKRANI
+   ========================================================= */
+#s-giris .icerik{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.baslik{font-size:clamp(46px,9vw,96px);font-weight:900;color:var(--tur);line-height:1;
+  text-shadow:0 5px 0 #fff,0 10px 0 rgba(30,42,68,.12)}
+.altbaslik{font-size:clamp(18px,2.6vw,28px);font-weight:800;opacity:.85}
+.kazanim{font-size:clamp(13px,1.6vw,16px);font-weight:700;opacity:.6}
+.kahraman{width:min(560px,90vw);height:auto}
+.kahraman .pg{animation:salla 2.4s ease-in-out infinite;transform-box:view-box;transform-origin:0 0;transform:translate(300px,135px) scale(1.5)}
+@keyframes salla{0%,100%{transform:translate(300px,135px) rotate(-4deg) scale(1.5)}50%{transform:translate(300px,131px) rotate(4deg) scale(1.5)}}
+.giris-dugmeler{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.giris-dugmeler .btn{min-width:170px}
+.giris-dugmeler .btn.buyuk{font-size:clamp(24px,3.4vw,36px);min-width:240px;min-height:76px}
+
+/* =========================================================
+   5. PİST HARİTASI
+   ========================================================= */
+.kural-cip{background:#fff;border-radius:20px;padding:10px 16px;font-weight:800;font-size:clamp(15px,2vw,20px);
+  text-align:center;margin:0 auto 14px;max-width:760px;box-shadow:0 4px 0 var(--gri)}
+.kural-cip b.asg{color:var(--mavi)} .kural-cip b.yuk{color:var(--tur)}
+#pistler{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;max-width:1200px;margin:0 auto;padding-bottom:10px}
+.pist{background:#fff;border:none;border-radius:24px;padding:14px 16px;box-shadow:0 6px 0 var(--gri);
+  display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;min-height:150px;position:relative}
+.pist:active{transform:translateY(4px);box-shadow:0 2px 0 var(--gri)}
+.pist .rozet{width:48px;height:48px;border-radius:16px;color:#fff;font-weight:900;font-size:24px;
+  display:flex;align-items:center;justify-content:center}
+.pist .pad{font-weight:900;font-size:clamp(19px,2.2vw,24px)}
+.pist .pacik{font-weight:700;font-size:15px;opacity:.75;line-height:1.3;flex:1}
+.pist .yildizlar{font-size:24px;letter-spacing:2px;color:#E0E6F0}
+.pist .yildizlar .d{color:var(--sari);text-shadow:0 1px 0 #C9A800}
+.pist.kilitli{filter:grayscale(1);opacity:.55}
+.pist.hizli{background:linear-gradient(135deg,#fff 0%,#FFF3C2 100%)}
+
+/* =========================================================
+   6. OYUN EKRANI
+   ========================================================= */
+#s-oyun.aktif{display:grid;grid-template-rows:auto auto minmax(150px,1fr) auto auto}
+#ustIlerleme{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+.nk{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--gri)}
+.nk.d{background:var(--yesil);border-color:var(--yesil)}
+.nk.y{background:var(--pembe);border-color:var(--pembe)}
+.nk.s{border-color:var(--mor);transform:scale(1.25)}
+.sure-kutu{display:flex;align-items:center;gap:10px;min-width:180px}
+.sure-cubuk{flex:1;height:16px;background:#fff;border-radius:999px;overflow:hidden;border:3px solid var(--gri)}
+.sure-cubuk i{display:block;height:100%;background:var(--yesil);width:100%}
+.sure-cubuk i.az{background:var(--pembe)}
+.puan{font-weight:900;font-size:22px}
+
+#soru{margin:2px 14px 0;background:#fff;border-radius:24px;padding:12px 18px;
+  font-size:clamp(18px,2.5vw,30px);font-weight:800;text-align:center;line-height:1.35;box-shadow:0 5px 0 var(--gri)}
+#soru .alt-soru{font-size:.72em;font-weight:800;opacity:.7;margin-top:2px}
+#soru .dogrusu{display:block;margin-top:4px;color:#00957C}
+#soru b.hedef{color:var(--mor);font-size:1.3em}
+.etiket{display:inline-block;padding:0 10px;border-radius:12px;color:#fff;font-weight:900}
+.etiket.on{background:var(--mavi)} .etiket.yuz{background:var(--tur)}
+
+/* Sayı gösterimi ve basamak vurgusu */
+.sayi{font-size:1.35em;font-weight:900;color:var(--mor);white-space:nowrap;letter-spacing:1px}
+.sayi .r{display:inline-block;padding:0 2px;border-radius:6px}
+.sayi .bak{background:#FFE866;color:var(--koyu);border-bottom:5px solid #E0A800}
+.sayi .yuv{outline:3px solid var(--tur);outline-offset:-1px}
+
+#sahne{position:relative;margin:4px 10px 0;min-height:0}
+#sahne svg{width:100%;height:100%;display:block}
+.bayrak{cursor:pointer}
+.ist-yak rect.etk{fill:#D6FFF5;stroke:var(--yesil)}
+.ist-yak path.flama{fill:var(--yesil)}
+
+#panel{padding:8px 14px 2px}
+.secenekler{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:900px;margin:0 auto}
+.sec{background:#fff;font-size:clamp(22px,3vw,36px);font-weight:900;min-height:72px;border-radius:20px;
+  box-shadow:0 6px 0 var(--gri);border:4px solid transparent;cursor:pointer;padding:6px 10px}
+.sec:active{transform:translateY(4px);box-shadow:0 2px 0 var(--gri)}
+.sec.cift{font-size:clamp(19px,2.6vw,30px)}
+.sec.dogru{background:#D6FFF5;border-color:var(--yesil)}
+.sec.yanlis{background:#FFE1EA;border-color:var(--pembe)}
+.sec:disabled{cursor:default}
+.sec:disabled:not(.dogru):not(.yanlis){opacity:.45}
+.ipucu{max-width:900px;margin:0 auto 10px;background:#FFF7CC;border-radius:18px;padding:10px 14px;
+  font-weight:800;font-size:clamp(15px,2vw,21px);text-align:center;border:3px dashed #E0A800}
+.ipucu .sayi{font-size:1.1em}
+
+.gb{max-width:960px;margin:0 auto;background:#fff;border-radius:24px;padding:12px 16px;display:flex;gap:14px;
+  align-items:center;box-shadow:0 5px 0 var(--gri)}
+.gb.iyi{border:4px solid var(--yesil)} .gb.kotu{border:4px solid var(--tur)}
+.gb .ikon{font-size:42px;line-height:1}
+.gb .yazi{flex:1;font-size:clamp(16px,2.1vw,23px);font-weight:700;line-height:1.4}
+.gb .yazi .baslik2{font-weight:900;font-size:1.12em}
+.gb .yazi .senin{font-size:.85em;opacity:.7}
+.gb .sayi{font-size:1.15em}
+.gb .btn{min-width:150px}
+
+/* =========================================================
+   7. SONUÇ, AYARLAR, MAĞAZA
+   ========================================================= */
+.kart{background:#fff;border-radius:24px;padding:16px 18px;box-shadow:0 5px 0 var(--gri);margin-bottom:14px}
+.kart.satir{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900;font-size:clamp(18px,2.4vw,24px)}
+.kart p{font-weight:700;line-height:1.45;margin-top:6px}
+.sonuc-ust{text-align:center}
+.sonuc-ust .skor{font-size:clamp(44px,8vw,80px);font-weight:900;color:var(--mor);line-height:1.05}
+.sonuc-ust .buyuk-yildiz{font-size:clamp(48px,8vw,72px);letter-spacing:6px;color:#E0E6F0}
+.buyuk-yildiz span{display:inline-block}
+.buyuk-yildiz span.d{color:var(--sari);text-shadow:0 3px 0 #C9A800;animation:yildizPop .5s both}
+@keyframes yildizPop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.sonuc-ust .mesaj{font-weight:900;font-size:clamp(18px,2.4vw,26px);margin-top:4px}
+.yeni-pist{background:#D6FFF5;border:3px solid var(--yesil)}
+.hata-liste{list-style:none;margin-top:6px}
+.hata-liste li{font-weight:700;font-size:clamp(16px,2vw,20px);padding:6px 0;border-bottom:2px dashed #E6ECF5}
+.hata-liste li:last-child{border-bottom:none}
+.hata-liste b{color:var(--tur)}
+.sonuc-dugmeler{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:6px 0 10px}
+
+.anahtar{width:84px;height:46px;border-radius:999px;border:none;background:var(--gri);position:relative;cursor:pointer;transition:background .2s}
+.anahtar::after{content:'';position:absolute;top:5px;left:5px;width:36px;height:36px;border-radius:50%;background:#fff;transition:left .2s}
+.anahtar.acik{background:var(--yesil)} .anahtar.acik::after{left:43px}
+
+.m-onizleme{display:flex;justify-content:center}
+.m-onizleme svg{width:min(220px,50vw);height:auto}
+.m-not{text-align:center;font-weight:800;opacity:.65;margin:4px 0 10px}
+.sekmeler{display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.sekme{border:none;background:#fff;border-radius:16px;padding:10px 18px;font-weight:900;font-size:19px;box-shadow:0 4px 0 var(--gri);cursor:pointer}
+.sekme.aktif{background:var(--mavi);color:#fff;box-shadow:0 4px 0 #2C74CC}
+#mUrunler{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;max-width:900px;margin:0 auto}
+.urun{background:#fff;border-radius:20px;padding:10px;text-align:center;box-shadow:0 5px 0 var(--gri);display:flex;flex-direction:column;gap:6px;align-items:center}
+.urun svg{width:100px;height:100px}
+.urun .uad{font-weight:900}
+.urun .btn{min-height:48px;font-size:18px;padding:8px 14px;width:100%}
+.urun.secili{outline:4px solid var(--yesil)}
+
+/* =========================================================
+   8. MODAL VE BİLDİRİM
+   ========================================================= */
+#modal{position:fixed;inset:0;background:rgba(30,42,68,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal[hidden]{display:none}
+.mkutu{background:#fff;border-radius:28px;padding:22px;max-width:560px;width:100%;text-align:center;box-shadow:0 10px 0 rgba(30,42,68,.2)}
+.micerik{font-weight:800;font-size:clamp(18px,2.4vw,24px);line-height:1.45;margin-bottom:16px}
+.micerik .sayi{font-size:1.1em}
+.mdugmeler{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);visibility:hidden;background:var(--koyu);color:#fff;
+  padding:12px 20px;border-radius:18px;font-weight:800;font-size:18px;z-index:60;transition:transform .25s;max-width:92vw;text-align:center}
+#toast.goster{transform:translateX(-50%) translateY(0);visibility:visible}
+
+/* =========================================================
+   9. DUYARLI YERLEŞİM
+   ========================================================= */
+@media (max-width:620px){
+  .ust{padding:8px 10px 4px;gap:8px}
+  .yuvarlak-btn{width:46px;height:46px;min-width:46px;font-size:22px}
+  #ustPist{display:none}
+  #s-oyun .ust{flex-wrap:wrap}
+  #ustIlerleme{order:3;width:100%}
+  .nk{width:13px;height:13px}
+  #soru{margin:2px 10px 0;padding:10px 12px}
+  #panel{padding:8px 10px 2px}
+  .secenekler{gap:10px}
+  .sec{min-height:64px}
+  .gb{flex-wrap:wrap;padding:10px 12px}
+  .gb .ikon{font-size:32px}
+  .gb .btn{width:100%}
+}
+@media (max-height:560px) and (orientation:landscape){
+  .baslik{font-size:44px}
+  .kahraman{width:min(360px,50vw)}
+  #soru{padding:6px 14px;font-size:20px}
+  .sec{min-height:54px;font-size:24px}
+  .btn{min-height:54px}
+}
+@media (prefers-reduced-motion:reduce){
+  .kt,.kahraman .pg{animation:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Ortak SVG tanımları (degradeler) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gAltin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE680"/><stop offset=".5" stop-color="#FFC400"/><stop offset="1" stop-color="#E09B00"/>
+    </linearGradient>
+    <linearGradient id="gGok" x1="0" x2="1">
+      <stop offset="0" stop-color="#FF4D4D"/><stop offset=".25" stop-color="#FFD600"/><stop offset=".5" stop-color="#00C9A7"/>
+      <stop offset=".75" stop-color="#4D9FFF"/><stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div id="karlar"></div>
+
+<!-- ============ EKRAN 1: GİRİŞ ============ -->
+<section class="ekran aktif" id="s-giris">
+  <div class="icerik">
+    <div class="baslik">Kızak Pisti</div>
+    <div class="altbaslik">Sayıları en yakın onluğa ve yüzlüğe yuvarla!</div>
+    <svg class="kahraman" viewBox="0 -50 600 310" id="kahraman" aria-hidden="true"></svg>
+    <div class="giris-dugmeler">
+      <button class="btn buyuk" id="oynaBtn">Oyna ▶</button>
+    </div>
+    <div class="giris-dugmeler">
+      <button class="btn mavi" id="magazaBtn">🎿 Mağaza</button>
+      <button class="btn beyaz" id="ayarBtn">⚙️ Ayarlar</button>
+    </div>
+    <div class="kar-cip" id="girisKar">❄ 0</div>
+    <div class="kazanim">4. sınıf · M.4.1.1.4 · Doğal sayıları en yakın onluğa veya yüzlüğe yuvarlar.</div>
+  </div>
+  <div class="alt">Sinan İnce 2026</div>
+</section>
+
+<!-- ============ EKRAN 2: PİST HARİTASI ============ -->
+<section class="ekran" id="s-harita">
+  <div class="ust">
+    <button class="yuvarlak-btn" data-git="giris" aria-label="Ana sayfa">⌂</button>
+    <h2>Pist Haritası</h2>
+    <div class="kar-cip" id="haritaKar">❄ 0</div>
+  </div>
+  <div class="icerik">
+    <div class="kural-cip">Kural: Bakılan rakam <b class="asg">0, 1, 2, 3, 4 → aşağı ⬇</b> · <b class="yuk">5, 6, 7, 8, 9 → yukarı ⬆</b></div>
+    <div id="pistler"></div>
+  </div>
+  <div class="alt">Sinan İnce 2026</div>
+</section>
+
+<!-- ============ EKRAN 3: OYUN ============ -->
+<section class="ekran" id="s-oyun">
+  <div class="ust">
+    <button class="yuvarlak-btn" id="oyunGeri" aria-label="Haritaya dön">‹</button>
+    <h2 id="ustPist">Pist</h2>
+    <div id="ustIlerleme"></div>
+    <button class="yuvarlak-btn" id="kuralBtn" aria-label="Kural">?</button>
+    <div class="kar-cip" id="oyunKar">❄ 0</div>
+  </div>
+  <div id="soru" aria-live="polite"></div>
+  <div id="sahne"></div>
+  <div id="panel"></div>
+  <div class="alt">Sinan İnce 2026</div>
+</section>
+
+<!-- ============ EKRAN 4: TUR SONU ============ -->
+<section class="ekran" id="s-sonuc">
+  <div class="ust">
+    <button class="yuvarlak-btn" data-git="harita" aria-label="Haritaya dön">‹</button>
+    <h2 id="sonucBaslik">Tur Sonu</h2>
+    <div class="kar-cip" id="sonucKar">❄ 0</div>
+  </div>
+  <div class="icerik dar" id="sonucIcerik"></div>
+  <div class="alt">Sinan İnce 2026</div>
+</section>
+
+<!-- ============ EKRAN 5: AYARLAR ============ -->
+<section class="ekran" id="s-ayarlar">
+  <div class="ust">
+    <button class="yuvarlak-btn" data-git="giris" aria-label="Ana sayfa">⌂</button>
+    <h2 id="ayarBaslik">Ayarlar</h2>
+  </div>
+  <div class="icerik dar">
+    <div class="kart satir"><span>🔊 Ses</span><button class="anahtar" id="sesBtn" aria-label="Ses aç kapa"></button></div>
+    <div class="kart satir"><span>🔄 İlerlemeyi sıfırla</span><button class="btn pembe" id="sifirBtn">Sıfırla</button></div>
+    <div class="kart">
+      <b>Nasıl oynanır?</b>
+      <p>Bir sayıyı <b>en yakın onluğa</b> yuvarlarken <b>birler</b> basamağına, <b>en yakın yüzlüğe</b> yuvarlarken <b>onlar</b> basamağına bak.</p>
+      <p>Bakılan rakam 0, 1, 2, 3 ya da 4 ise kızak geri kayar: <b>aşağı</b> yuvarla. 5, 6, 7, 8 ya da 9 ise kızak tepeyi aşar: <b>yukarı</b> yuvarla.</p>
+      <p>Bir pistte 10 sorudan en az 7 doğru yaparsan yeni pist açılır.</p>
+    </div>
+  </div>
+  <div class="alt">Sinan İnce 2026</div>
+</section>
+
+<!-- ============ EKRAN 6: MAĞAZA ============ -->
+<section class="ekran" id="s-magaza">
+  <div class="ust">
+    <button class="yuvarlak-btn" data-git="giris" aria-label="Ana sayfa">⌂</button>
+    <h2>Mağaza</h2>
+    <div class="kar-cip" id="magazaKar">❄ 0</div>
+  </div>
+  <div class="icerik">
+    <div class="m-onizleme" id="mOnizleme"></div>
+    <div class="m-not">Bunlar sadece görünüş içindir. Kar tanelerini pistlerde kazanırsın.</div>
+    <div class="sekmeler">
+      <button class="sekme aktif" data-sekme="kizak">Kızak</button>
+      <button class="sekme" data-sekme="atki">Atkı</button>
+      <button class="sekme" data-sekme="bere">Bere</button>
+    </div>
+    <div id="mUrunler"></div>
+  </div>
+  <div class="alt">Sinan İnce 2026</div>
+</section>
+
+<div id="modal" hidden><div class="mkutu"></div></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   1. YARDIMCI FONKSİYONLAR
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const sec1 = a => a[Math.floor(Math.random() * a.length)];
+const karistir = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');      // 4367 -> 4.367
+const R = (n, a) => Math.floor((n + a / 2) / a) * a;                       // yuvarlama: 5 ise yukarı
+const rakam = (n, yer) => Math.floor(n / Math.pow(10, yer)) % 10;
+const BASAMAK = ['birler', 'onlar', 'yüzler', 'binler', 'on binler', 'yüz binler', 'milyonlar'];
+const buyukHarf = s => s.charAt(0).toLocaleUpperCase('tr') + s.slice(1);
+const yerAdi = a => a === 10 ? 'onluğa' : 'yüzlüğe';
+const istAdi = a => a === 10 ? 'onluk' : 'yüzlük';
+const bakYer = a => a === 10 ? 0 : 1;     // bakılan basamak
+const yuvYer = a => a === 10 ? 1 : 2;     // yuvarlanan basamak
+
+/* Sayıyı basamak vurgulu HTML olarak yazar */
+function sayiHTML(n, bak = -1, yuv = -1) {
+  const s = String(n), L = s.length; let h = '';
+  for (let i = 0; i < L; i++) {
+    const yer = L - 1 - i; let c = 'r';
+    if (yer === bak) c += ' bak';
+    if (yer === yuv) c += ' yuv';
+    h += `<span class="${c}">${s[i]}</span>`;
+    if (yer > 0 && yer % 3 === 0) h += '<span class="nk-nokta">.</span>';
+  }
+  return `<span class="sayi">${h}</span>`;
+}
+
+/* =========================================================
+   2. KALICILIK (localStorage)
+   ========================================================= */
+const ANAHTAR = 'kizak_pisti_v1';
+function varsayilan() {
+  return { v: 1, acik: 1, yildiz: {}, kar: 0,
+    sahip: { kizak: ['kirmizi'], atki: ['mavi'], bere: ['yok'] },
+    secili: { kizak: 'kirmizi', atki: 'mavi', bere: 'yok' },
+    ses: true, hizliRekor: 0 };
+}
+let save = varsayilan();
+function yukle() {
+  try {
+    const v = JSON.parse(localStorage.getItem(ANAHTAR) || 'null');
+    if (v && v.v === 1) {
+      const d = varsayilan();
+      save = Object.assign(d, v);
+      save.sahip = Object.assign(varsayilan().sahip, v.sahip || {});
+      save.secili = Object.assign(varsayilan().secili, v.secili || {});
+      save.yildiz = v.yildiz || {};
+    }
+  } catch (e) { save = varsayilan(); }
+}
+function kaydet() { try { localStorage.setItem(ANAHTAR, JSON.stringify(save)); } catch (e) {} }
+
+/* =========================================================
+   3. SES (Web Audio API)
+   ========================================================= */
+let AC = null;
+function acx() {
+  if (!save.ses) return null;
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+  } catch (e) { return null; }
+  return AC;
+}
+function ton(f, dur, tip = 'sine', vol = .15, gec = 0) {
+  const c = acx(); if (!c) return;
+  const t = c.currentTime + gec, o = c.createOscillator(), g = c.createGain();
+  o.type = tip; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + .015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .03);
+}
+const sDokun = () => ton(660, .06, 'triangle', .08);
+function sDogru(kisa) { ton(784, .14, 'sine', .16); ton(1047, .22, 'sine', .14, .1); if (!kisa) ton(1319, .25, 'sine', .1, .2); }
+function sYanlis() { ton(262, .16, 'triangle', .12); ton(196, .24, 'triangle', .12, .13); }
+function sFanfar() { [523, 659, 784, 1047].forEach((f, i) => ton(f, .28, 'triangle', .13, i * .12)); }
+function sKayma() {
+  const c = acx(); if (!c) return;
+  const d = .8, len = Math.floor(c.sampleRate * d), b = c.createBuffer(1, len, c.sampleRate), a = b.getChannelData(0);
+  for (let i = 0; i < len; i++) a[i] = Math.random() * 2 - 1;
+  const s = c.createBufferSource(); s.buffer = b;
+  const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+  const t = c.currentTime;
+  f.frequency.setValueAtTime(700, t); f.frequency.exponentialRampToValueAtTime(2200, t + d);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.1, t + .1); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  s.connect(f).connect(g).connect(c.destination); s.start(t); s.stop(t + d);
+}
+
+/* =========================================================
+   4. PİSTLER (KADEMELER) VE İÇERİK
+   ========================================================= */
+const PISTLER = [
+  { id: 1, ad: 'Onluk Tepesi',    acik: '3 basamaklı sayıları en yakın onluğa yuvarla.', mod: 'AB', renk: '#00C9A7', tepeDeger: true },
+  { id: 2, ad: 'Yüzlük Yamacı',   acik: '3 ve 4 basamaklı sayıları en yakın yüzlüğe yuvarla.', mod: 'AB', renk: '#4D9FFF', tepeDeger: true },
+  { id: 3, ad: 'Karışık Vadi',    acik: 'Onluk mu, yüzlük mü? Soruyu dikkatli oku!', mod: 'B', renk: '#A855F7', tepeDeger: false },
+  { id: 4, ad: 'Büyük Dağ',       acik: '5 ve 6 basamaklı büyük sayılar.', mod: 'C', renk: '#FF6B35' },
+  { id: 5, ad: 'Tuzaklı Pist',    acik: 'Elde, tam orta ve zaten yuvarlak sayılar.', mod: 'C', renk: '#FF4D8D' },
+  { id: 6, ad: 'Ters Pist',       acik: 'Yuvarlanınca o sayı olan en küçük ve en büyük sayıyı bul.', mod: 'C', renk: '#1E2A44' },
+  { id: 7, ad: 'Hayattan Sorular', acik: 'Gazete, stadyum, kütüphane… Yuvarlama her yerde!', mod: 'C', renk: '#E0A800' }
+];
+const HIZLI = { id: 'H', ad: 'Hızlı Pist', acik: '60 saniyede kaç doğru yapabilirsin?', mod: 'C', renk: '#FFD600' };
+const pistBul = k => k === 'H' ? HIZLI : PISTLER.find(p => p.id === k);
+
+const HAYAT = [
+  { m: 'Kayak merkezine bir günde {n} kişi geldi. Gazete bu sayıyı en yakın {yer} yuvarlayarak yazdı. Gazetede hangi sayı yazar?', d: [3, 4] },
+  { m: 'Teleferik bu kış {n} sefer yaptı. Bu sayı en yakın {yer} yuvarlanınca kaç olur?', d: [3, 4] },
+  { m: 'Bir maçı stadyumda {n} kişi izledi. Spiker bu sayıyı en yakın {yer} yuvarlayarak söyledi. Spiker hangi sayıyı söyledi?', d: [4, 5] },
+  { m: 'Şehir kütüphanesinde {n} kitap var. Bu sayı en yakın {yer} yuvarlanınca yaklaşık kaç kitap olur?', d: [4, 5] },
+  { m: 'Bir uçak bir yılda {n} kilometre uçtu. Bu sayı en yakın {yer} yuvarlanınca kaç kilometre olur?', d: [5, 6] },
+  { m: 'Fidan kampanyasında {n} fidan dikildi. Bu sayıyı en yakın {yer} yuvarlarsak kaç olur?', d: [4, 6] },
+  { m: 'Bir köprüden bir günde {n} araç geçti. Bu sayı en yakın {yer} yuvarlanınca kaç araç eder?', d: [4, 6] },
+  { m: 'Okul kermesinde {n} lira toplandı. Bu sayı en yakın {yer} yuvarlanınca yaklaşık kaç lira olur?', d: [3, 4] }
+];
+
+/* =========================================================
+   5. SORU MOTORU
+   ========================================================= */
+const yonListesi = () => karistir(['yukari', 'yukari', 'yukari', 'yukari', 'orta', 'asagi', 'asagi', 'asagi', 'asagi', 'asagi']);
+const adimListesi = () => karistir([10, 10, 10, 10, 10, 100, 100, 100, 100, 100]);
+
+/* Bir turun 10 soruluk planı */
+function planTur(k) {
+  const p = [], yon = yonListesi(), ad = adimListesi();
+  switch (k) {
+    case 1: for (let i = 0; i < 10; i++) p.push({ tip: 'normal', adim: 10, d: 3, yon: yon[i] }); break;
+    case 2: { const ds = karistir([3, 3, 3, 3, 3, 4, 4, 4, 4, 4]);
+      for (let i = 0; i < 10; i++) p.push({ tip: 'normal', adim: 100, d: ds[i], yon: yon[i] }); } break;
+    case 3: for (let i = 0; i < 10; i++) p.push({ tip: 'normal', adim: ad[i], d: 4, yon: yon[i] }); break;
+    case 4: { const ds = karistir([5, 5, 5, 5, 5, 6, 6, 6, 6, 6]);
+      for (let i = 0; i < 10; i++) p.push({ tip: 'normal', adim: ad[i], d: ds[i], yon: yon[i] }); } break;
+    case 5: { const t = karistir(['elde', 'elde', 'elde', 'orta', 'orta', 'yuvarlak', 'yuvarlak', 'zincir', 'zincir', 'zincir']);
+      t.forEach((y, i) => { const a = y === 'zincir' ? 100 : ad[i];
+        p.push({ tip: 'normal', adim: a, d: (y === 'elde' && a === 100) ? rnd(4, 5) : rnd(3, 5), yon: y }); }); } break;
+    case 6: { const h = karistir(['kucuk', 'kucuk', 'kucuk', 'kucuk', 'kucuk', 'buyuk', 'buyuk', 'buyuk', 'buyuk', 'buyuk']);
+      const a = karistir([10, 10, 10, 10, 100, 100, 100, 100, 100, 100]);
+      h.forEach((x, i) => p.push({ tip: 'ters', adim: a[i], hedef: x })); } break;
+    case 7: { const s = karistir(HAYAT.map((_, i) => i)).concat(karistir(HAYAT.map((_, i) => i)));
+      for (let i = 0; i < 10; i++) { const t = HAYAT[s[i]];
+        p.push({ tip: 'hayat', sablon: s[i], adim: ad[i], d: rnd(t.d[0], t.d[1]), yon: yon[i] === 'orta' ? 'yukari' : yon[i] }); } } break;
+  }
+  return p;
+}
+/* Hızlı Pist için tek soru planı */
+function hizliPlan() {
+  return { tip: 'normal', adim: sec1([10, 100]), d: rnd(3, 5), yon: sec1(['yukari', 'yukari', 'asagi', 'asagi', 'orta']) };
+}
+
+/* Plana uygun sayı üretir */
+function sayiUret(pl, used, prevLo) {
+  const A = pl.adim, min = Math.pow(10, pl.d - 1), max = Math.pow(10, pl.d) - 1;
+  let yon = pl.yon;
+  if (yon === 'asagi' && A === 100 && Math.random() < .3) yon = 'zincir';   // onlar 4, birler 5-9 tuzağı
+  for (let tur = 0; tur < 3; tur++) {
+    for (let t = 0; t < 3000; t++) {
+      let n = rnd(min, max);
+      if (yon === 'yuvarlak') { n = Math.floor(n / A) * A; if (n % (A * 10) === 0) continue; }
+      else if (yon === 'orta') n = Math.floor(n / A) * A + A / 2;
+      else if (yon === 'elde') n = Math.floor(n / (A * 10)) * (A * 10) + 9 * A + rnd(A / 2, A - 1);
+      else if (yon === 'zincir') n = Math.floor(n / 100) * 100 + 40 + rnd(5, 9);
+      else {
+        const r = n % A, key = rakam(n, bakYer(A));
+        if (r === 0) continue;
+        if (yon === 'yukari' && (key < 5 || r === A / 2)) continue;
+        if (yon === 'asagi' && key >= 5) continue;
+      }
+      if (n < min || n > max) continue;
+      const lo = Math.floor(n / A) * A;
+      if (tur < 2 && used.has(n)) continue;
+      if (tur < 1 && lo === prevLo) continue;
+      return n;
+    }
+  }
+  return min + A + 3;   // güvenlik (pratikte hiç ulaşılmaz)
+}
+
+/* Çoktan seçmeli seçenekler: her yanlış seçenek bir hata türünü temsil eder */
+function secenekUret(q) {
+  const { n, adim: A, lo, hi, dogru } = q;
+  const out = [{ v: dogru, hata: null }];
+  const ekle = (v, h) => { if (v <= 0 || out.some(o => o.v === v)) return; out.push({ v, hata: h }); };
+  if (q.yuvarlak) { ekle(n + A, 'yon'); ekle(n - A, 'yon'); }
+  else if (dogru === hi) ekle(lo, 'kesme'); else ekle(hi, 'yon');
+  ekle(R(n, A === 10 ? 100 : 10), 'basamak');
+  if (A === 100) ekle(R(R(n, 10), 100), 'zincir');
+  if (!q.yuvarlak && dogru === hi && (hi / A) % 10 === 0) ekle(dogru - A * 10, 'elde');
+  ekle(R(n, A * 10), 'basamak');
+  ekle(lo - A, 'komsu'); ekle(hi + A, 'komsu'); ekle(hi + 2 * A, 'komsu'); ekle(lo - 2 * A, 'komsu');
+  return karistir(out.slice(0, 4));
+}
+
+/* 1. adım için "iki komşu istasyon" seçenekleri */
+function ciftUret(q) {
+  const { n, adim: A, lo, hi } = q;
+  const out = [{ a: lo, b: hi, ok: true }];
+  const ekle = (a, b, h) => { if (a < 0 || out.some(o => o.a === a && o.b === b)) return; out.push({ a, b, ok: false, hata: h }); };
+  const B = A === 10 ? 100 : 10, bl = Math.floor(n / B) * B;
+  ekle(bl, bl + B, 'basamak');
+  ekle(lo - A, lo, 'komsu'); ekle(hi, hi + A, 'komsu'); ekle(lo - 2 * A, lo - A, 'komsu'); ekle(hi + A, hi + 2 * A, 'komsu');
+  return karistir(out.slice(0, 4));
+}
+
+/* Ters soru: "Yuvarlanınca T olan en küçük / en büyük sayı" */
+function tersKur(pl, used) {
+  const A = pl.adim; let T = 0;
+  for (let t = 0; t < 500; t++) {
+    T = A === 10 ? (Math.random() < .5 ? rnd(11, 99) * 10 : rnd(101, 999) * 10) : rnd(11, 99) * 100;
+    if (T % (A * 10) === 0) continue;
+    if (!used.has(T)) break;
+  }
+  const rMin = T - A / 2, rMax = T + A / 2 - 1;
+  let dogru, sec;
+  if (pl.hedef === 'kucuk') {
+    dogru = rMin;
+    sec = [{ v: rMin, hata: null }, { v: rMin - 1, hata: 'ters_alt' }, { v: T - A, hata: 'ters_ist' }, { v: rMin + 1, hata: 'ters_kucuk' }];
+  } else {
+    dogru = rMax;
+    sec = [{ v: rMax, hata: null }, { v: rMax + 1, hata: 'ters_ust' }, { v: T + A, hata: 'ters_ist' }, { v: rMax - 1, hata: 'ters_buyuk' }];
+  }
+  return { tip: 'ters', pl, n: T, T, adim: A, rMin, rMax, dogru, lo: null, secenekler: karistir(sec) };
+}
+
+/* Plandan tam soru nesnesi kurar */
+function soruKur(pl, used, prevLo) {
+  if (pl.tip === 'ters') return tersKur(pl, used);
+  const A = pl.adim, n = sayiUret(pl, used, prevLo);
+  const lo = Math.floor(n / A) * A, hi = lo + A;
+  const q = { tip: pl.tip, pl, n, adim: A, lo, hi, dogru: R(n, A),
+    orta: n % A === A / 2, yuvarlak: n % A === 0, key: rakam(n, bakYer(A)) };
+  q.secenekler = secenekUret(q);
+  q.ciftler = ciftUret(q);
+  return q;
+}
+
+/* =========================================================
+   6. ÖĞRETİCİ GERİ BİLDİRİM METİNLERİ
+   ========================================================= */
+function kuralSatiri(q) {
+  const A = q.adim, bak = buyukHarf(BASAMAK[bakYer(A)]);
+  const ok = `<b>${fmt(q.dogru)}</b>`;
+  if (q.yuvarlak) return `${sayiHTML(q.n, -1, yuvYer(A))} zaten bir ${istAdi(A)} sayı. Yuvarlayınca değişmez.`;
+  if (q.orta) return `${bak} basamağı 5. Kural: 5 ise yukarı → ${ok}`;
+  return q.key >= 5
+    ? `${bak} basamağı ${q.key}. 5 ya da daha büyük → yukarı: ${ok}`
+    : `${bak} basamağı ${q.key}. 5'ten küçük → aşağı: ${ok}`;
+}
+const HATA_ON = {
+  kesme:   q => 'Yukarı yuvarlaman gerekiyordu.',
+  yon:     q => q.yuvarlak ? 'Bu sayı zaten yuvarlak.' : 'Aşağı yuvarlaman gerekiyordu.',
+  basamak: q => `En yakın ${yerAdi(q.adim)} yuvarlarken ${BASAMAK[bakYer(q.adim)]} basamağına bakarız.`,
+  zincir:  q => 'Önce onluğa, sonra yüzlüğe yuvarlama! Yalnızca onlar basamağına bak.',
+  elde:    q => `${buyukHarf(BASAMAK[yuvYer(q.adim)])} basamağındaki 9 bir artınca 10 olur. 1 elde ${BASAMAK[yuvYer(q.adim) + 1]} basamağına geçer.`,
+  orta:    q => 'Tam tepede! Tam ortadaki sayılar yukarı yuvarlanır.',
+  komsu:   q => `${fmt(q.n)} sayısı ${fmt(q.lo)} ile ${fmt(q.hi)} arasında.`
+};
+function tersAciklama(q, hata) {
+  const A = q.adim, T = fmt(q.T);
+  const kural = `En yakın ${yerAdi(A)} yuvarlanınca <b>${T}</b> olan sayılar: <b>${fmt(q.rMin)}</b> ile <b>${fmt(q.rMax)}</b> arası.`;
+  let on = '';
+  switch (hata) {
+    case 'ters_alt': on = `${fmt(q.rMin - 1)} yuvarlanınca ${fmt(q.T - A)} olur. ${buyukHarf(BASAMAK[bakYer(A)])} basamağı 4, yani 5'ten küçük.`; break;
+    case 'ters_ust': on = `${fmt(q.rMax + 1)} yuvarlanınca ${fmt(q.T + A)} olur, çünkü 5 ise yukarı yuvarlarız.`; break;
+    case 'ters_ist': { const v = q.pl.hedef === 'kucuk' ? q.T - A : q.T + A; on = `${fmt(v)} zaten bir ${istAdi(A)} sayı. Yuvarlayınca ${T} olmaz.`; } break;
+    case 'ters_kucuk': on = `Bu sayı da yuvarlanınca ${T} olur ama daha küçüğü var.`; break;
+    case 'ters_buyuk': on = `Bu sayı da yuvarlanınca ${T} olur ama daha büyüğü var.`; break;
+  }
+  return { on, kural };
+}
+const HATA_OZET = {
+  kesme: 'Yukarı yuvarlaman gerekirken aşağı yuvarladın', yon: 'Aşağı yuvarlaman gerekirken yukarı yuvarladın',
+  basamak: 'Yanlış basamağa baktın', zincir: 'Önce onluğa, sonra yüzlüğe yuvarladın', elde: 'Eldeyi unuttun',
+  orta: 'Tam ortadaki sayıyı aşağı yuvarladın', komsu: 'Komşu istasyonu seçtin', aralik: 'İki komşu sayıyı bulurken karıştırdın',
+  ters_alt: 'Sınırın bir altını seçtin', ters_ust: 'Sınırın bir üstünü seçtin (5 ise yukarı!)', ters_ist: 'İstasyon sayısını seçtin',
+  ters_kucuk: 'En küçüğü değil, daha büyük bir sayı seçtin', ters_buyuk: 'En büyüğü değil, daha küçük bir sayı seçtin'
+};
+const OVGU = ['Harika!', 'Süper kayış!', 'Tam isabet!', 'Çok iyi!', 'Müthiş!', 'Aferin!'];
+
+/* =========================================================
+   7. KARAKTER (PENGUEN + KIZAK) VE KOZMETİKLER
+   ========================================================= */
+const MAGAZA = {
+  kizak: [{ id: 'kirmizi', ad: 'Kırmızı', f: 0 }, { id: 'mavi', ad: 'Mavi', f: 10 }, { id: 'yesil', ad: 'Yeşil', f: 10 }, { id: 'mor', ad: 'Mor', f: 15 }, { id: 'altin', ad: 'Altın', f: 40 }],
+  atki:  [{ id: 'mavi', ad: 'Mavi', f: 0 }, { id: 'pembe', ad: 'Pembe', f: 8 }, { id: 'sari', ad: 'Sarı', f: 8 }, { id: 'yesil', ad: 'Yeşil', f: 8 }, { id: 'gokkusagi', ad: 'Gökkuşağı', f: 25 }],
+  bere:  [{ id: 'yok', ad: 'Yok', f: 0 }, { id: 'kirmizi', ad: 'Kırmızı bere', f: 12 }, { id: 'ponpon', ad: 'Ponponlu bere', f: 15 }, { id: 'tac', ad: 'Taç', f: 50 }]
+};
+const RENK_KIZAK = { kirmizi: '#FF4D4D', mavi: '#4D9FFF', yesil: '#00C9A7', mor: '#A855F7', altin: 'url(#gAltin)' };
+const RENK_ATKI = { mavi: '#4D9FFF', pembe: '#FF4D8D', sari: '#FFD600', yesil: '#00C9A7', gokkusagi: 'url(#gGok)' };
+
+/* Kızağın alt orta noktası (0,0); yüz sağa bakar */
+function penguen(c) {
+  const K = RENK_KIZAK[c.kizak] || '#FF4D4D', A = RENK_ATKI[c.atki] || '#4D9FFF';
+  let bere = '';
+  const kep = r => `<path d="M-10 -86 Q5 -113 22 -86 Z" fill="${r}"/><rect x="-12" y="-90" width="36" height="8" rx="4" fill="#fff"/>`;
+  if (c.bere === 'kirmizi') bere = kep('#FF4D4D');
+  if (c.bere === 'ponpon') bere = kep('#4D9FFF') + '<circle cx="6" cy="-107" r="6.5" fill="#fff" stroke="#DDE6F2" stroke-width="1"/>';
+  if (c.bere === 'tac') bere = '<path d="M-8 -88 L-11 -106 L-1 -97 L6 -110 L13 -97 L23 -106 L20 -88 Z" fill="url(#gAltin)" stroke="#B8860B" stroke-width="1.5"/>';
+  return `
+    <path d="M-46 -2 L40 -2 Q55 -2 52 -15" fill="none" stroke="#5A3A1A" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-30" y1="-2" x2="-30" y2="-12" stroke="#5A3A1A" stroke-width="4"/>
+    <line x1="26" y1="-2" x2="26" y2="-12" stroke="#5A3A1A" stroke-width="4"/>
+    <rect x="-42" y="-22" width="84" height="12" rx="5" fill="${K}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+    <ellipse cx="-2" cy="-46" rx="22" ry="26" fill="#22304A"/>
+    <ellipse cx="3" cy="-42" rx="14" ry="19" fill="#fff"/>
+    <ellipse cx="-20" cy="-44" rx="6" ry="15" fill="#1A2438" transform="rotate(20 -20 -44)"/>
+    <ellipse cx="8" cy="-23" rx="10" ry="4" fill="#FF9F1C"/>
+    <circle cx="4" cy="-78" r="16" fill="#22304A"/>
+    <ellipse cx="9" cy="-77" rx="10" ry="9" fill="#fff"/>
+    <circle cx="6" cy="-79" r="2.5" fill="#22304A"/><circle cx="14" cy="-79" r="2.5" fill="#22304A"/>
+    <path d="M18 -75 L29 -72 L18 -69 Z" fill="#FF9F1C"/>
+    <rect x="-15" y="-65" width="34" height="8" rx="4" fill="${A}"/>
+    <rect x="-22" y="-63" width="8" height="20" rx="4" fill="${A}" transform="rotate(25 -18 -63)"/>
+    ${bere}`;
+}
+const onizlemeSVG = c => `<svg viewBox="-62 -122 124 132" aria-hidden="true">${penguen(c)}</svg>`;
+
+/* =========================================================
+   8. DAĞ SAHNESİ (SAYI DOĞRUSU)
+   Çukurlar = istasyonlar (onluk/yüzlük), tepe = tam orta
+   ========================================================= */
+const SV = { W: 1000, H: 400, V: 305, P: 170, x0: 80, x1: 920, fs: 34, olcek: 1 };
+const DAG = { opt: null, ist: [0, 1], v: 0, flip: 1 };
+const hillY = t => SV.V - (SV.V - SV.P) * (1 - Math.cos(2 * Math.PI * t)) / 2;
+
+function olcuHesapla() {
+  const st = $('#sahne'), w = st.clientWidth || 800, h = st.clientHeight || 320;
+  const dar = w < 620;
+  SV.fs = dar ? 46 : 34; SV.olcek = dar ? 1.6 : 1;
+  SV.x0 = dar ? 115 : 80; SV.x1 = SV.W - SV.x0;
+  SV.H = Math.max(360, Math.min(dar ? 1150 : 820, Math.round(SV.W * h / w)));
+  SV.V = SV.H - (dar ? 110 : 95);
+  const tepeUst = Math.round(150 * SV.olcek) + 20;
+  SV.P = Math.max(tepeUst, SV.V - (dar ? 380 : 240));
+  if (SV.V - SV.P < 80) SV.P = SV.V - 80;
+}
+function dagCiz(opt) {
+  DAG.opt = opt; DAG.ist = opt.ist;
+  olcuHesapla();
+  const { W, H, V, P, x0, x1, fs } = SV, s = opt.ist, n = s.length - 1, segW = (x1 - x0) / n;
+  const X = i => x0 + i * segW;
+  // zemin eğrisi
+  let egri = `M -20 ${V} L ${x0} ${V}`;
+  for (let i = 0; i < n; i++) for (let j = 1; j <= 30; j++) { const t = j / 30; egri += ` L ${(X(i) + t * segW).toFixed(1)} ${hillY(t).toFixed(1)}`; }
+  egri += ` L ${W + 20} ${V}`;
+  const zemin = egri + ` L ${W + 20} ${H} L -20 ${H} Z`;
+  // uzak dağlar
+  const uzak = `<polygon points="0,${V} 110,${P + 10} 250,${V - 30} 410,${P - 30} 560,${V - 40} 730,${P + 20} 870,${V - 50} 1000,${P - 10} 1000,${V} " fill="#DCEEFF"/>
+    <polygon points="0,${V} 180,${P + 60} 330,${V - 10} 640,${P + 50} 800,${V - 20} 1000,${P + 70} 1000,${V}" fill="#C9E4FB"/>`;
+  // odak tepe gölgesi
+  let odak = '';
+  if (opt.odak >= 0) {
+    let d = `M ${X(opt.odak)} ${H} L ${X(opt.odak)} ${V}`;
+    for (let j = 1; j <= 30; j++) { const t = j / 30; d += ` L ${(X(opt.odak) + t * segW).toFixed(1)} ${hillY(t).toFixed(1)}`; }
+    d += ` L ${X(opt.odak + 1)} ${H} Z`;
+    odak = `<path d="${d}" fill="rgba(77,159,255,.12)"/>`;
+  }
+  // ters soru bölgesi
+  let bolge = '';
+  if (opt.bolge) {
+    const xa = vx(opt.bolge[0]), xb = vx(opt.bolge[1]);
+    let d = `M ${xa} ${H}`;
+    for (let k = 0; k <= 40; k++) { const v = opt.bolge[0] + (opt.bolge[1] - opt.bolge[0]) * k / 40; d += ` L ${vx(v).toFixed(1)} ${vxy(v).y.toFixed(1)}`; }
+    d += ` L ${xb} ${H} Z`;
+    bolge = `<path d="${d}" fill="rgba(0,201,167,.22)"/>`;
+  }
+  // tepe etiketleri
+  let tepe = '';
+  (opt.tepeler || []).forEach(tp => {
+    const x = X(tp.i) + segW / 2, yEt = P - Math.round(130 * SV.olcek);
+    tepe += `<line x1="${x}" y1="${P}" x2="${x}" y2="${V + 6}" stroke="#7FA8D6" stroke-width="3" stroke-dasharray="10 8"/>
+      <text x="${x}" y="${yEt}" text-anchor="middle" font-size="${fs * .85}" font-weight="900" fill="#5B7BA6">${tp.metin}</text>
+      ${tp.alt ? `<text x="${x}" y="${yEt + fs * .7}" text-anchor="middle" font-size="${fs * .5}" font-weight="800" fill="#7FA8D6">${tp.alt}</text>` : ''}`;
+  });
+  // istasyonlar (bayraklar ve etiketler)
+  let bayr = '';
+  s.forEach((v, i) => {
+    const x = X(i), odakMi = opt.odak < 0 || i === opt.odak || i === opt.odak + 1;
+    const et = opt.etiket ? opt.etiket[i] : (SV.olcek > 1 && !odakMi ? '' : fmt(v));
+    const tik = opt.tikla && opt.tikla.includes(v);
+    const genis = Math.max(fs * 1.4, String(et).length * fs * .6 + 26);
+    bayr += `<g class="istasyon${tik ? ' bayrak' : ''}" data-ist="${v}" ${tik ? `data-v="${v}"` : ''} opacity="${odakMi ? 1 : .45}">
+      <line x1="${x}" y1="${V}" x2="${x}" y2="${V - 82}" stroke="#5A3A1A" stroke-width="5" stroke-linecap="round"/>
+      <path class="flama" d="M ${x} ${V - 82} L ${x + 42} ${V - 70} L ${x} ${V - 58} Z" fill="${odakMi ? '#FF6B35' : '#9DB3CF'}"/>
+      ${et !== '' ? `<rect class="etk" x="${x - genis / 2}" y="${V + 14}" width="${genis}" height="${fs + 16}" rx="14" fill="#fff" stroke="${odakMi ? '#4D9FFF' : '#C9D6E8'}" stroke-width="4"/>
+      <text x="${x}" y="${V + 14 + fs * .92}" text-anchor="middle" font-size="${fs}" font-weight="900" fill="#1E2A44">${et}</text>` : ''}
+      ${tik ? `<rect x="${x - 70}" y="${V - 100}" width="140" height="${fs + 140}" fill="transparent"/>` : ''}
+    </g>`;
+  });
+  const gunes = `<circle cx="${W - 90}" cy="70" r="36" fill="#FFE27A" opacity=".9"/>`;
+  const svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sayı doğrusu dağı">
+    ${gunes}${uzak}
+    <path d="${zemin}" fill="#fff"/>
+    ${odak}${bolge}
+    <path d="${egri}" fill="none" stroke="#9CCBF0" stroke-width="5" stroke-linejoin="round"/>
+    ${tepe}${bayr}
+    <g id="kizak">${penguen(save.secili)}</g>
+  </svg>`;
+  $('#sahne').innerHTML = svg;
+  if (opt.kizakV != null) kizakKoy(opt.kizakV, opt.flip || 1);
+}
+function vx(v) { const s = DAG.ist; return SV.x0 + (v - s[0]) / (s[s.length - 1] - s[0]) * (SV.x1 - SV.x0); }
+function vxy(v) {
+  const s = DAG.ist; let i = 0;
+  while (i < s.length - 2 && v > s[i + 1]) i++;
+  const t = (v - s[i]) / (s[i + 1] - s[i]);
+  return { x: vx(v), y: hillY(t), t, i };
+}
+function kizakKoy(v, flip) {
+  DAG.v = v; DAG.flip = flip || 1;
+  const g = document.getElementById('kizak'); if (!g) return;
+  const p = vxy(v), segW = (SV.x1 - SV.x0) / (DAG.ist.length - 1);
+  const dy = -(SV.V - SV.P) * Math.PI * Math.sin(2 * Math.PI * p.t);
+  const ang = Math.atan2(dy, segW) * 180 / Math.PI * .6;
+  g.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${ang.toFixed(1)}) scale(${(DAG.flip * SV.olcek).toFixed(2)} ${SV.olcek})`);
+}
+const azHareket = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function kaydir(v0, v1, dur, cb) {
+  if (v0 === v1) { zipla(cb); return; }
+  const flip = v1 < v0 ? -1 : 1, t0 = performance.now(), sure = azHareket() ? 150 : dur;
+  sKayma();
+  (function f(now) {
+    const p = Math.min(1, (now - t0) / sure);
+    const e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    kizakKoy(v0 + (v1 - v0) * e, flip);
+    if (p < 1) requestAnimationFrame(f); else zipla(cb);
+  })(t0);
+}
+function zipla(cb) {
+  const g = document.getElementById('kizak'); if (!g) { cb && cb(); return; }
+  const base = g.getAttribute('transform'), t0 = performance.now();
+  (function f(now) {
+    const p = Math.min(1, (now - t0) / 300), h = Math.sin(p * Math.PI) * 18;
+    g.setAttribute('transform', `translate(0 ${-h.toFixed(1)}) ` + base);
+    if (p < 1) requestAnimationFrame(f); else { g.setAttribute('transform', base); cb && cb(); }
+  })(t0);
+}
+function istasyonYak(v) { const e = document.querySelector(`#sahne [data-ist="${v}"]`); if (e) e.classList.add('ist-yak'); }
+
+/* =========================================================
+   9. SAHNE YÖNETİCİSİ
+   ========================================================= */
+function goster(id) {
+  document.querySelectorAll('.ekran').forEach(e => e.classList.toggle('aktif', e.id === 's-' + id));
+  karGuncelle();
+  if (id === 'harita') haritaCiz();
+  if (id === 'magaza') magazaCiz();
+  if (id === 'ayarlar') ayarCiz();
+  if (id === 'giris') kahramanCiz();
+}
+function karGuncelle(pop) {
+  ['girisKar', 'haritaKar', 'oyunKar', 'sonucKar', 'magazaKar'].forEach(i => {
+    const e = document.getElementById(i); if (!e) return;
+    e.textContent = '❄ ' + save.kar;
+    if (pop && i === 'oyunKar') { e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
+  });
+}
+function modal(html, dugmeler) {
+  const m = $('#modal'), k = m.querySelector('.mkutu');
+  k.innerHTML = `<div class="micerik">${html}</div><div class="mdugmeler"></div>`;
+  const d = k.querySelector('.mdugmeler');
+  dugmeler.forEach(b => {
+    const e = document.createElement('button'); e.className = 'btn ' + (b.s || ''); e.textContent = b.y;
+    e.onclick = () => { m.hidden = true; sDokun(); b.f && b.f(); };
+    d.appendChild(e);
+  });
+  m.hidden = false;
+}
+let toastZ = null;
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('goster'); clearTimeout(toastZ); toastZ = setTimeout(() => e.classList.remove('goster'), 2400); }
+
+/* =========================================================
+   10. GİRİŞ VE PİST HARİTASI
+   ========================================================= */
+function kahramanCiz() {
+  $('#kahraman').innerHTML = `
+    <path d="M0 232 Q300 38 600 232 L600 260 L0 260 Z" fill="#fff"/>
+    <path d="M0 232 Q300 38 600 232" fill="none" stroke="#9CCBF0" stroke-width="5"/>
+    <g class="pg">${penguen(save.secili)}</g>`;
+}
+const yildizHTML = y => [1, 2, 3].map(i => `<span class="${i <= y ? 'd' : ''}">★</span>`).join('');
+function haritaCiz() {
+  const g = $('#pistler'); g.innerHTML = '';
+  PISTLER.forEach(p => {
+    const kilitli = p.id > save.acik, y = save.yildiz[p.id] || 0;
+    const b = document.createElement('button');
+    b.className = 'pist' + (kilitli ? ' kilitli' : '');
+    b.innerHTML = `<div class="rozet" style="background:${p.renk}">${kilitli ? '🔒' : p.id}</div>
+      <div class="pad">${p.ad}</div><div class="pacik">${p.acik}</div><div class="yildizlar">${yildizHTML(y)}</div>`;
+    b.onclick = () => {
+      if (kilitli) { sYanlis(); toast('Bu pist kilitli. Önceki pistte en az 7 doğru yap!'); return; }
+      sDokun(); turBaslat(p.id);
+    };
+    g.appendChild(b);
+  });
+  const hk = save.acik < 4;
+  const h = document.createElement('button');
+  h.className = 'pist hizli' + (hk ? ' kilitli' : '');
+  h.innerHTML = `<div class="rozet" style="background:#E0A800">${hk ? '🔒' : '⏱'}</div>
+    <div class="pad">${HIZLI.ad}</div><div class="pacik">${HIZLI.acik}${hk ? ' (Büyük Dağ açılınca açılır.)' : ''}</div>
+    <div class="yildizlar" style="color:var(--koyu);font-size:18px;font-weight:900">Rekor: ${save.hizliRekor}</div>`;
+  h.onclick = () => { if (hk) { sYanlis(); toast('Hızlı Pist, Büyük Dağ açılınca açılır.'); return; } sDokun(); turBaslat('H'); };
+  g.appendChild(h);
+}
+
+/* =========================================================
+   11. OYUN DÖNGÜSÜ
+   ========================================================= */
+const OY = { k: null, modu: 'C', plan: [], i: 0, used: new Set(), prevLo: null, q: null, asama: 'A',
+  ilk: true, kilit: false, dogruSay: 0, sonuclar: [], hatalar: {}, kazanilan: 0,
+  hizli: false, bitis: 0, zamanlayici: null, bitti: false };
+
+function turBaslat(k) {
+  const p = pistBul(k);
+  Object.assign(OY, { k, modu: p.mod, plan: k === 'H' ? [] : planTur(k), i: 0, used: new Set(), prevLo: null,
+    dogruSay: 0, sonuclar: [], hatalar: {}, kazanilan: 0, hizli: k === 'H', bitti: false });
+  clearInterval(OY.zamanlayici);
+  $('#ustPist').textContent = p.ad;
+  $('#kuralBtn').style.display = OY.hizli ? 'none' : '';
+  goster('oyun');
+  if (OY.hizli) { OY.bitis = performance.now() + 60000; OY.zamanlayici = setInterval(hizliSaat, 100); }
+  soruGoster();
+}
+function soruGoster() {
+  const pl = OY.hizli ? hizliPlan() : OY.plan[OY.i];
+  const q = soruKur(pl, OY.used, OY.prevLo);
+  OY.q = q; OY.used.add(q.n); OY.prevLo = q.tip === 'ters' ? null : q.lo;
+  OY.ilk = true; OY.kilit = false;
+  ilerlemeCiz();
+  if (OY.modu === 'AB') adimA(); else if (OY.modu === 'B') adimB(); else adimC();
+}
+function ilerlemeCiz() {
+  const e = $('#ustIlerleme');
+  if (OY.hizli) {
+    if (!e.querySelector('.sure-kutu')) e.innerHTML = `<div class="sure-kutu"><div class="sure-cubuk"><i id="sureI"></i></div><div class="puan" id="hizliPuan">✔ 0</div></div>`;
+    $('#hizliPuan').textContent = '✔ ' + OY.dogruSay;
+    return;
+  }
+  let h = '';
+  for (let i = 0; i < OY.plan.length; i++) {
+    const r = OY.sonuclar[i];
+    h += `<span class="nk${r === true ? ' d' : r === false ? ' y' : ''}${i === OY.i && r === undefined ? ' s' : ''}"></span>`;
+  }
+  e.innerHTML = h;
+}
+function soruYaz(isik) {
+  const q = OY.q, A = q.adim;
+  const yer = `<span class="etiket ${A === 10 ? 'on' : 'yuz'}">${yerAdi(A)}</span>`;
+  const num = isik && q.tip !== 'ters' ? sayiHTML(q.n, bakYer(A), yuvYer(A)) : sayiHTML(q.n);
+  let h;
+  if (q.tip === 'ters') h = `En yakın ${yer} yuvarlanınca <b class="hedef">${fmt(q.T)}</b> olan <b>en ${q.pl.hedef === 'kucuk' ? 'küçük' : 'büyük'}</b> doğal sayı hangisi?`;
+  else if (q.tip === 'hayat') h = HAYAT[q.pl.sablon].m.replace('{n}', num).replace('{yer}', yer);
+  else if (OY.asama === 'A') h = `${num} sayısını en yakın ${yer} yuvarlayacağız.<div class="alt-soru">1. adım: Hangi iki ${istAdi(A)} sayının arasında?</div>`;
+  else if (OY.asama === 'B') h = `${num} sayısını en yakın ${yer} yuvarla.<div class="alt-soru">${OY.modu === 'AB' ? '2. adım: ' : ''}Kızak hangi istasyona kayar? Dokun.</div>`;
+  else h = `${num} sayısı en yakın ${yer} yuvarlanınca kaç olur?`;
+  $('#soru').innerHTML = h;
+}
+const sessizDag = (etiket) => dagCiz({ ist: [0, 1, 2, 3], etiket, odak: etiket[1] ? 1 : -1, tepeler: [], kizakV: 1.5 });
+
+/* --- 1. adım: iki komşu istasyonu bul --- */
+function adimA() {
+  OY.asama = 'A'; const q = OY.q;
+  soruYaz();
+  sessizDag(['', '?', '?', '']);
+  const p = $('#panel');
+  p.innerHTML = `<div class="ipucu" id="ipucu" hidden></div>
+    <div class="secenekler">${q.ciftler.map((c, i) => `<button class="sec cift" data-i="${i}">${fmt(c.a)} – ${fmt(c.b)}</button>`).join('')}</div>`;
+  p.querySelectorAll('.cift').forEach(b => b.onclick = () => {
+    if (OY.kilit) return;
+    const c = q.ciftler[+b.dataset.i];
+    if (c.ok) {
+      OY.kilit = true; b.classList.add('dogru'); sDogru(true);
+      p.querySelectorAll('.cift').forEach(x => x.disabled = true);
+      setTimeout(() => { OY.kilit = false; adimB(); }, 550);
+    } else {
+      b.classList.add('yanlis'); b.disabled = true; sYanlis();
+      if (OY.ilk) { OY.ilk = false; hataEkle('aralik'); }
+      const ip = $('#ipucu'); ip.hidden = false;
+      ip.innerHTML = `İpucu: ${istAdi(q.adim)} sayılar <b>${q.adim === 10 ? '0' : '00'}</b> ile biter. ${sayiHTML(q.n)} sayısının hemen altındaki ve hemen üstündeki ${istAdi(q.adim)} sayıyı bul.`;
+    }
+  });
+}
+
+/* --- 2. adım: kızak hangi tarafa kayar --- */
+function adimB() {
+  OY.asama = 'B'; const q = OY.q, A = q.adim, pist = pistBul(OY.k);
+  soruYaz();
+  dagCiz({ ist: [q.lo - A, q.lo, q.hi, q.hi + A], etiket: null, odak: 1,
+    tepeler: [{ i: 1, metin: pist.tepeDeger ? fmt(q.lo + A / 2) : '?', alt: 'tam orta' }],
+    tikla: [q.lo, q.hi], kizakV: q.n });
+  $('#panel').innerHTML = `<div class="secenekler">
+    <button class="sec yon" data-val="${q.lo}">◀ ${fmt(q.lo)}</button>
+    <button class="sec yon" data-val="${q.hi}">${fmt(q.hi)} ▶</button></div>`;
+  $('#panel').querySelectorAll('.yon').forEach(b => b.onclick = () => secB(+b.dataset.val));
+}
+function secB(v) {
+  if (OY.asama !== 'B' || OY.kilit) return;
+  const q = OY.q; if (v !== q.lo && v !== q.hi) return;
+  cevapVer(v, v === q.dogru ? null : (v === q.lo ? 'kesme' : 'yon'));
+}
+
+/* --- Doğrudan çoktan seçmeli (K4+ ve Hızlı Pist) --- */
+function adimC() {
+  OY.asama = 'C'; const q = OY.q;
+  soruYaz();
+  sessizDag(['', '', '', '']);
+  $('#panel').innerHTML = `<div class="secenekler">${q.secenekler.map((s, i) => `<button class="sec" data-i="${i}" data-val="${s.v}">${fmt(s.v)}</button>`).join('')}</div>`;
+  $('#panel').querySelectorAll('.sec').forEach(b => b.onclick = () => { const s = q.secenekler[+b.dataset.i]; cevapVer(s.v, s.hata); });
+}
+
+function hataEkle(h) { OY.hatalar[h] = (OY.hatalar[h] || 0) + 1; }
+function karEkle(n) { save.kar += n; OY.kazanilan += n; kaydet(); karGuncelle(true); }
+
+/* Yanlıştan 2 soru sonra benzer bir soru gelir */
+function tekrarPlanla() {
+  if (OY.hizli) return;
+  const j = OY.i + 2; if (j >= OY.plan.length) return;
+  const pl = Object.assign({}, OY.q.pl);
+  if (pl.tip === 'hayat') { pl.sablon = (pl.sablon + 3) % HAYAT.length; const t = HAYAT[pl.sablon]; pl.d = rnd(t.d[0], t.d[1]); }
+  OY.plan[j] = pl;
+}
+
+/* Her cevabın ortak işlenmesi */
+function cevapVer(v, hata) {
+  if (OY.kilit || OY.bitti) return;
+  OY.kilit = true;
+  const q = OY.q, ok = v === q.dogru;
+  if (!ok) {
+    if (q.orta && hata === 'kesme') hata = 'orta';
+    if (!hata) hata = 'komsu';
+    if (q.yuvarlak && hata === 'komsu') hata = 'yon';
+  }
+  document.querySelectorAll('#panel .sec').forEach(b => {
+    b.disabled = true; const bv = +b.dataset.val;
+    if (bv === q.dogru) b.classList.add('dogru'); else if (bv === v) b.classList.add('yanlis');
+  });
+  const basari = ok && OY.ilk;
+  OY.sonuclar.push(basari);
+  if (basari) { OY.dogruSay++; karEkle(1); }
+  if (!ok) { hataEkle(hata); tekrarPlanla(); }
+  ok ? sDogru() : sYanlis();
+  ilerlemeCiz();
+  if (OY.hizli) { hizliSonrasi(ok); return; }
+
+  const eski = OY.asama; soruYaz(true); OY.asama = 'G';
+  // Sahne: kızak doğru istasyona kayar
+  if (q.tip === 'ters') {
+    const A = q.adim;
+    dagCiz({ ist: [q.T - A, q.T, q.T + A], etiket: null, odak: -1,
+      tepeler: [{ i: 0, metin: fmt(q.T - A / 2) }, { i: 1, metin: fmt(q.T + A / 2) }],
+      bolge: [q.T - A / 2, q.T + A / 2], kizakV: q.dogru });
+    setTimeout(() => kaydir(q.dogru, q.T, 900, () => istasyonYak(q.T)), 350);
+  } else {
+    const A = q.adim;
+    dagCiz({ ist: [q.lo - A, q.lo, q.hi, q.hi + A], etiket: null, odak: 1,
+      tepeler: [{ i: 1, metin: fmt(q.lo + A / 2), alt: 'tam orta' }], kizakV: q.n });
+    setTimeout(() => kaydir(q.n, q.dogru, 900, () => istasyonYak(q.dogru)), eski === 'B' ? 80 : 350);
+  }
+  // Geri bildirim paneli
+  let bas, met;
+  if (q.tip === 'ters') {
+    const t = tersAciklama(q, hata);
+    bas = ok ? sec1(OVGU) : 'Birlikte bakalım';
+    met = ok ? t.kural : `${t.on}<br>${t.kural}`;
+  } else {
+    const kr = kuralSatiri(q);
+    bas = ok ? (OY.ilk ? sec1(OVGU) : 'Doğru! İlk adımı bir dahakine tek seferde bul.') : 'Birlikte bakalım';
+    met = ok ? kr : `${HATA_ON[hata](q)}<br>${kr}`;
+  }
+  const senin = ok ? '' : `<div class="senin">Senin cevabın: ${fmt(v)}</div>`;
+  $('#panel').innerHTML = `<div class="gb ${ok ? 'iyi' : 'kotu'}" role="status">
+    <div class="ikon">${ok ? '✅' : '💡'}</div>
+    <div class="yazi"><div class="baslik2">${bas}</div>${met}${senin}</div>
+    <button class="btn yesil" id="devam">Devam ▶</button></div>`;
+  $('#devam').onclick = () => { sDokun(); sonraki(); };
+  $('#devam').focus({ preventScroll: true });
+}
+function sonraki() {
+  OY.i++;
+  if (OY.i >= OY.plan.length) turBitir(); else soruGoster();
+}
+
+/* --- Hızlı Pist --- */
+function hizliSonrasi(ok) {
+  if (!ok) $('#soru').insertAdjacentHTML('beforeend', `<span class="dogrusu">Doğrusu: ${fmt(OY.q.dogru)}</span>`);
+  setTimeout(() => { if (!OY.bitti && OY.hizli && $('#s-oyun').classList.contains('aktif')) { OY.i++; soruGoster(); } }, ok ? 450 : 1400);
+}
+function hizliSaat() {
+  const kalan = OY.bitis - performance.now(), i = $('#sureI');
+  if (i) { i.style.width = Math.max(0, kalan / 600) + '%'; i.classList.toggle('az', kalan < 10000); }
+  if (kalan <= 0) { clearInterval(OY.zamanlayici); OY.bitti = true; hizliBitir(); }
+}
+function hizliBitir() {
+  const d = OY.dogruSay, rekor = d > save.hizliRekor;
+  if (rekor) save.hizliRekor = d;
+  kaydet();
+  sonucCiz({ baslik: 'Hızlı Pist', skor: `${d} doğru`, yildiz: null,
+    mesaj: rekor && d > 0 ? '🏆 Yeni rekor!' : `Rekor: ${save.hizliRekor}`, yeni: null });
+}
+
+/* --- Tur sonu --- */
+function turBitir() {
+  const k = OY.k, d = OY.dogruSay, y = d === 10 ? 3 : d >= 8 ? 2 : d >= 7 ? 1 : 0;
+  if (y > (save.yildiz[k] || 0)) save.yildiz[k] = y;
+  let yeni = null;
+  if (d >= 7 && k === save.acik && k < 7) { save.acik = k + 1; yeni = PISTLER[k]; }
+  kaydet();
+  const mesaj = d >= 7 ? (k === 7 && d >= 7 ? 'Tüm pistleri bitirdin! Sen bir yuvarlama ustasısın!' : 'Pisti geçtin!') : 'Yeni pisti açmak için en az 7 doğru gerekiyor. Bir daha dene!';
+  sonucCiz({ baslik: pistBul(k).ad, skor: `${d} / 10`, yildiz: y, mesaj, yeni });
+}
+function sonucCiz(o) {
+  $('#sonucBaslik').textContent = o.baslik;
+  const hl = Object.entries(OY.hatalar).sort((a, b) => b[1] - a[1]);
+  const hataKart = hl.length
+    ? `<div class="kart"><b>Dikkat etmen gerekenler:</b><ul class="hata-liste">${hl.map(([h, n]) => `<li><b>${n} kez</b> · ${HATA_OZET[h] || h}</li>`).join('')}</ul></div>`
+    : `<div class="kart" style="text-align:center"><b>Hiç hata yok! Harika!</b></div>`;
+  const yeniKart = o.yeni ? `<div class="kart yeni-pist" style="text-align:center"><b>🎉 Yeni pist açıldı: ${o.yeni.ad}</b></div>` : '';
+  const yildiz = o.yildiz == null ? '' : `<div class="buyuk-yildiz">${[1, 2, 3].map(i => `<span class="${i <= o.yildiz ? 'd' : ''}" style="animation-delay:${i * .2}s">★</span>`).join('')}</div>`;
+  $('#sonucIcerik').innerHTML = `
+    <div class="kart sonuc-ust">
+      <div class="skor">${o.skor}</div>${yildiz}
+      <div class="mesaj">${o.mesaj}</div>
+      <div style="font-weight:800;margin-top:4px">+${OY.kazanilan} ❄ kazandın</div>
+    </div>
+    ${yeniKart}${hataKart}
+    <div class="sonuc-dugmeler">
+      <button class="btn" id="tekrarBtn">↻ Tekrar</button>
+      ${o.yeni ? `<button class="btn yesil" id="sonrakiBtn">Sonraki pist ▶</button>` : ''}
+      <button class="btn beyaz" id="haritaBtn">Pist Haritası</button>
+    </div>`;
+  $('#tekrarBtn').onclick = () => { sDokun(); turBaslat(OY.k); };
+  $('#haritaBtn').onclick = () => { sDokun(); goster('harita'); };
+  if (o.yeni) $('#sonrakiBtn').onclick = () => { sDokun(); turBaslat(o.yeni.id); };
+  goster('sonuc');
+  if (o.yildiz > 0 || o.yeni || (o.yildiz == null && OY.dogruSay > 0)) sFanfar();
+}
+
+/* =========================================================
+   12. AYARLAR (gizli öğretmen modu: başlığa 3 kez dokun)
+   ========================================================= */
+function ayarCiz() { $('#sesBtn').classList.toggle('acik', save.ses); }
+let ogrDokun = 0, ogrZ = null;
+
+/* =========================================================
+   13. MAĞAZA (yalnızca kozmetik)
+   ========================================================= */
+let mSekme = 'kizak';
+function magazaCiz() {
+  $('#mOnizleme').innerHTML = onizlemeSVG(save.secili);
+  document.querySelectorAll('.sekme').forEach(s => s.classList.toggle('aktif', s.dataset.sekme === mSekme));
+  const g = $('#mUrunler'); g.innerHTML = '';
+  MAGAZA[mSekme].forEach(u => {
+    const sahip = save.sahip[mSekme].includes(u.id), secili = save.secili[mSekme] === u.id;
+    const c = Object.assign({}, save.secili, { [mSekme]: u.id });
+    const d = document.createElement('div');
+    d.className = 'urun' + (secili ? ' secili' : '');
+    d.innerHTML = `${onizlemeSVG(c)}<div class="uad">${u.ad}</div>
+      <button class="btn ${secili ? 'yesil' : sahip ? 'mavi' : ''}" ${secili ? 'disabled' : ''}>${secili ? 'Seçili' : sahip ? 'Seç' : '❄ ' + u.f}</button>`;
+    d.querySelector('button').onclick = () => {
+      if (sahip) { save.secili[mSekme] = u.id; kaydet(); sDokun(); magazaCiz(); return; }
+      if (save.kar < u.f) { sYanlis(); toast('Yeterli kar tanen yok. Pistlerde doğru cevap ver!'); return; }
+      modal(`<b>${u.ad}</b> ❄ ${u.f} kar tanesiyle alınsın mı?`, [
+        { y: 'Evet, al', s: 'yesil', f: () => { save.kar -= u.f; save.sahip[mSekme].push(u.id); save.secili[mSekme] = u.id; kaydet(); sFanfar(); karGuncelle(); magazaCiz(); } },
+        { y: 'Vazgeç', s: 'beyaz' }]);
+    };
+    g.appendChild(d);
+  });
+}
+
+/* =========================================================
+   14. OLAY BAĞLANTILARI VE BAŞLANGIÇ
+   ========================================================= */
+function baslat() {
+  yukle();
+  // kar taneleri
+  const k = $('#karlar');
+  for (let i = 0; i < 22; i++) {
+    const e = document.createElement('div'); e.className = 'kt';
+    const s = 5 + Math.random() * 9;
+    e.style.cssText = `left:${Math.random() * 100}%;width:${s}px;height:${s}px;animation-duration:${8 + Math.random() * 10}s;animation-delay:${-Math.random() * 18}s;opacity:${.5 + Math.random() * .5}`;
+    k.appendChild(e);
+  }
+  document.querySelectorAll('[data-git]').forEach(b => b.onclick = () => { sDokun(); goster(b.dataset.git); });
+  $('#oynaBtn').onclick = () => { sDokun(); goster('harita'); };
+  $('#magazaBtn').onclick = () => { sDokun(); goster('magaza'); };
+  $('#ayarBtn').onclick = () => { sDokun(); goster('ayarlar'); };
+  $('#oyunGeri').onclick = () => {
+    sDokun();
+    modal('Turdan çıkmak istiyor musun?<br><small>Bu turdaki ilerleme sayılmaz, kazandığın kar taneleri kalır.</small>', [
+      { y: 'Çık', s: 'pembe', f: () => { clearInterval(OY.zamanlayici); OY.bitti = true; goster('harita'); } },
+      { y: 'Devam et', s: 'yesil' }]);
+  };
+  $('#kuralBtn').onclick = () => {
+    sDokun();
+    modal(`<b>Yuvarlama kuralı</b><br>Onluğa yuvarlarken <b>birler</b>, yüzlüğe yuvarlarken <b>onlar</b> basamağına bak.<br>
+      0, 1, 2, 3, 4 → aşağı ⬇ &nbsp; 5, 6, 7, 8, 9 → yukarı ⬆<br>
+      Örnek: ${sayiHTML(4367, 0, 1)} → onluğa <b>4.370</b><br>${sayiHTML(4367, 1, 2)} → yüzlüğe <b>4.400</b>`, [{ y: 'Tamam', s: 'yesil' }]);
+  };
+  $('#sahne').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) secB(+b.dataset.v); });
+  $('#sesBtn').onclick = () => { save.ses = !save.ses; kaydet(); ayarCiz(); sDokun(); };
+  $('#sifirBtn').onclick = () => {
+    sDokun();
+    modal('Tüm ilerleme, yıldızlar, kar taneleri ve mağaza eşyaları silinsin mi?', [
+      { y: 'Evet, sıfırla', s: 'pembe', f: () => { const ses = save.ses; save = varsayilan(); save.ses = ses; kaydet(); karGuncelle(); toast('İlerleme sıfırlandı.'); } },
+      { y: 'Vazgeç', s: 'beyaz' }]);
+  };
+  $('#ayarBaslik').onclick = () => {
+    ogrDokun++; clearTimeout(ogrZ); ogrZ = setTimeout(() => ogrDokun = 0, 1500);
+    if (ogrDokun >= 3) {
+      ogrDokun = 0;
+      modal('Öğretmen modu: Tüm pistler açılsın mı?', [
+        { y: 'Aç', s: 'yesil', f: () => { save.acik = 7; kaydet(); toast('Tüm pistler açıldı.'); } },
+        { y: 'Vazgeç', s: 'beyaz' }]);
+    }
+  };
+  document.querySelectorAll('.sekme').forEach(s => s.onclick = () => { mSekme = s.dataset.sekme; sDokun(); magazaCiz(); });
+  let rz = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => {
+      if ($('#s-oyun').classList.contains('aktif') && DAG.opt) {
+        const v = DAG.v, f = DAG.flip, cls = [...document.querySelectorAll('#sahne .ist-yak')].map(e => e.dataset.ist);
+        dagCiz(DAG.opt); kizakKoy(v, f); cls.forEach(istasyonYak);
+      }
+    }, 120);
+  });
+  goster('giris');
+}
+baslat();
+
+/* Test için motor fonksiyonları dışa açık */
+window.KP = { R, fmt, planTur, hizliPlan, sayiUret, secenekUret, ciftUret, tersKur, soruKur, kuralSatiri, HATA_ON, tersAciklama, HAYAT, PISTLER };
+</script>
+</body>
+</html>
