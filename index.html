@@ -126,6 +126,25 @@
       transform: translateY(1px);
       box-shadow: 0 2px 0 rgba(0,0,0,0.15);
     }
+    .arama-kutu {
+      display: flex; align-items: center; gap: 6px;
+      background: white; border-radius: 999px; padding: 6px 8px 6px 14px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    }
+    .arama-kutu input {
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.95rem;
+      border: none; outline: none; background: transparent; color: #2D2D2D;
+      width: 150px; transition: width .2s;
+    }
+    .arama-kutu input:focus { width: 200px; }
+    .arama-kutu input::placeholder { color: #B9AEA0; font-weight: 700; }
+    .arama-kutu button {
+      border: none; cursor: pointer; width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, #A855F7, #FF4D8D); color: #fff; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .arama-kutu button[hidden] { display: none; }
+    @media (max-width: 600px) { .arama-kutu input, .arama-kutu input:focus { width: 110px; } }
     .badge {
       background: rgba(255,255,255,0.22);
       border: 2px solid rgba(255,255,255,0.4);
@@ -521,6 +540,9 @@
       text-decoration: none;
       text-align: center;
     }
+    .play-btn { width: calc(100% - 32px); }
+    .play-btn:focus-visible { outline: 3px solid #2D2D2D; outline-offset: 2px; }
+    .game-card.uyku .game-thumb * { animation-play-state: paused !important; }
     .play-btn:hover {
       transform: translateY(2px);
       box-shadow: 0 2px 0 rgba(0,0,0,0.2);
@@ -577,6 +599,7 @@
     .modal-btn:hover { transform: scale(1.1); }
     .modal-btn:active { transform: scale(0.93); }
     .modal-btn-close  { background: #FF4D8D; color: white; }
+    .modal-btn-tam    { background: #4D9FFF; color: white; }
 
     .modal-body {
       position: fixed;
@@ -1361,6 +1384,11 @@
       <div class="badge">📱 Mobil Uyumlu</div>
       <div class="badge">🎯 Eğlenceli</div>
     </div>
+    <form class="arama-kutu" role="search" onsubmit="return false">
+      <input id="arama" type="search" placeholder="Oyun ara…" autocomplete="off" aria-label="Oyun ara" oninput="aramaYap(this.value)">
+      <button type="button" id="arama-temizle" hidden onclick="aramaYap('', true)" title="Aramayı temizle">✕</button>
+      <button type="button" id="arama-ikon" onclick="document.getElementById('arama').focus()" title="Ara">🔍</button>
+    </form>
     <a class="about-btn" href="hakkimda.html">👤 Hakkımda</a>
   </div>
 </header>
@@ -1401,6 +1429,7 @@
 <!-- MODAL - TAM EKRAN -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-controls">
+    <button class="modal-btn modal-btn-tam"    onclick="tamEkran()" title="Tam ekran">⛶</button>
     <button class="modal-btn modal-btn-close"  onclick="closeModal()" title="Kapat">✕</button>
   </div>
   <div class="modal">
@@ -2000,7 +2029,7 @@ const categories = [
         file: "ac_timsah.html",
         desc: "Timsah hep büyük sayıyı yer! Büyüktür-küçüktür işaretini timsahla keşfet, sayıları sırala, akıllı tahtada arkadaşınla yarış!",
         sinif: "2. Sınıf — Sayıların sırası (tek ya da 2 oyunculu)",
-        isNew: true,
+        eklenme: "2026-10-20",
         thumbBg: "linear-gradient(180deg, #FFF8F0 0%, #E6F5FF 57%, #6FD3F2 57%, #2E8FD6 100%)",
         customThumb: `
 <div class="ac-timsah-thumb">
@@ -3083,7 +3112,7 @@ const hiddenCategories = [
         file: "oruntu_koprusu.html",
         desc: "Kuralı bul, kurbağayı taş taş karşıya geçir! Sayı ve şekil örüntüleri.",
         sinif: "3. Sınıf — Sayı ve şekil örüntüleri",
-        isNew: true,
+        eklenme: "2026-10-22",
         thumbBg: "linear-gradient(180deg, #8EDBFF, #2484CB)",
         customThumb: `
 <div class="oruntu-koprusu-thumb">
@@ -3135,7 +3164,7 @@ const hiddenCategories = [
         file: "kasa_ustasi.html",
         desc: "6 basamaklı sayıları çözümle, şifreyi bul, kasaları aç!",
         sinif: "4. Sınıf — 6 basamaklı sayıların çözümlenmesi",
-        isNew: true,
+        eklenme: "2026-10-20",
         thumbBg: "linear-gradient(135deg, #0B1533, #1C2F66)",
         customThumb: `
 <div class="kasa-ustasi-thumb">
@@ -3177,7 +3206,7 @@ const hiddenCategories = [
         file: "kizak_pisti.html",
         desc: "Kızağı doğru istasyona kaydır, sayıları en yakın onluğa ve yüzlüğe yuvarla!",
         sinif: "4. Sınıf — Doğal sayıları yuvarlama",
-        isNew: true,
+        eklenme: "2026-10-21",
         thumbBg: "linear-gradient(180deg, #CFE9FF, #F4FBFF)",
         customThumb: `
 <div class="kizak-pisti-thumb">
@@ -3225,7 +3254,7 @@ const hiddenCategories = [
         file: "elde_ekspresi.html",
         desc: "Vagonları sütun sütun topla, elde sandığını bir sonraki vagona taşı!",
         sinif: "4. Sınıf — En çok dört basamaklı sayılarla toplama",
-        isNew: true,
+        eklenme: "2026-10-22",
         thumbBg: "linear-gradient(180deg, #BFE8FF, #8BD36A)",
         customThumb: `
 <div class="elde-ekspresi-thumb">
@@ -3303,7 +3332,7 @@ const hiddenCategories = [
         file: "maden_kasifi.html",
         desc: "Türkiye haritasını gez, madenleri kazıp çıkar, nerelerde kullanıldıklarını eşleştir!",
         sinif: "4. Sınıf — Kayaçlar, madenler ve fosiller",
-        isNew: true,
+        eklenme: "2026-10-20",
         thumbBg: "linear-gradient(180deg, #9FD6F0, #7D5232)",
         customThumb: `
 <div class="maden-kasifi-thumb">
@@ -3371,6 +3400,54 @@ try {
   const s = parseInt(localStorage.getItem('seciliSinif') || '2');
   if (s >= 1 && s <= 4) seciliSinif = s;
 } catch (e) {}
+// Adresten sınıf: sinanince.com/?sinif=3
+{ const u = parseInt(new URLSearchParams(location.search).get('sinif')); if (u >= 1 && u <= 4) seciliSinif = u; }
+function adresGuncelle() {
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('sinif', seciliSinif);
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  } catch (e) {}
+}
+
+// "Yeni" rozeti: eklenme tarihinden itibaren 14 gün otomatik görünür
+const YENI_GUN = 14;
+function yeniMi(o) {
+  if (o.isNew) return true;
+  if (!o.eklenme) return false;
+  const fark = (Date.now() - new Date(o.eklenme + 'T00:00:00')) / 86400000;
+  return fark >= 0 && fark < YENI_GUN;
+}
+
+// Ekranda olmayan kartların animasyonunu durdur (eski tahta/tablet için)
+const kartGozcu = ('IntersectionObserver' in window) ? new IntersectionObserver(girdiler => {
+  girdiler.forEach(g => g.target.classList.toggle('uyku', !g.isIntersecting));
+}, { rootMargin: '150px 0px' }) : null;
+
+// Arama: tüm sınıflarda ad, açıklama ve kazanımda arar
+let aramaMetni = '';
+const trKucuk = t => (t || '').replace(/İ/g, 'i').replace(/I/g, 'ı').toLocaleLowerCase('tr');
+function aramaYap(metin, odak) {
+  aramaMetni = (metin || '').trim();
+  const inp = document.getElementById('arama');
+  if (inp.value !== aramaMetni && !aramaMetni) inp.value = '';
+  document.getElementById('arama-temizle').hidden = !aramaMetni;
+  document.getElementById('arama-ikon').hidden = !!aramaMetni;
+  buildPage();
+  if (odak) inp.focus();
+}
+function aramaGruplari() {
+  const q = trKucuk(aramaMetni);
+  const gruplar = new Map();
+  categories.concat(hiddenCategories).forEach(cat => {
+    const oyunlar = cat.games.filter(o => trKucuk(o.name + ' ' + o.desc + ' ' + oyunBecerisi(o)).includes(q));
+    if (!oyunlar.length) return;
+    const ad = konuAdi(cat);
+    if (!gruplar.has(ad)) gruplar.set(ad, Object.assign({}, cat, { name: ad, games: [] }));
+    gruplar.get(ad).games.push(...oyunlar.filter(o => !gruplar.get(ad).games.includes(o)));
+  });
+  return [...gruplar.values()].sort((a, b) => konuSira(a.name) - konuSira(b.name));
+}
 
 function oyunSiniflari(oyun) {
   if (oyun.grades) return oyun.grades;
@@ -3403,7 +3480,9 @@ function oyunBecerisi(o) {
 function sinifSec(g) {
   seciliSinif = g;
   try { localStorage.setItem('seciliSinif', seciliSinif); } catch (e) {}
+  adresGuncelle();
   filtreTemizle(true); // sınıf değişince kazanım filtresi sıfırlanır
+  if (aramaMetni) { document.getElementById('arama').value = ''; aramaMetni = ''; aramaYap(''); return; }
   buildPage();
 }
 
@@ -3418,7 +3497,9 @@ function sinifBarGuncelle() {
     btn.style.color = secili ? '#fff' : r.renk;
   });
   const alt = document.getElementById('hero-alt');
-  if (alt) alt.textContent = seciliSinif + '. sınıf oyunları — favorini seç ve başla!';
+  if (alt) alt.textContent = aramaMetni
+    ? '"' + aramaMetni + '" için arama sonuçları (tüm sınıflar)'
+    : seciliSinif + '. sınıf oyunları — favorini seç ve başla!';
   filtreBtnGuncelle();
 }
 
@@ -3443,8 +3524,8 @@ function sinifGruplari(g) {
 function buildPage() {
   const main = document.getElementById('main-content');
   main.innerHTML = '';
-  let liste = sinifGruplari(seciliSinif);
-  if (seciliBeceriler.size) {
+  let liste = aramaMetni ? aramaGruplari() : sinifGruplari(seciliSinif);
+  if (seciliBeceriler.size && !aramaMetni) {
     liste = liste
       .map(cat => Object.assign({}, cat, { games: cat.games.filter(o => seciliBeceriler.has(oyunBecerisi(o))) }))
       .filter(cat => cat.games.length);
@@ -3453,7 +3534,7 @@ function buildPage() {
   if (!liste.length) {
     const bos = document.createElement('div');
     bos.className = 'sinif-bos';
-    bos.textContent = '🚧 Bu sınıf için oyunlar çok yakında!';
+    bos.textContent = aramaMetni ? '🔍 "' + aramaMetni + '" ile eşleşen oyun bulunamadı.' : '🚧 Bu sınıf için oyunlar çok yakında!';
     main.appendChild(bos);
   }
   sinifBarGuncelle();
@@ -3563,7 +3644,7 @@ function makeSection(cat, ci) {
       card.innerHTML = `
         <div class="game-thumb" style="background:${game.thumbBg}">
           ${game.customThumb || `<div class="thumb-canli"><span class="ts ts1">✦</span><span class="ts ts2">✨</span><span class="ts ts3">✧</span><span class="thumb-emoji">${game.emoji || '🎮'}</span></div>`}
-          ${game.isNew ? '<div class="new-badge">✨ Yeni!</div>' : ''}
+          ${yeniMi(game) ? '<div class="new-badge">✨ Yeni!</div>' : ''}
           ${game.isSpecial ? '<div class="special-badge">⭐ ÖZEL ETKİNLİK</div>' : ''}
         </div>
         <div class="game-info">
@@ -3571,11 +3652,12 @@ function makeSection(cat, ci) {
           <div class="game-desc">${game.desc}</div>
           ${game.sinif ? `<div class="game-sinif">🎒 ${game.sinif}</div>` : ''}
         </div>
-        <div class="play-btn" style="background:${cat.iconBg}" data-file="${game.file}" data-name="${game.name}" onclick="openGame(this.dataset.file, this.dataset.name)">
+        <button type="button" class="play-btn" style="background:${cat.iconBg}" data-file="${game.file}" data-name="${game.name}" onclick="openGame(this.dataset.file, this.dataset.name)" aria-label="${game.name} oyununu oyna">
           ▶ Oyna!
-        </div>
+        </button>
       `;
       grid.appendChild(card);
+      kartGozcu && kartGozcu.observe(card);
     });
 
     section.appendChild(header);
@@ -3595,7 +3677,28 @@ function openGame(file, name) {
   document.getElementById('game-frame').src = OYUN_KOK + file;
   document.getElementById('modal-overlay').classList.add('active');
   document.body.style.overflow = 'hidden';
+  // Adres: sinanince.com/#ac_timsah → bu oyunu doğrudan açar
+  const id = file.replace(/\.html$/, '');
+  if (location.hash !== '#' + id) history.replaceState(null, '', location.pathname + location.search + '#' + id);
 }
+
+function tamEkran() {
+  const el = document.getElementById('modal-overlay');
+  const f = document.getElementById('game-frame');
+  if (document.fullscreenElement) { document.exitFullscreen && document.exitFullscreen(); return; }
+  const istek = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (istek) istek.call(el).catch(() => {});
+  else if (f.webkitEnterFullscreen) f.webkitEnterFullscreen(); // iOS Safari
+}
+
+// Adresteki #oyun_adi varsa o oyunu aç
+function adrestenOyunAc() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (!id) return;
+  const o = categories.concat(hiddenCategories).flatMap(c => c.games).find(g => g.file === id + '.html');
+  if (o) openGame(o.file, o.name);
+}
+window.addEventListener('hashchange', () => { if (location.hash) adrestenOyunAc(); else closeModal(); });
 
 function reloadGame() {
   const f = document.getElementById('game-frame');
@@ -3603,9 +3706,11 @@ function reloadGame() {
 }
 
 function closeModal() {
+  if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   document.getElementById('modal-overlay').classList.remove('active');
   document.getElementById('game-frame').src = '';
   document.body.style.overflow = '';
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 }
 
 document.getElementById('modal-overlay').addEventListener('click', function(e) {
@@ -3655,6 +3760,7 @@ function launchConfetti() {
 
 buildPage();
 addFloaties();
+adrestenOyunAc();
 
 // Konfeti sadece sayfaya ilk girişte
 if (!sessionStorage.getItem('confettiShown')) {
