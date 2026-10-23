@@ -3736,7 +3736,7 @@ function oyunSay(file, name) {
     const d = new Date(), gun = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const inc = () => firebase.firestore.FieldValue.increment(1);
     fbDb().then(db => db.collection('oyun_istatistik').doc(file.replace(/\.html$/, '')).set({
-      ad: name, dosya: file, toplam: inc(), ['gunluk.' + gun]: inc(), son: firebase.firestore.FieldValue.serverTimestamp()
+      ad: name, dosya: file, toplam: inc(), gunluk: { [gun]: inc() }, son: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true })).catch(() => {});
   } catch (e) {}
 }
