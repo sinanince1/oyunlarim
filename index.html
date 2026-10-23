@@ -668,6 +668,24 @@
       .ku-teker, .ku-kapi, .ku-p1, .ku-p2 { animation: none; }
       .ku-p1, .ku-p2 { opacity: 1; }
     }
+    /* ---- Sözcük Müzesi kart animasyonu: kart vitrinden çıkar, mecaz anlam salonuna girer, kapı ışır ---- */
+    .sozcuk-muzesi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .sozcuk-muzesi-thumb svg { width: 100%; height: 100%; }
+    .sm-kart { animation: smKart 5s ease-in-out infinite; }
+    @keyframes smKart {
+      0%        { transform: translate(120px, 16px) scale(1); opacity: 0; }
+      8%, 28%   { transform: translate(120px, 30px) scale(1); opacity: 1; }
+      36%       { transform: translate(120px, 46px) scale(1.06); opacity: 1; }
+      58%, 100% { transform: translate(120px, 100px) scale(.25); opacity: 0; }
+    }
+    .sm-isik { opacity: 0; animation: smIsik 5s ease-in-out infinite; }
+    @keyframes smIsik { 0%, 54% { opacity: 0; } 62%, 82% { opacity: 1; } 92%, 100% { opacity: 0; } }
+    .sm-kapak { transform-box: fill-box; transform-origin: center top; transform: scaleY(0); animation: smKirp 4s infinite; }
+    @keyframes smKirp { 0%, 90%, 100% { transform: scaleY(0); } 94% { transform: scaleY(1); } }
+    @media (prefers-reduced-motion: reduce) {
+      .sm-kart { animation: none; transform: translate(120px, 30px); opacity: 1; }
+      .sm-isik, .sm-kapak { animation: none; }
+    }
     /* ---- Kızak Pisti kart animasyonu: penguen tepeden 4.400 istasyonuna kayar ---- */
     .kizak-pisti-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .kizak-pisti-thumb svg { width: 100%; height: 100%; }
@@ -1510,6 +1528,62 @@ const categories = [
     iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
     lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
     games: [
+      {
+        name: "Sözcük Müzesi",
+        file: "sozcuk_muzesi.html",
+        desc: "Sözcük kartlarını cümledeki anlamına göre gerçek, mecaz ya da terim anlam salonuna taşı!",
+        sinif: "4. Sınıf — Gerçek, mecaz ve terim anlam (T.4.3.10)",
+        eklenme: "2026-10-23",
+        thumbBg: "linear-gradient(180deg, #FBF5EA, #EADFCB)",
+        customThumb: `
+<div class="sozcuk-muzesi-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><radialGradient id="smSpot" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#FFF0B8"/><stop offset="1" stop-color="#FFF0B8" stop-opacity="0"/></radialGradient></defs>
+  <rect width="240" height="150" fill="#FBF5EA"/>
+  <!-- müze duvarı: sütunlar -->
+  <g fill="#F3EADB" stroke="#D9C9AC" stroke-width="1.5">
+    <rect x="6" y="6" width="12" height="122"/><rect x="222" y="6" width="12" height="122"/>
+  </g>
+  <rect y="126" width="240" height="24" fill="#E4D6BF"/>
+  <rect y="126" width="240" height="3" fill="#CDBD9F"/>
+  <!-- vitrin -->
+  <rect x="72" y="8" width="96" height="40" rx="6" fill="url(#smSpot)" stroke="#fff" stroke-width="2.5"/>
+  <rect x="72" y="8" width="96" height="40" rx="6" fill="none" stroke="#1F2A4D" stroke-opacity=".15" stroke-width="1"/>
+  <rect x="80" y="44" width="80" height="4" rx="1.5" fill="#D9C9AC"/>
+  <!-- salon kapıları -->
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" text-anchor="middle" font-size="7.5">
+    <path d="M26 126 V94 a24 24 0 0 1 48 0 V126 Z" fill="#FCEBCF" stroke="#E08A1E" stroke-width="3"/>
+    <circle cx="50" cy="100" r="7" fill="#E08A1E"/><path d="M50 93 q2 -4 5 -5" stroke="#E08A1E" stroke-width="1.6" fill="none"/>
+    <text x="50" y="120" fill="#E08A1E">GERÇEK</text>
+    <path class="sm-isik" d="M90 126 V94 a30 30 0 0 1 60 0 V126 Z" fill="#8B5CF6" opacity=".35"/>
+    <path d="M96 126 V94 a24 24 0 0 1 48 0 V126 Z" fill="#EDE4FF" stroke="#8B5CF6" stroke-width="3"/>
+    <path d="M111 94 c6 3 12 3 18 0 v6 c0 7 -4 11 -9 11 s-9 -4 -9 -11 z" fill="#8B5CF6"/>
+    <path d="M115 99 h3 M122 99 h3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M115 104 q5 3 10 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle class="sm-isik" cx="120" cy="76" r="3.5" fill="#8B5CF6"/>
+    <text x="120" y="120" fill="#8B5CF6">MECAZ</text>
+    <path d="M166 126 V94 a24 24 0 0 1 48 0 V126 Z" fill="#D3F2F2" stroke="#0E9FA3" stroke-width="3"/>
+    <g stroke="#0E9FA3" stroke-width="2.2" stroke-linecap="round" fill="none"><circle cx="190" cy="92" r="2.4" fill="#0E9FA3"/><path d="M190 94 l-6 15 M190 94 l6 15"/></g>
+    <text x="190" y="120" fill="#0E9FA3">TERİM</text>
+  </g>
+  <!-- baykuş rehber -->
+  <g transform="translate(28 22)">
+    <path d="M-10 -12 l3 -7 l5 5 z M10 -12 l-3 -7 l-5 5 z" fill="#8B5E3C"/>
+    <ellipse cx="0" cy="2" rx="14" ry="16" fill="#8B5E3C"/>
+    <ellipse cx="0" cy="8" rx="8" ry="9" fill="#EAD5B3"/>
+    <circle cx="-5.5" cy="-4" r="5" fill="#fff" stroke="#C9A227" stroke-width="1.3"/><circle cx="5.5" cy="-4" r="5" fill="#fff" stroke="#C9A227" stroke-width="1.3"/>
+    <circle cx="-5" cy="-3.5" r="2.2" fill="#1F2A4D"/><circle cx="5" cy="-3.5" r="2.2" fill="#1F2A4D"/>
+    <ellipse class="sm-kapak" cx="-5.5" cy="-4" rx="5.2" ry="5.2" fill="#8B5E3C"/><ellipse class="sm-kapak" cx="5.5" cy="-4" rx="5.2" ry="5.2" fill="#8B5E3C"/>
+    <path d="M0 0 l-2 3 l2 2.5 l2 -2.5 z" fill="#F0A030"/>
+  </g>
+  <!-- sözcük kartı -->
+  <g class="sm-kart">
+    <rect x="-40" y="-11" width="80" height="22" rx="4" fill="#fff" stroke="#EADFCB" stroke-width="1.5"/>
+    <text x="0" y="3.5" font-family="Nunito, Segoe UI, sans-serif" font-weight="800" font-size="9" fill="#2A2A35" text-anchor="middle">Kavganın <tspan fill="#8C2F39" font-weight="900" text-decoration="underline">kökü</tspan></text>
+  </g>
+</svg>
+</div>
+`
+      },
       {
         name: "Hikâye Sahnesi",
         file: "hikaye_sahnesi.html",
