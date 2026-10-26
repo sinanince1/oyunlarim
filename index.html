@@ -884,6 +884,25 @@
     .sc-elma { animation: scElma 3.6s ease-in-out infinite; }
     @keyframes scElma { 0% { transform: translate(0,0) scale(1); opacity: 0; } 12% { opacity: 1; } 45% { transform: translate(78px,-38px) scale(.7); opacity: 1; } 55%,100% { transform: translate(84px,-40px) scale(.2); opacity: 0; } }
     @media (prefers-reduced-motion: reduce) { .sc-can, .sc-dolgu, .sc-elma { animation: none; } .sc-elma { opacity: 0; } }
+    /* ---- Cumhuriyet Fener Alayı kart animasyonu ---- */
+    .cfa-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .cfa-thumb svg { width: 100%; height: 100%; }
+    .cfa-bayrak { transform-box: fill-box; transform-origin: left center; animation: cfaDalga 2.6s ease-in-out infinite; }
+    @keyframes cfaDalga { 0%,100% { transform: skewY(0) scaleX(1); } 50% { transform: skewY(-4deg) scaleX(.95); } }
+    .cfa-alay { animation: cfaYuru 9s linear infinite; }
+    @keyframes cfaYuru { from { transform: translateX(-40px); } to { transform: translateX(270px); } }
+    .cfa-zipla { animation: cfaZipla .4s ease-in-out infinite alternate; }
+    @keyframes cfaZipla { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+    .cfa-isik { animation: cfaIsik 1.6s ease-in-out infinite; }
+    @keyframes cfaIsik { 0%,100% { opacity: .35; } 50% { opacity: .15; } }
+    .cfa-fisek { transform-box: fill-box; transform-origin: center; animation: cfaFisek 2.4s ease-out infinite; }
+    .cfa-fisek2 { animation-delay: 1.2s; }
+    @keyframes cfaFisek { 0% { transform: scale(.1); opacity: 0; } 15% { opacity: 1; } 70% { opacity: .9; } 100% { transform: scale(1.15); opacity: 0; } }
+    .cfa-yildiz { animation: cfaParla 2.4s ease-in-out infinite; }
+    @keyframes cfaParla { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .cfa-bayrak, .cfa-alay, .cfa-zipla, .cfa-isik, .cfa-fisek, .cfa-yildiz { animation: none; } .cfa-alay { transform: translateX(110px); } .cfa-fisek { opacity: 1; } }
+    /* Yeni ve Özel Etkinlik rozetleri birlikteyse Özel Etkinlik sol üste */
+    .new-badge + .special-badge { right: auto; left: 12px; }
     /* ---- Sözlük Postası kart animasyonu ---- */
     .hikaye-sahnesi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .hikaye-sahnesi-thumb svg { width: 100%; height: 100%; }
@@ -3025,6 +3044,67 @@ const categories = [
     lineColor: "linear-gradient(90deg, #4CAF50, #00C9A7)",
     games: [
       {
+        name: "Cumhuriyet Fener Alayı",
+        file: "cumhuriyet_fener_alayi.html",
+        desc: "Fener alayıyla yürü, durak durak Cumhuriyet'in hikâyesini öğren ve fenerlerini yak! 🏮",
+        sinif: "1-4. Sınıf — Özel Etkinlik",
+        beceri: "Özel Etkinlik",
+        grades: [1, 2, 3, 4],
+        eklenme: "2026-10-26",
+        isSpecial: true,
+        thumbBg: "linear-gradient(180deg,#0A1433 0%,#22357A 100%)",
+        customThumb: `
+<div class="cfa-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <g fill="#fff"><circle class="cfa-yildiz" cx="20" cy="16" r="1.4"/><circle class="cfa-yildiz" cx="110" cy="12" r="1.2" style="animation-delay:.8s"/><circle class="cfa-yildiz" cx="150" cy="30" r="1.4" style="animation-delay:1.4s"/><circle class="cfa-yildiz" cx="226" cy="58" r="1.1" style="animation-delay:.4s"/><circle class="cfa-yildiz" cx="84" cy="40" r="1" style="animation-delay:1.9s"/></g>
+  <g class="cfa-fisek " stroke-width="2" stroke-linecap="round"><line x1="71.0" y1="60.0" x2="82.0" y2="60.0" stroke="#fff"/><line x1="70.6" y1="61.5" x2="80.1" y2="67.0" stroke="#E30A17"/><line x1="69.5" y1="62.6" x2="75.0" y2="72.1" stroke="#fff"/><line x1="68.0" y1="63.0" x2="68.0" y2="74.0" stroke="#E30A17"/><line x1="66.5" y1="62.6" x2="61.0" y2="72.1" stroke="#fff"/><line x1="65.4" y1="61.5" x2="55.9" y2="67.0" stroke="#E30A17"/><line x1="65.0" y1="60.0" x2="54.0" y2="60.0" stroke="#fff"/><line x1="65.4" y1="58.5" x2="55.9" y2="53.0" stroke="#E30A17"/><line x1="66.5" y1="57.4" x2="61.0" y2="47.9" stroke="#fff"/><line x1="68.0" y1="57.0" x2="68.0" y2="46.0" stroke="#E30A17"/><line x1="69.5" y1="57.4" x2="75.0" y2="47.9" stroke="#fff"/><line x1="70.6" y1="58.5" x2="80.1" y2="53.0" stroke="#E30A17"/></g><g class="cfa-fisek cfa-fisek2" stroke-width="2" stroke-linecap="round"><line x1="209.0" y1="58.0" x2="220.0" y2="58.0" stroke="#fff"/><line x1="208.6" y1="59.5" x2="218.1" y2="65.0" stroke="#FFD24D"/><line x1="207.5" y1="60.6" x2="213.0" y2="70.1" stroke="#fff"/><line x1="206.0" y1="61.0" x2="206.0" y2="72.0" stroke="#FFD24D"/><line x1="204.5" y1="60.6" x2="199.0" y2="70.1" stroke="#fff"/><line x1="203.4" y1="59.5" x2="193.9" y2="65.0" stroke="#FFD24D"/><line x1="203.0" y1="58.0" x2="192.0" y2="58.0" stroke="#fff"/><line x1="203.4" y1="56.5" x2="193.9" y2="51.0" stroke="#FFD24D"/><line x1="204.5" y1="55.4" x2="199.0" y2="45.9" stroke="#fff"/><line x1="206.0" y1="55.0" x2="206.0" y2="44.0" stroke="#FFD24D"/><line x1="207.5" y1="55.4" x2="213.0" y2="45.9" stroke="#fff"/><line x1="208.6" y1="56.5" x2="218.1" y2="51.0" stroke="#FFD24D"/></g>
+  <g fill="#fff"><path d="M0 4 L10 4 L5 13Z"/><path d="M24 7 L34 7 L29 16Z"/><path d="M48 9 L58 9 L53 18Z"/></g>
+  <g fill="#E30A17"><path d="M12 5 L22 5 L17 14Z"/><path d="M36 8 L46 8 L41 17Z"/></g>
+  <path d="M0 3 Q30 10 62 9" stroke="#C9CDE6" stroke-width="1" fill="none"/>
+  <rect x="0" y="78" width="30" height="34" rx="2" fill="#16245a"/><rect x="32" y="62" width="22" height="50" rx="2" fill="#16245a"/><rect x="56" y="84" width="34" height="28" rx="2" fill="#16245a"/><rect x="92" y="68" width="26" height="44" rx="2" fill="#16245a"/><rect x="120" y="82" width="36" height="30" rx="2" fill="#16245a"/><rect x="158" y="60" width="24" height="52" rx="2" fill="#16245a"/><rect x="184" y="76" width="30" height="36" rx="2" fill="#16245a"/><rect x="216" y="66" width="26" height="46" rx="2" fill="#16245a"/><rect x="6" y="86" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="14" y="94" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="38" y="70" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="44" y="84" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="62" y="92" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="98" y="76" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="104" y="90" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="128" y="90" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="164" y="68" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="170" y="82" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="190" y="84" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="222" y="74" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/><rect x="228" y="88" width="4" height="5" rx="1" fill="#FFD96B" opacity=".8"/>
+  <rect y="110" width="240" height="40" fill="#2C3C78"/><rect y="109" width="240" height="3" fill="#0B1438"/>
+  <line x1="0" y1="132" x2="240" y2="132" stroke="#FFD24D" stroke-opacity=".5" stroke-width="2" stroke-dasharray="8 9"/>
+  <line x1="114" y1="44" x2="114" y2="110" stroke="#E4E6F2" stroke-width="2.5" stroke-linecap="round"/><circle cx="114" cy="43" r="3" fill="#FFD24D"/>
+  <g transform="translate(115 45)"><g class="cfa-bayrak"><rect width="54" height="36" fill="#E30A17"/><circle cx="19.12" cy="18" r="9.00" fill="#fff"/><circle cx="21.38" cy="18" r="7.20" fill="#E30A17"/><polygon fill="#fff" points="26.25,18.00 29.36,16.99 29.36,13.72 31.28,16.37 34.39,15.35 32.47,18.00 34.39,20.65 31.28,19.63 29.36,22.28 29.36,19.01"/></g></g>
+  <g class="cfa-alay"><g transform="translate(60 130) scale(.5)"><g class="cfa-zipla">
+      <rect x="-11" y="-31" width="9" height="31" rx="4" fill="#24305e"/><rect x="2" y="-31" width="9" height="31" rx="4" fill="#24305e"/>
+      <path d="M-17,-28 L-13,-68 Q0,-75 13,-68 L17,-28 Z" fill="#E30A17"/>
+      <circle cx="0" cy="-86" r="18" fill="#F6C9A0"/>
+      <path d="M-19,-86 Q-19,-108 0,-107 Q19,-108 19,-86 Q12,-97 0,-96 Q-12,-97 -19,-86Z" fill="#3b2412"/>
+      <circle cx="-6" cy="-85" r="2.6" fill="#1b2340"/><circle cx="6" cy="-85" r="2.6" fill="#1b2340"/>
+      <path d="M-5,-78 Q0,-74 5,-78" stroke="#1b2340" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M10,-62 L26,-56" stroke="#E30A17" stroke-width="8" stroke-linecap="round"/>
+      <line x1="24" y1="-56" x2="40" y2="-94" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
+      <circle class="cfa-isik" cx="40" cy="-68" r="26" fill="#FFD24D" opacity=".35"/>
+      <ellipse cx="40" cy="-68" rx="10" ry="12" fill="#E30A17"/><ellipse cx="40" cy="-68" rx="5" ry="8" fill="#FFE27A"/>
+    </g></g><g transform="translate(30 130) scale(.5)"><g class="cfa-zipla">
+      <rect x="-11" y="-31" width="9" height="31" rx="4" fill="#24305e"/><rect x="2" y="-31" width="9" height="31" rx="4" fill="#24305e"/>
+      <path d="M-17,-28 L-13,-68 Q0,-75 13,-68 L17,-28 Z" fill="#2E86FF"/>
+      <circle cx="0" cy="-86" r="18" fill="#F6C9A0"/>
+      <path d="M-19,-86 Q-19,-108 0,-107 Q19,-108 19,-86 Q12,-97 0,-96 Q-12,-97 -19,-86Z" fill="#1b1b1b"/>
+      <circle cx="-6" cy="-85" r="2.6" fill="#1b2340"/><circle cx="6" cy="-85" r="2.6" fill="#1b2340"/>
+      <path d="M-5,-78 Q0,-74 5,-78" stroke="#1b2340" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M10,-62 L26,-56" stroke="#2E86FF" stroke-width="8" stroke-linecap="round"/>
+      <line x1="24" y1="-56" x2="40" y2="-94" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
+      <circle class="cfa-isik" cx="40" cy="-68" r="26" fill="#FFD24D" opacity=".35"/>
+      <ellipse cx="40" cy="-68" rx="10" ry="12" fill="#E30A17"/><ellipse cx="40" cy="-68" rx="5" ry="8" fill="#FFE27A"/>
+    </g></g><g transform="translate(0 130) scale(.5)"><g class="cfa-zipla">
+      <rect x="-11" y="-31" width="9" height="31" rx="4" fill="#24305e"/><rect x="2" y="-31" width="9" height="31" rx="4" fill="#24305e"/>
+      <path d="M-17,-28 L-13,-68 Q0,-75 13,-68 L17,-28 Z" fill="#1FBF75"/>
+      <circle cx="0" cy="-86" r="18" fill="#F6C9A0"/>
+      <path d="M-19,-86 Q-19,-108 0,-107 Q19,-108 19,-86 Q12,-97 0,-96 Q-12,-97 -19,-86Z" fill="#c58b3a"/>
+      <circle cx="-6" cy="-85" r="2.6" fill="#1b2340"/><circle cx="6" cy="-85" r="2.6" fill="#1b2340"/>
+      <path d="M-5,-78 Q0,-74 5,-78" stroke="#1b2340" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M10,-62 L26,-56" stroke="#1FBF75" stroke-width="8" stroke-linecap="round"/>
+      <line x1="24" y1="-56" x2="40" y2="-94" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
+      <circle class="cfa-isik" cx="40" cy="-68" r="26" fill="#FFD24D" opacity=".35"/>
+      <ellipse cx="40" cy="-68" rx="10" ry="12" fill="#E30A17"/><ellipse cx="40" cy="-68" rx="5" ry="8" fill="#FFE27A"/>
+    </g></g></g>
+</svg>
+</div>
+`,
+      },
+      {
         name: "Sağlıklı Can",
         file: "saglikli_can.html",
         desc: "Can'ın gününü planla, sağlıklı alışkanlıkların büyümesine nasıl yardım ettiğini keşfet!",
@@ -3568,7 +3648,7 @@ const SINIF_RENK = {
   3: { renk: '#00C9A7', grad: 'linear-gradient(135deg,#00C9A7,#4D9FFF)' },
   4: { renk: '#4D9FFF', grad: 'linear-gradient(135deg,#4D9FFF,#A855F7)' }
 };
-const KONU_SIRASI = ['Türkçe', 'Matematik', 'Fen Bilimleri', 'Hayat Bilgisi', 'PYP', 'Diğer Oyunlar'];
+const KONU_SIRASI = ['Hayat Bilgisi', 'Türkçe', 'Matematik', 'Fen Bilimleri', 'PYP', 'Diğer Oyunlar'];
 
 let seciliSinif = 2; // ilk girişte 2. sınıf açılır
 try {
