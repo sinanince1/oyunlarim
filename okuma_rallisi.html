@@ -144,6 +144,10 @@ button{font:inherit;color:inherit}
   padding:.25em 1.1em .25em .25em;font-weight:900;font-size:var(--f1);box-shadow:0 .3em .9em rgba(0,0,0,.2);
 }
 .profil-cip svg{width:2.6em;height:2.6em;display:block}
+.profil-cip[data-eylem]{cursor:pointer;transition:transform .15s}
+.profil-cip[data-eylem]:hover{transform:scale(1.04)}
+.profil-cip[data-eylem]:active{transform:scale(.97)}
+.cip.yon{background:var(--koyu)}
 .profil-cip small{display:block;font-weight:800;font-size:.72em;color:#6A7090}
 .hud-sag{display:flex;gap:.55em;align-items:center}
 .cip{
@@ -586,6 +590,10 @@ a.btn{text-decoration:none}
 .ag-orta small{font-weight:800;color:var(--yesil-k);font-size:var(--f0)}
 .atolye-panel .show-dugmeler{margin-bottom:.7em}
 .atolye-panel .sekme{white-space:nowrap;font-size:calc(var(--f1)*.9);padding:.5em .4em}
+.kucuk-baglanti{border:0;background:none;cursor:pointer;font:inherit;font-size:var(--f0);font-weight:800;color:rgba(255,255,255,.75);text-decoration:underline;margin-top:.4em;position:relative;z-index:2;padding:.3em .6em}
+.kucuk-baglanti:hover{color:#fff}
+.galeri-satir{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4em;background:#F4F6FB;border-radius:1em;padding:.5em .8em;margin-bottom:.7em;font-size:var(--f0);font-weight:800;color:#4A5070}
+.galeri-satir .kucuk-baglanti{color:#B91C1C;margin:0}
 .kupa-kutu{background:#FFFDF8;border:3px solid #F3E7D3;border-radius:1.1em;padding:.6em .8em}
 .kupa-kutu h2{font-size:var(--f2);font-weight:1000;text-align:center;color:#B45309;margin-bottom:.4em}
 @media (max-height:430px){.kaide-slot{padding-top:calc(var(--o)*7)}.kaide{height:calc(var(--o)*5.5)}.kaide-ad{font-size:var(--f2)}.salon-ok{width:2.4em;height:2.4em}}
@@ -792,7 +800,8 @@ const AVATARLAR = [
   { tur:"tavsan",     arka:"#FBCFE8", gomlek:"#A855F7" },
   { tur:"aslan",      arka:"#FDBA74", gomlek:"#FFD600" },
   { tur:"kelebek",    arka:"#DDD6FE", gomlek:"#FF8FB1" },
-  { tur:"kaplumbaga", arka:"#BAE6FD", gomlek:"#16A34A" }
+  { tur:"kaplumbaga", arka:"#BAE6FD", gomlek:"#16A34A" },
+  { tur:"tekboynuz",  arka:"#FDE2F3", gomlek:"#A855F7" }
 ];
 
 /* ==========================================================
@@ -818,7 +827,7 @@ function yeniDurum() {
     istatistik: { yaris: 0, galibiyet: 0, okunanMetin: 0 },
     yarislar: Object.fromEntries(["kolay", "orta", "zor", "cokZor"].map(k => [k, { yaris: 0, birinci: 0, ikinci: 0, ucuncu: 0, enIyi: null }])),
     sezon: { hafta: "", sayi: 0, alinanlar: [] },
-    ayarlar: { ses: true, metinBoyu: 0, muzik: true, muzikSes: 50 },
+    ayarlar: { ses: true, metinBoyu: 0, muzik: true, muzikSes: 25, muzikDokundu: false },
     ogretmen: { sesliOkuma: false },
     ipucu: { garaj: false },
     galeri: { anahtar: "", sahip: "", sinif: "", id: "" }   // Araçlar Galerisi: cihaz anahtarı ve son kullanılan bilgiler
@@ -840,6 +849,7 @@ function yukle() {
     const d = ham ? birlestir(yeniDurum(), JSON.parse(ham)) : yeniDurum();
     d.garaj.arabalar = d.garaj.arabalar.map(arabaNormal);
     if (d.garaj.secili >= d.garaj.arabalar.length) d.garaj.secili = 0;
+    if (!d.ayarlar.muzikDokundu) d.ayarlar.muzikSes = 25;      // oyuncu ayarlamadıysa müzik %25 ile başlar
     return d;
   } catch (e) { return yeniDurum(); }
 }
@@ -879,7 +889,10 @@ const RENKLER = [["#FF6B35","Turuncu"],["#EF4444","Kırmızı"],["#FF4D8D","Pemb
   ["#4D9FFF","Mavi"],["#93C5FD","Bebek mavisi"],["#00C9A7","Turkuaz"],["#86EFAC","Nane yeşili"],["#22C55E","Yeşil"],["#FFD600","Sarı"],
   ["#FDE68A","Limon"],["#FFFFFF","Beyaz"],["#9CA3AF","Gümüş"],["#1F2340","Gece mavisi"]];
 const oge = (dizi, ozel = {}) => dizi.map(([id, ad, fiyat]) => ({ id, ad, ozel: ozel[id] || null, fiyat: fiyat || null }));
-const ogeFiyat = (kat, o) => o.fiyat || GORUNUM[kat].fiyat;
+const ogeFiyat = (kat, o) => yoneticiModu ? 0 : (o.fiyat || GORUNUM[kat].fiyat);
+const parcaFiyat = lv => yoneticiModu ? 0 : PARCA_FIYAT[lv];
+const yeriFiyat = () => yoneticiModu ? 0 : ARABA_YERI_FIYAT[durum.garaj.yerSayisi];
+const ozelKilit = o => o.ozel && !yoneticiModu;
 const GORUNUM = {
   govde:     { ad: "Gövde",       fiyat: 80, ogeler: oge([["spor","Spor"],["mini","Minik"],["retro","Retro"],["ustuacik","Üstü Açık"],["kamyonet","Kamyonet"],
     ["buggy","Buggy"],["kart","Go-Kart"],["kas","Kas Araba",130],["arazi","Arazi Canavarı",130],["f1","Formula",130],
@@ -1217,6 +1230,14 @@ ${gozCift(48, 3.1, 7.5)}<path d="M46 55 L54 55 L50 59.5 Z" fill="#7C2D12"/><path
 <rect x="45" y="56" width="10" height="44" rx="5" fill="#7C3AED"/>
 <path d="M45 35 Q40 22 34 18" stroke="#5B21B6" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M55 35 Q60 22 66 18" stroke="#5B21B6" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="34" cy="18" r="3.4" fill="#FF4D8D"/><circle cx="66" cy="18" r="3.4" fill="#FF4D8D"/>
 <circle cx="50" cy="46" r="15" fill="#C4B5FD"/>${gozCift(45, 2.6, 6)}${yanak(51, 10, "#F472B6")}${gulus(51, 4, "#5B21B6")}`,
+  tekboynuz: a => `${omuz(a.gomlek)}<rect x="44" y="64" width="12" height="13" rx="4" fill="#FFFFFF"/>
+<path d="M30 30 Q20 46 26 66 Q30 58 32 50 Q30 64 36 72 L40 40 Z" fill="#A855F7"/><path d="M33 34 Q26 48 30 62 Q34 54 36 46 Z" fill="#FF8FB1"/>
+<path d="M34 34 L37 20 L45 30 Z" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1.5"/><path d="M66 34 L63 20 L55 30 Z" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1.5"/><path d="M37 30 L38.5 24 L42 29 Z" fill="#FBCFE8"/><path d="M63 30 L61.5 24 L58 29 Z" fill="#FBCFE8"/>
+<circle cx="50" cy="51" r="20" fill="#FFFFFF" stroke="#E9D5FF" stroke-width="1.5"/>
+<path d="M45 33 L50 10 L55 33 Z" fill="#FFD600" stroke="#E0A800" stroke-width="1.2"/><path d="M46.6 27 L53.4 24 M47.6 21 L52.4 18.6" stroke="#E0A800" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M40 32 Q48 26 58 32 Q54 38 46 37 Q42 36 40 32 Z" fill="#4D9FFF"/><path d="M46 31 Q52 28 60 34 Q56 39 50 37 Z" fill="#00C9A7"/>
+${gozCift(50, 3.2)}<path d="M38.5 46.5 l-2 -2 M61.5 46.5 l2 -2" stroke="#1F2340" stroke-width="1.4" stroke-linecap="round"/>${yanak(57, 13, "#F472B6")}${gulus(59, 5, "#7C3AED")}
+<circle cx="70" cy="66" r="1.8" fill="#FFD600"/><circle cx="28" cy="72" r="1.4" fill="#FFD600"/>`,
   kaplumbaga: a => `<rect x="41" y="56" width="18" height="18" rx="6" fill="#86EFAC"/>
 <path d="M12 102 Q14 70 50 68 Q86 70 88 102 Z" fill="#16A34A"/><path d="M12 102 Q14 70 50 68 Q86 70 88 102" fill="none" stroke="#FDE68A" stroke-width="3"/>
 <g fill="#22C55E" stroke="#15803D" stroke-width="1.5"><path d="M42 76 L58 76 L63 86 L58 96 L42 96 L37 86 Z"/><path d="M22 84 L33 82 L37 90 L32 100 L20 100 Z"/><path d="M78 84 L67 82 L63 90 L68 100 L80 100 Z"/></g>
@@ -4133,7 +4154,7 @@ const okumaSuresi = m => Math.max(10, Math.round(kelimeSay(m) / 2));   // saniye
 const seviyeMetinleri = s => METINLER.filter(m => m.seviye === s);
 const yildizi = id => durum.metinler[id] || 0;
 const bitenSay = s => seviyeMetinleri(s).filter(m => yildizi(m.id) > 0).length;
-const seviyeAcik = s => s === 1 || bitenSay(s - 1) >= KILIT_ESIGI;
+const seviyeAcik = s => yoneticiModu || s === 1 || bitenSay(s - 1) >= KILIT_ESIGI;
 const bolgesi = s => BOLGELER[s - 1];
 const yildizHTML = n => [0, 1, 2].map(i => `<span class="${i < n ? "" : "bos"}">★</span>`).join("");
 
@@ -4172,7 +4193,7 @@ function boyutKontrolHTML() {
 <button class="btn mavi kucuk" data-eylem="metinBoyu" data-yon="1" aria-label="Yazıyı büyüt" ${b === METIN_BOYLARI.length - 1 ? "disabled" : ""}>A+</button>`;
 }
 function ciplerHTML() {
-  return `<div class="cip" title="Jeton"><span class="ik">🪙</span>${durum.jeton}</div><div class="cip" title="Yakıt"><span class="ik">⛽</span>${durum.yakit}</div>`;
+  return `${yoneticiModu ? `<div class="cip yon" title="Yönetici modu">🛡️</div>` : ""}<div class="cip" title="Jeton"><span class="ik">🪙</span>${durum.jeton}</div><div class="cip" title="Yakıt"><span class="ik">⛽</span>${durum.yakit}</div>`;
 }
 // Pazartesi başlayan haftanın anahtarı (Sezon Kupası için)
 function haftaAnahtari(t = new Date()) {
@@ -4283,9 +4304,9 @@ Sahneler.garaj = {
     const ilk = !durum.ipucu.garaj;
     return `
 <div class="hud">
-  <div class="profil-cip">${avatarSVG(durum.profil.avatar)}<div>${esc(durum.profil.ad)}<small>Sürücü</small></div></div>
+  <div class="profil-cip" data-eylem="profilDuzenle" role="button" tabindex="0" aria-label="Sürücü bilgilerini düzenle">${avatarSVG(durum.profil.avatar)}<div>${esc(durum.profil.ad)}<small>Sürücü · ✏️ düzenle</small></div></div>
   <div class="hud-sag">
-    <div class="cip" title="Jeton"><span class="ik">🪙</span><span id="jetonSay">${durum.jeton}</span></div>
+    ${yoneticiModu ? `<div class="cip yon" title="Yönetici modu">🛡️</div>` : ""}<div class="cip" title="Jeton"><span class="ik">🪙</span><span id="jetonSay">${durum.jeton}</span></div>
     <div class="cip" title="Yakıt"><span class="ik">⛽</span><span id="yakitSay">${durum.yakit}</span></div>
     <div class="cip guc" title="Arabanın gücü"><span class="ik">⚡</span>Güç ${guc()}</div>
     <button class="yuvarlak" data-eylem="ayarlar" aria-label="Ayarlar"><span>⚙️</span></button>
@@ -4306,7 +4327,7 @@ ${ilk ? `<div class="balon" id="ipucu">${avatarSVG(durum.profil.avatar)}<p>Hoş 
 };
 
 // Garajda sıradaki adımı gösteren küçük ipucu
-const parcaAlinabilir = () => PARCALAR.some(k => durum.garaj.parcalar[k] < 5 && durum.jeton >= PARCA_FIYAT[durum.garaj.parcalar[k]]);
+const parcaAlinabilir = () => PARCALAR.some(k => durum.garaj.parcalar[k] < 5 && durum.jeton >= parcaFiyat(durum.garaj.parcalar[k]));
 function garajIpucuHTML() {
   const g = guc(), sonraki = YARIS_KADEME.find(k => k.min > g);
   let yazi, hedef = "";
@@ -4456,8 +4477,11 @@ function atolyePanelHTML() {
 <div class="show-dugmeler">
   <button class="btn mor kucuk" data-eylem="arabaAdiAc">✏️ Adı</button>
   <button class="btn pembe kucuk" data-eylem="arabaKarti">🖼️ Araba Kartı</button>
-  ${yer < 4 ? `<button class="btn kucuk" data-eylem="yeniArabaAc">＋ Yeni araba · 🪙 ${ARABA_YERI_FIYAT[yer]}</button>` : ""}
+  ${yer < 4 ? `<button class="btn kucuk" data-eylem="yeniArabaAc">＋ Yeni araba · ${yeriFiyat() ? `🪙 ${yeriFiyat()}` : "🎁 Ücretsiz"}</button>` : ""}
 </div>
+${galeriAcik() ? `<div class="galeri-satir">${durum.galeri.id
+    ? `<span>🏛️ Bu araban galeride sergileniyor.</span><button class="kucuk-baglanti" data-eylem="sergiKaldirSor">Galeride göstermeyi bırak</button>`
+    : `<span>🏛️ Araban galeride görünmüyor.</span><button class="btn yesil kucuk" data-eylem="sergileAc">Galeride sergile</button>`}</div>` : ""}
 <div class="kupa-kutu">${kupaDolabiHTML()}</div>`;
   }
   if (atolyeSekme === "performans")
@@ -4471,8 +4495,8 @@ function ogeKartHTML(kat, o) {
   const takili = takiliDeger(kat) === o.id, sahip = sahipMi(kat, o.id), denenen = deneme && deneme.kat === kat && deneme.id === o.id;
   const durumYazi = takili ? `<span class="o-durum takili">✓ Takılı</span>`
     : sahip ? `<span class="o-durum">Sende</span>`
-    : o.ozel ? `<span class="o-durum ozel">${o.ozel === "sezon" ? "📅 Sezon" : "🏆 Özel"}</span>`
-    : `<span class="o-durum fiyat">🪙 ${ogeFiyat(kat, o)}</span>`;
+    : ozelKilit(o) ? `<span class="o-durum ozel">${o.ozel === "sezon" ? "📅 Sezon" : "🏆 Özel"}</span>`
+    : `<span class="o-durum fiyat">${ogeFiyat(kat, o) ? `🪙 ${ogeFiyat(kat, o)}` : "🎁 Ücretsiz"}</span>`;
   return `<button class="oge${takili ? " takili" : ""}${denenen ? " denenen" : ""}" data-eylem="ogeSec" data-k="${kat}" data-i="${esc(o.id)}">
 <span class="o-onizleme">${ogeOnizleme(kat, o.id)}</span><span class="o-ad">${esc(o.ad)}</span>${durumYazi}</button>`;
 }
@@ -4494,11 +4518,11 @@ function denemeCubukHTML() {
   if (!deneme) return "";
   const o = GORUNUM[deneme.kat].ogeler.find(x => x.id === deneme.id), fiyat = ogeFiyat(deneme.kat, o);
   const yeter = durum.jeton >= fiyat, onay = atolyeOnay === "g:" + deneme.kat + ":" + deneme.id;
-  if (o.ozel) return `<div class="deneme-cubuk"><div><b>${o.ozel === "sezon" ? "📅" : "🏆"} ${esc(o.ad)}</b> ${o.ozel === "sezon" ? "sezon çıkartması" : "özel bir ödül"}<small>${ozelAciklama(o)}</small></div>
+  if (ozelKilit(o)) return `<div class="deneme-cubuk"><div><b>${o.ozel === "sezon" ? "📅" : "🏆"} ${esc(o.ad)}</b> ${o.ozel === "sezon" ? "sezon çıkartması" : "özel bir ödül"}<small>${ozelAciklama(o)}</small></div>
 <button class="btn gri kucuk" data-eylem="denemeIptal">Tamam</button></div>`;
   return `<div class="deneme-cubuk"><div><b>${esc(o.ad)}</b> ${GORUNUM[deneme.kat].ad.toLocaleLowerCase("tr")} · arabanda deniyorsun<small>${yeter ? "Beğendiysen satın al." : `${fiyat - durum.jeton} jeton daha biriktirmelisin.`}</small></div>
 <button class="btn gri kucuk" data-eylem="denemeIptal">Vazgeç</button>
-<button class="btn ${onay ? "yesil" : ""} kucuk" data-eylem="ogeAl" ${yeter ? "" : "disabled"}>${onay ? "Onayla ✓" : `🪙 ${fiyat} Satın al`}</button></div>`;
+<button class="btn ${onay ? "yesil" : ""} kucuk" data-eylem="ogeAl" ${yeter ? "" : "disabled"}>${onay ? "Onayla ✓" : fiyat ? `🪙 ${fiyat} Satın al` : "🎁 Ücretsiz al"}</button></div>`;
 }
 function atolyeYenile(arabaDa = true) {
   if (aktifAd !== "atolye") return;
@@ -4541,7 +4565,16 @@ const TEPKILER = ["👍", "❤️", "🔥"];
 const ADIM_N = 24;
 const gal = { liste: [], ekstra: {}, benim: null, toplam: 0, yukleniyor: false, hata: null, istekNo: 0 };
 const sergiBul = id => gal.liste.find(x => x.id === id) || gal.ekstra[id];
-let galeriYonetici = "";                            // yönetici şifresi yalnızca bu oturumda bellekte tutulur
+let galeriYonetici = "";                            // galeri sunucusu için yönetici şifresi (yalnızca bu sekmede)
+/* Yönetici modu: Ayarlar başlığına 5 kez dokun → şifre. Yükseltmeler ücretsiz, bütün metinler açık, galeri düzenlenebilir.
+   Şifrenin kendisi değil özeti tutulur; mod yalnızca bu sekme açıkken sürer. */
+const YONETICI_OZET = "d03d029ba3b4999b46d278dc6e7f3b54bfd8348fcd35e82ae48c8edc47d8237b";
+let yoneticiModu = false;
+try { yoneticiModu = sessionStorage.getItem("okumaRallisi_yonetici") === "1"; galeriYonetici = yoneticiModu ? sessionStorage.getItem("okumaRallisi_yoneticiS") || "" : ""; } catch (e) {}
+async function sifreOzet(s) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("okuma-rallisi|" + s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
 let yonetimOnay = null;                             // silme için ikinci dokunuş
 
 function galeriAnahtar() {
@@ -4667,7 +4700,7 @@ function kaideHTML(s, i) {
   const v = galeriVeri(s.veri), begeni = (s.t || [0, 0, 0]).reduce((a, b) => a + b, 0);
   let alt;
   if (!s.benim) alt = `<span class="kaide-alt">${TEPKILER.map((t, e) => `${t} ${s.t[e]}`).join("  ")}</span>`;
-  else if (s.id) alt = `<span class="kaide-alt">${s.gizli ? "🙈 Öğretmenin gizledi" : "✓ Galeride"} · ❤️ ${begeni}</span>`;
+  else if (s.id) alt = `<span class="kaide-alt">${s.gizli ? "🙈 Öğretmenin gizledi" : "✓ Galeride"} · ❤️ ${begeni}</span><button class="kucuk-baglanti" data-eylem="sergiKaldirSor">Galeride göstermeyi bırak</button>`;
   else alt = galeriAcik() ? `<button class="btn yesil kucuk sergile-btn" data-eylem="sergileAc">🏛️ Galeride sergile</button>` : `<span class="kaide-alt">🏗️ Galeri yakında açılıyor</span>`;
   return `<div class="kaide-slot${s.benim ? " benim" : ""}${s.gizli ? " gizli" : ""}" style="--isik:${renk}">
   <div class="spot"></div>
@@ -4800,9 +4833,9 @@ function gucKutuHTML() {
 function parcaListeHTML() {
   return PARCALAR.map(k => {
     const b = PARCA_BILGI[k], lv = durum.garaj.parcalar[k], tam = lv >= 5;
-    const fiyat = tam ? 0 : PARCA_FIYAT[lv], yeter = durum.jeton >= fiyat, onay = atolyeOnay === k;
+    const fiyat = tam ? 0 : parcaFiyat(lv), yeter = durum.jeton >= fiyat, onay = atolyeOnay === k;
     const al = tam ? `<span class="tamam">⭐ En üst seviye</span>`
-      : `<button class="btn ${onay ? "yesil" : ""} kucuk al-btn" data-eylem="parcaAl" data-p="${k}" ${yeter ? "" : "disabled"}>${onay ? "Onayla ✓" : `🪙 ${fiyat}`}</button>
+      : `<button class="btn ${onay ? "yesil" : ""} kucuk al-btn" data-eylem="parcaAl" data-p="${k}" ${yeter ? "" : "disabled"}>${onay ? "Onayla ✓" : fiyat ? `🪙 ${fiyat}` : "🎁 Ücretsiz"}</button>
          <small>${!yeter ? `${fiyat - durum.jeton} jeton eksik` : onay ? "Bir daha dokun" : "+4 güç"}</small>`;
     return `<div class="parca" style="--renk:${b.renk}">
 <span class="pik">${PARCA_IKON[k]}</span>
@@ -5671,6 +5704,9 @@ function pencereAc(icerik, sinif = "", ops = {}) {
 }
 function pencereKapat() { const p = document.getElementById("perde"); if (p) p.remove(); }
 
+function yonetimSahneYenile() {                     // açılan/kapanan kilitler ve fiyatlar hemen görünsün
+  if (["harita", "atolye", "garaj", "showroom"].includes(aktifAd)) { const p = document.getElementById("perde") ? document.getElementById("perde").innerHTML : null; git(aktifAd, aktifAd === "atolye" ? { sekme: atolyeSekme } : {}); if (p) pencereAc(ayarlarIcerik()); }
+}
 function $v(id) { const k = document.getElementById(id); return k ? k.value : ""; }
 function sergiGuncelle(yeni) {
   const s = sergiBul(yeni.id); if (!s) return;
@@ -5700,10 +5736,10 @@ function ayarlarIcerik() {
   <button class="btn mor kucuk" data-eylem="profilDuzenle">Değiştir</button></div>
 <div class="ayar-satir"><div>İlerleme kodu<small>Başka bir cihazda kaldığın yerden devam et</small></div>
   <div class="boyut-sec"><button class="btn mavi kucuk" data-eylem="kodGoster">Kodu al</button><button class="btn gri kucuk" data-eylem="kodGirAc">Kod gir</button></div></div>
-${ogretmenModu ? `<div class="ayar-satir ogretmen"><div>👩‍🏫 Sesli okuma desteği<small>${Okuyucu.destek() ? "Okuma süresi dolunca metinde 🔊 Dinle düğmesi çıkar" : "Bu cihazda Türkçe ses bulunamadı"}</small></div>
+${yoneticiModu ? `<div class="ayar-satir ogretmen"><div>🛡️ Yönetici modu açık<small>Yükseltmeler ücretsiz · bütün metinler açık${galeriAcik() ? (galeriYonetici ? " · galeride düzenle, gizle" : " · galeri sunucusu bu şifreyi kabul etmedi") : ""}</small></div>
+  <div class="boyut-sec">${galeriYonetici ? `<button class="btn mavi kucuk" data-eylem="kelimelerAc">🚫 Kelimeler</button>` : ""}<button class="btn gri kucuk" data-eylem="yoneticiCikis">Çıkış</button></div></div>` : ""}
+${yoneticiModu ? `<div class="ayar-satir ogretmen"><div>👩‍🏫 Sesli okuma desteği<small>${Okuyucu.destek() ? "Okuma süresi dolunca metinde 🔊 Dinle düğmesi çıkar" : "Bu cihazda Türkçe ses bulunamadı"}</small></div>
   <button class="anahtar${durum.ogretmen.sesliOkuma ? " acik" : ""}" data-eylem="sesliOkumaDegistir" aria-label="Sesli okuma" aria-pressed="${durum.ogretmen.sesliOkuma}"></button></div>` : ""}
-${ogretmenModu && galeriAcik() ? `<div class="ayar-satir ogretmen"><div>🛡️ Galeri yöneticisi<small>${galeriYonetici ? "Açık: galeride düzenle, gizle, sil" : "Adları düzenle, arabaları gizle"}</small></div>
-  <div class="boyut-sec">${galeriYonetici ? `<button class="btn mavi kucuk" data-eylem="kelimelerAc">🚫 Kelimeler</button><button class="btn gri kucuk" data-eylem="yoneticiCikis">Çıkış</button>` : `<button class="btn mor kucuk" data-eylem="yoneticiAc">Giriş</button>`}</div></div>` : ""}
 <div class="ayar-satir"><div>İlerlemeyi sıfırla<small>Jetonlar, araban ve kupalar silinir</small></div>
   <button class="btn kirmizi kucuk" data-eylem="sifirla">Sıfırla</button></div>
 <div class="pencere-dugmeler" style="margin-top:.8em"><button class="btn yesil" data-eylem="pencereKapat">Kapat</button></div>
@@ -5711,7 +5747,7 @@ ${ogretmenModu && galeriAcik() ? `<div class="ayar-satir ogretmen"><div>🛡️ 
 }
 
 /* --- İlerleme kodu: kayıt sıkıştırılır (varsa), base64 olarak verilir, sağlama toplamıyla korunur --- */
-let kodBekleyen = null, ogretmenModu = false, baslikDokunus = [];
+let kodBekleyen = null, baslikDokunus = [];
 const b64url = bayt => { let s = ""; bayt.forEach(b => s += String.fromCharCode(b)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
 const b64coz = t => { const s = atob(t.replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(s, c => c.charCodeAt(0)); };
 const saglama = t => { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36).slice(0, 5); };
@@ -5736,6 +5772,7 @@ async function ilerlemeCoz(kod) {
     const d = birlestir(yeniDurum(), veri);
     d.garaj.arabalar = d.garaj.arabalar.map(arabaNormal); d.ipucu.garaj = true;
     if (d.garaj.secili >= d.garaj.arabalar.length) d.garaj.secili = 0;
+    if (!d.ayarlar.muzikDokundu) d.ayarlar.muzikSes = 25;      // oyuncu ayarlamadıysa müzik %25 ile başlar
     return d;
   } catch (e) { return null; }
 }
@@ -5836,7 +5873,7 @@ const Eylemler = {
   <label>Arabanın adı<input id="sgArac" class="ad-kutu" maxlength="16" autocomplete="off" value="${esc(arac)}" placeholder="Pembe Roket"></label>
 </div>
 <p class="uyari" id="sgUyari"></p>
-<div class="pencere-dugmeler">${sergide ? `<button class="btn kirmizi kucuk" data-eylem="sergiKaldir">${yonetimOnay === "kaldir" ? "Emin misin? Kaldır" : "Galeriden kaldır"}</button>` : ""}
+<div class="pencere-dugmeler">${sergide ? `<button class="btn kirmizi kucuk" data-eylem="sergiKaldirSor">Göstermeyi bırak</button>` : ""}
 <button class="btn gri" data-eylem="pencereKapat">Vazgeç</button><button class="btn yesil" data-eylem="sergileGonder" id="sgGonder">🏛️ ${sergide ? "Güncelle" : "Sergile"}</button></div>`);
     document.querySelectorAll(".sergile-form input").forEach(k => k.addEventListener("keydown", e => { if (e.key === "Enter") Eylemler.sergileGonder(); }));
   },
@@ -5864,27 +5901,43 @@ const Eylemler = {
       uy.textContent = galeriHataMetni(h); Ses.hata();
     }
   },
-  async sergiKaldir() {
-    if (yonetimOnay !== "kaldir") { yonetimOnay = "kaldir"; const b = document.querySelector('[data-eylem="sergiKaldir"]'); if (b) b.textContent = "Emin misin? Kaldır"; return; }
-    yonetimOnay = null;
-    try { await galeriIstek("/sergi/kaldir", { veri: {} }); durum.galeri.id = ""; kaydet(); pencereKapat(); bildirim("Araban galeriden kaldırıldı."); gal.benim = null; galeriYukle(true); }
-    catch (h) { Ses.hata(); bildirim(galeriHataMetni(h)); }
+  sergiKaldirSor() {
+    pencereAc(`<h2>🏛️ Galeride göstermeyi bırak</h2><p class="onay-metin">Emin misin? Araban galeriden kalkar ve aldığı beğeniler silinir.<br>İstediğin zaman yeniden sergileyebilirsin.</p>
+<div class="pencere-dugmeler"><button class="btn gri" data-eylem="pencereKapat">Vazgeç</button><button class="btn kirmizi" data-eylem="sergiKaldir">Evet, göstermeyi bırak</button></div>`);
   },
+  async sergiKaldir(el) {
+    if (el) el.disabled = true;
+    try {
+      await galeriIstek("/sergi/kaldir", { veri: {} });
+      durum.galeri.id = ""; durum.galeri.son = ""; kaydet(); pencereKapat(); bildirim("Araban artık galeride görünmüyor.");
+      gal.benim = null;
+      if (aktifAd === "showroom") galeriYukle(true); else if (aktifAd === "atolye") atolyeYenile(false);
+    } catch (h) { if (el) el.disabled = false; Ses.hata(); bildirim(galeriHataMetni(h)); }
+  },
+
 
   /* --- Galeri yöneticisi (Ayarlar → öğretmen ayarları) --- */
   yoneticiAc() {
-    pencereAc(`<h2>🛡️ Galeri yöneticisi</h2><p class="onay-metin">Galerideki adları düzenlemek, arabaları gizlemek ve yasaklı kelimeleri yönetmek için şifreni yaz.</p>
-<div style="text-align:center"><input id="yonSifre" class="ad-kutu" type="password" autocomplete="off" maxlength="64"></div><p class="uyari" id="yonUyari" style="text-align:center"></p>
+    pencereAc(`<h2>🛡️ Yönetici girişi</h2><p class="onay-metin">Öğretmen şifresini yaz.</p>
+<div style="text-align:center"><input id="yonSifre" class="ad-kutu" type="password" inputmode="numeric" autocomplete="off" maxlength="64"></div><p class="uyari" id="yonUyari" style="text-align:center"></p>
 <div class="pencere-dugmeler"><button class="btn gri" data-eylem="ayarlar">◀ Geri</button><button class="btn yesil" data-eylem="yoneticiGiris">Giriş</button></div>`);
     const k = document.getElementById("yonSifre"); k.addEventListener("keydown", e => { if (e.key === "Enter") Eylemler.yoneticiGiris(); }); k.focus();
   },
   async yoneticiGiris() {
-    const s = $v("yonSifre"), uy = document.getElementById("yonUyari"); if (!s) return;
-    const eski = galeriYonetici; galeriYonetici = s;
-    try { await galeriIstek("/yonetici/giris", { yonetici: true }); bildirim("🛡️ Yönetici modu açık"); gal.liste = []; pencereAc(ayarlarIcerik()); }
-    catch (h) { galeriYonetici = eski; uy.textContent = galeriHataMetni(h); Ses.hata(); }
+    const s = $v("yonSifre").trim(), uy = document.getElementById("yonUyari"); if (!s) return;
+    let dogru = false;
+    try { dogru = (await sifreOzet(s)) === YONETICI_OZET; } catch (e) {}
+    if (!dogru) { uy.textContent = "Şifre yanlış."; Ses.hata(); document.getElementById("yonSifre").select(); return; }
+    yoneticiModu = true; galeriYonetici = "";
+    if (galeriAcik()) { galeriYonetici = s; try { await galeriIstek("/yonetici/giris", { yonetici: true }); } catch (h) { galeriYonetici = ""; } }
+    try { sessionStorage.setItem("okumaRallisi_yonetici", "1"); sessionStorage.setItem("okumaRallisi_yoneticiS", galeriYonetici); } catch (e) {}
+    gal.liste = []; Ses.onay(); bildirim("🛡️ Yönetici modu açıldı"); pencereAc(ayarlarIcerik()); yonetimSahneYenile();
   },
-  yoneticiCikis() { galeriYonetici = ""; gal.liste = []; bildirim("Yönetici modu kapandı"); pencereAc(ayarlarIcerik()); },
+  yoneticiCikis() {
+    yoneticiModu = false; galeriYonetici = ""; gal.liste = [];
+    try { sessionStorage.removeItem("okumaRallisi_yonetici"); sessionStorage.removeItem("okumaRallisi_yoneticiS"); } catch (e) {}
+    bildirim("Yönetici modu kapandı"); pencereAc(ayarlarIcerik()); yonetimSahneYenile();
+  },
   async yonKaydet(el) {
     const uy = document.getElementById("yonUyari");
     try {
@@ -5954,12 +6007,12 @@ const Eylemler = {
     pencereKapat(); atolyeYenile(false);
   },
   yeniArabaAc() {
-    const fiyat = ARABA_YERI_FIYAT[durum.garaj.yerSayisi], yeter = durum.jeton >= fiyat;
+    const fiyat = yeriFiyat(), yeter = durum.jeton >= fiyat;
     pencereAc(`<h2>Yeni araba</h2><p class="onay-metin">Garajına ${durum.garaj.yerSayisi + 1}. arabayı ekle! Parçaların bu arabaya da takılır; görünümünü Atölye'de istediğin gibi süsleyebilirsin.<br><b>Fiyatı: 🪙 ${fiyat}</b>${yeter ? "" : `<br>${fiyat - durum.jeton} jeton daha biriktirmelisin.`}</p>
 <div class="pencere-dugmeler"><button class="btn gri" data-eylem="pencereKapat">Vazgeç</button><button class="btn yesil" data-eylem="yeniArabaAl" ${yeter ? "" : "disabled"}>🪙 ${fiyat} Satın al</button></div>`);
   },
   yeniArabaAl() {
-    const fiyat = ARABA_YERI_FIYAT[durum.garaj.yerSayisi];
+    const fiyat = yeriFiyat();
     if (durum.garaj.yerSayisi >= 4 || durum.jeton < fiyat) return;
     const renkler = durum.envanter.renk;
     durum.jeton -= fiyat; durum.garaj.yerSayisi++;
@@ -5981,7 +6034,7 @@ const Eylemler = {
   /* --- Atölye --- */
   parcaAl(el) {
     const k = el.dataset.p, lv = durum.garaj.parcalar[k];
-    if (lv >= 5 || durum.jeton < PARCA_FIYAT[lv]) return;
+    if (lv >= 5 || durum.jeton < parcaFiyat(lv)) return;
     clearTimeout(atolyeOnayZaman);
     if (atolyeOnay !== k) {                     // ilk dokunuş: onay iste (yanlışlıkla almayı önler)
       atolyeOnay = k;
@@ -5990,7 +6043,7 @@ const Eylemler = {
       return;
     }
     const once = guc();
-    durum.jeton -= PARCA_FIYAT[lv]; durum.garaj.parcalar[k] = lv + 1; atolyeOnay = null; kaydet();
+    durum.jeton -= parcaFiyat(lv); durum.garaj.parcalar[k] = lv + 1; atolyeOnay = null; kaydet();
     Ses.yukselt(k);
     arabaParla(); atolyeYenile(false); $("#gucKutu").innerHTML = gucKutuHTML();
     const sonra = guc(), yeni = YARIS_KADEME.find(y => y.min > once && y.min <= sonra);
@@ -6007,14 +6060,14 @@ const Eylemler = {
       deneme = null; kaydet(); arabaParla(); atolyeYenile(false);
       return;
     }
-    if (o.ozel) { Ses.hata(); bildirim(o.ozel === "sezon" ? "📅 Bu bir sezon çıkartması: haftalık 3 metinle kazanılır!" : `🏆 Bu özel bir ödül: ${kademeAdi(o.ozel)} yarışlarında ${OZEL_ESIK} kez birinci ol!`); deneme = { kat, id }; atolyeYenile(); return; }
+    if (ozelKilit(o)) { Ses.hata(); bildirim(o.ozel === "sezon" ? "📅 Bu bir sezon çıkartması: haftalık 3 metinle kazanılır!" : `🏆 Bu özel bir ödül: ${kademeAdi(o.ozel)} yarışlarında ${OZEL_ESIK} kez birinci ol!`); deneme = { kat, id }; atolyeYenile(); return; }
     deneme = { kat, id }; atolyeYenile();
   },
   denemeIptal() { deneme = null; atolyeOnay = null; atolyeYenile(); },
   ogeAl() {
     if (!deneme) return;
     const { kat, id } = deneme, o = GORUNUM[kat].ogeler.find(x => x.id === id), fiyat = ogeFiyat(kat, o), anahtar = "g:" + kat + ":" + id;
-    if (o.ozel || durum.jeton < fiyat) return;
+    if (ozelKilit(o) || durum.jeton < fiyat) return;
     clearTimeout(atolyeOnayZaman);
     if (atolyeOnay !== anahtar) { atolyeOnay = anahtar; atolyeOnayZaman = setTimeout(() => { atolyeOnay = null; atolyeYenile(false); }, 3000); atolyeYenile(false); return; }
     durum.jeton -= fiyat; durum.envanter[kat].push(id);
@@ -6174,10 +6227,10 @@ const Eylemler = {
     git("garaj"); bildirim(`👋 Tekrar hoş geldin, ${durum.profil.ad}!`);
   },
 
-  /* --- Öğretmen ayarı: "Ayarlar" başlığına 3 kez dokun --- */
+  /* --- Yönetici modu: "Ayarlar" başlığına art arda 5 kez dokun --- */
   ayarBaslik() {
-    const t = Date.now(); baslikDokunus = baslikDokunus.filter(x => t - x < 1500); baslikDokunus.push(t);
-    if (baslikDokunus.length >= 3) { baslikDokunus = []; ogretmenModu = !ogretmenModu; pencereAc(ayarlarIcerik()); if (ogretmenModu) bildirim("👩‍🏫 Öğretmen ayarları açıldı"); }
+    const t = Date.now(); baslikDokunus = baslikDokunus.filter(x => t - x < 2500); baslikDokunus.push(t);
+    if (baslikDokunus.length >= 5) { baslikDokunus = []; if (yoneticiModu) bildirim("🛡️ Yönetici modu zaten açık"); else Eylemler.yoneticiAc(); }
   },
   sesliOkumaDegistir() { durum.ogretmen.sesliOkuma = !durum.ogretmen.sesliOkuma; kaydet(); pencereAc(ayarlarIcerik()); },
   dinle() {
@@ -6197,7 +6250,7 @@ const SESSIZ = new Set(["muzikDegistir", "galeriTepki", "arabaDokun", "sesDegist
 document.addEventListener("pointerdown", () => Ses.hazirla(), { passive: true });
 document.addEventListener("input", e => {          // ayarlardaki müzik sesi kaydırağı
   if (e.target.id !== "muzikSes") return;
-  durum.ayarlar.muzikSes = +e.target.value; Muzik.ayarla();
+  durum.ayarlar.muzikSes = +e.target.value; durum.ayarlar.muzikDokundu = true; Muzik.ayarla();
 });
 document.addEventListener("change", e => { if (e.target.id === "muzikSes") kaydet(); });
 document.addEventListener("click", e => {
