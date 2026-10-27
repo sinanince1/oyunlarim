@@ -590,6 +590,9 @@ a.btn{text-decoration:none}
 .ag-orta small{font-weight:800;color:var(--yesil-k);font-size:var(--f0)}
 .atolye-panel .show-dugmeler{margin-bottom:.7em}
 .atolye-panel .sekme{white-space:nowrap;font-size:calc(var(--f1)*.9);padding:.5em .4em}
+.yon-alt{margin-top:.5em}
+.yon-kod{display:block;text-align:center;color:#7A809A;font-weight:700;margin-top:.4em}
+.yon-kod b{font-family:ui-monospace,Consolas,monospace;color:var(--koyu);user-select:all}
 .kucuk-baglanti{border:0;background:none;cursor:pointer;font:inherit;font-size:var(--f0);font-weight:800;color:rgba(255,255,255,.75);text-decoration:underline;margin-top:.4em;position:relative;z-index:2;padding:.3em .6em}
 .kucuk-baglanti:hover{color:#fff}
 .galeri-satir{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4em;background:#F4F6FB;border-radius:1em;padding:.5em .8em;margin-bottom:.7em;font-size:var(--f0);font-weight:800;color:#4A5070}
@@ -611,7 +614,7 @@ a.btn{text-decoration:none}
 .sb-araba svg{width:100%;height:auto;overflow:visible}
 .sergi-buyuk h2{margin:.1em 0 .3em}
 .sergi-buyuk .surucu-kart{font-size:var(--f1);flex-wrap:wrap;justify-content:center}
-.yonetim{background:#F4F6FB;border:3px dashed #CDD2E0;border-radius:1em;padding:.6em .8em;margin-top:.6em;font-size:var(--f0)}
+.yonetim{background:#F4F6FB;border:3px dashed #CDD2E0;border-radius:1em;padding:.6em .8em;margin:.6em 0 .2em;font-size:var(--f0);width:100%}
 .yonetim > b{display:block;font-weight:1000;margin-bottom:.4em}
 .yon-satir{display:grid;grid-template-columns:1fr .6fr 1.3fr;gap:.5em;font-weight:900}
 .kelime-ekle{display:flex;gap:.5em;justify-content:center;align-items:center;margin-bottom:.7em}
@@ -4601,7 +4604,7 @@ async function galeriIstek(yol, { veri, yonetici = false } = {}) {
 const GALERI_HATA = {
   kapali: "Galeri çok yakında açılıyor!", ag: "Galeriye bağlanılamadı. İnternet bağlantını kontrol et.",
   cok_istek: "Çok sık denedin. Biraz sonra tekrar dene.", sunucu: "Galeride bir sorun oldu. Biraz sonra tekrar dene.",
-  sifre: "Şifre yanlış.", cok_deneme: "Çok fazla yanlış deneme. Bir saat sonra tekrar dene.", yonetici_kapali: "Yönetici şifresi sunucuda ayarlanmamış."
+  engelli: "Bu cihazdan galeriye araba eklenemiyor.", sifre: "Şifre yanlış.", cok_deneme: "Çok fazla yanlış deneme. Bir saat sonra tekrar dene.", yonetici_kapali: "Yönetici şifresi sunucuda ayarlanmamış."
 };
 const galeriHataMetni = h => GALERI_HATA[h && h.hata] || GALERI_HATA.sunucu;
 
@@ -4768,20 +4771,24 @@ function sergiPencere(s) {
   <p class="uyari" id="yonUyari"></p>
   <div class="pencere-dugmeler"><button class="btn yesil kucuk" data-eylem="yonKaydet" data-id="${esc(s.id)}">💾 Kaydet</button>
   <button class="btn mor kucuk" data-eylem="yonGizle" data-id="${esc(s.id)}">${s.gizli ? "👀 Göster" : "🙈 Gizle"}</button>
-  <button class="btn kirmizi kucuk" data-eylem="yonSil" data-id="${esc(s.id)}">${yonetimOnay === "sil:" + s.id ? "Emin misin? Sil" : "🗑️ Sil"}</button></div></div>` : "";
+  <button class="btn kirmizi kucuk" data-eylem="yonSil" data-id="${esc(s.id)}">${yonetimOnay === "sil:" + s.id ? "Emin misin? Sil" : "🗑️ Sil"}</button></div>
+  <div class="pencere-dugmeler yon-alt"><button class="btn mavi kucuk" data-eylem="yonKodKopyala" data-id="${esc(s.id)}">📋 Araba kodunu kopyala</button>
+  <button class="btn kirmizi kucuk" data-eylem="yonEngelleSor" data-id="${esc(s.id)}">⛔ Kullanıcıyı engelle</button></div>
+  <small class="yon-kod">Araba kodu: <b>${esc(s.id)}</b></small></div>` : "";
   const tepki = s.id && !s.gizli ? `<div class="tepkiler buyuk">${TEPKILER.map((t, e) => `<button class="tepki${s.verdim && s.verdim[e] ? " verdi" : ""}" data-eylem="galeriTepki" data-id="${esc(s.id)}" data-e="${e}" aria-label="${t} tepki ver">${t} <small>${s.t[e]}</small></button>`).join("")}</div>` : "";
   const benimDugme = s.benim && galeriAcik() ? `<button class="btn yesil" data-eylem="sergileAc">🏛️ ${s.id ? "Bilgilerimi düzenle" : "Galeride sergile"}</button>` : "";
   pencereAc(`<div class="sergi-buyuk">
   <div class="sb-araba">${arabaSVG(v.araba, String(v.avatar + 1), v.parcalar, v.kask, { gomlek: AVATARLAR[v.avatar].gomlek })}</div>
   <h2>${esc(s.aracAdi)}${s.gizli ? " 🙈" : ""}</h2>
   <div class="surucu-kart">${avatarSVG(v.avatar)}<svg viewBox="-18 -18 36 36" class="kask-mini">${kaskSVG(0, 0, 15, v.kask)}</svg><div><small>Sahibi</small><b>${esc(s.sahip)}</b>${s.sinif ? `<small>${esc(s.sinif)} sınıfı</small>` : ""}</div></div>
+  ${yon}
   <div class="sb-istat">
     <div><b>⚡ ${v.guc}</b><small>Güç</small></div><div><b>🏁 ${say(v.yaris)}</b><small>Yarış</small></div>
     <div><b>🥇 ${say(v.galibiyet)}</b><small>Birincilik</small></div><div><b>📖 ${v.okunan}</b><small>Metin</small></div><div><b>⭐ ${v.yildiz}</b><small>Yıldız</small></div>
   </div>
   <div class="sb-iki"><div class="sb-parcalar"><h3>🔧 Performans</h3>${parcalar}</div><div class="sb-kupalar"><h3>🏆 Yarışlar</h3><div class="sb-kupa-izgara">${kupalar}</div></div></div>
   ${tepki}
-</div>${yon}
+</div>
 <div class="pencere-dugmeler" style="margin-top:.7em"><button class="btn gri" data-eylem="pencereKapat">Kapat</button>${benimDugme}</div>`, "genis");
 }
 
@@ -5737,7 +5744,7 @@ function ayarlarIcerik() {
 <div class="ayar-satir"><div>İlerleme kodu<small>Başka bir cihazda kaldığın yerden devam et</small></div>
   <div class="boyut-sec"><button class="btn mavi kucuk" data-eylem="kodGoster">Kodu al</button><button class="btn gri kucuk" data-eylem="kodGirAc">Kod gir</button></div></div>
 ${yoneticiModu ? `<div class="ayar-satir ogretmen"><div>🛡️ Yönetici modu açık<small>Yükseltmeler ücretsiz · bütün metinler açık${galeriAcik() ? (galeriYonetici ? " · galeride düzenle, gizle" : " · galeri sunucusu bu şifreyi kabul etmedi") : ""}</small></div>
-  <div class="boyut-sec">${galeriYonetici ? `<button class="btn mavi kucuk" data-eylem="kelimelerAc">🚫 Kelimeler</button>` : ""}<button class="btn gri kucuk" data-eylem="yoneticiCikis">Çıkış</button></div></div>` : ""}
+  <div class="boyut-sec">${galeriYonetici ? `<button class="btn mavi kucuk" data-eylem="kelimelerAc">🚫 Kelimeler</button><button class="btn mor kucuk" data-eylem="engellerAc">⛔ Engellenenler</button>` : ""}<button class="btn gri kucuk" data-eylem="yoneticiCikis">Çıkış</button></div></div>` : ""}
 ${yoneticiModu ? `<div class="ayar-satir ogretmen"><div>👩‍🏫 Sesli okuma desteği<small>${Okuyucu.destek() ? "Okuma süresi dolunca metinde 🔊 Dinle düğmesi çıkar" : "Bu cihazda Türkçe ses bulunamadı"}</small></div>
   <button class="anahtar${durum.ogretmen.sesliOkuma ? " acik" : ""}" data-eylem="sesliOkumaDegistir" aria-label="Sesli okuma" aria-pressed="${durum.ogretmen.sesliOkuma}"></button></div>` : ""}
 <div class="ayar-satir"><div>İlerlemeyi sıfırla<small>Jetonlar, araban ve kupalar silinir</small></div>
@@ -5901,6 +5908,41 @@ const Eylemler = {
       uy.textContent = galeriHataMetni(h); Ses.hata();
     }
   },
+  async yonKodKopyala(el) {
+    const s = sergiBul(el.dataset.id); if (!s) return;
+    const metin = `Okuma Rallisi araba kodu: ${s.id} · ${s.aracAdi} · ${s.sahip} ${s.sinif}`;
+    try { await navigator.clipboard.writeText(metin); bildirim("📋 Araba kodu kopyalandı: " + s.id); }
+    catch (e) {
+      const t = document.createElement("textarea"); t.value = metin; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {} t.remove();
+      bildirim(ok ? "📋 Araba kodu kopyalandı: " + s.id : "Kod: " + s.id);
+    }
+  },
+  yonEngelleSor(el) {
+    const s = sergiBul(el.dataset.id); if (!s) return;
+    pencereAc(`<h2>⛔ Kullanıcıyı engelle</h2><p class="onay-metin"><b>${esc(s.aracAdi)}</b> · ${esc(s.sahip)} ${esc(s.sinif)}<br>Bu araba galeriden silinir ve bu cihaz bir daha galeriye araba ekleyemez.<br><small>Engeli sonra Ayarlar → Engellenenler'den kaldırabilirsin.</small></p>
+<div class="pencere-dugmeler"><button class="btn gri" data-eylem="sergiAc" data-id="${esc(s.id)}">Vazgeç</button><button class="btn kirmizi" data-eylem="yonEngelle" data-id="${esc(s.id)}">⛔ Engelle</button></div>`);
+  },
+  async yonEngelle(el) {
+    const id = el.dataset.id; el.disabled = true;
+    try {
+      await galeriIstek("/yonetici/engelle", { yonetici: true, veri: { id } });
+      gal.liste = gal.liste.filter(x => x.id !== id); delete gal.ekstra[id]; gal.toplam = Math.max(0, gal.toplam - 1);
+      pencereKapat(); salonCiz(); bildirim("⛔ Kullanıcı engellendi, arabası galeriden kaldırıldı.");
+    } catch (h) { el.disabled = false; Ses.hata(); bildirim(galeriHataMetni(h)); }
+  },
+  async engellerAc() {
+    pencereAc(`<h2>⛔ Engellenenler</h2><p class="onay-metin">Bu cihazlar galeriye araba ekleyemez.</p><div id="engelListe" class="engel-liste">Yükleniyor...</div>
+<div class="pencere-dugmeler" style="margin-top:.6em"><button class="btn gri" data-eylem="ayarlar">◀ Geri</button></div>`, "genis");
+    try {
+      const l = (await galeriIstek("/yonetici/engeller", { yonetici: true })).liste, k = document.getElementById("engelListe");
+      k.innerHTML = l.length ? `<ul class="tekrar-liste">${l.map(e => `<li><button class="btn yesil kucuk" data-eylem="engelKaldir" data-k="${esc(e.kod)}">Engeli kaldır</button> <b>${esc(e.aracAdi || "")}</b> · ${esc(e.sahip || "")} ${esc(e.sinif || "")} <small>${new Date(e.zaman).toLocaleDateString("tr-TR")}</small></li>`).join("")}</ul>` : `<p class="alt-not">Engellenen kimse yok.</p>`;
+    } catch (h) { document.getElementById("engelListe").textContent = galeriHataMetni(h); }
+  },
+  async engelKaldir(el) {
+    try { await galeriIstek("/yonetici/engel-kaldir", { yonetici: true, veri: { kod: el.dataset.k } }); bildirim("Engel kaldırıldı."); Eylemler.engellerAc(); }
+    catch (h) { Ses.hata(); bildirim(galeriHataMetni(h)); }
+  },
   sergiKaldirSor() {
     pencereAc(`<h2>🏛️ Galeride göstermeyi bırak</h2><p class="onay-metin">Emin misin? Araban galeriden kalkar ve aldığı beğeniler silinir.<br>İstediğin zaman yeniden sergileyebilirsin.</p>
 <div class="pencere-dugmeler"><button class="btn gri" data-eylem="pencereKapat">Vazgeç</button><button class="btn kirmizi" data-eylem="sergiKaldir">Evet, göstermeyi bırak</button></div>`);
@@ -5958,12 +6000,12 @@ const Eylemler = {
     catch (h) { Ses.hata(); bildirim(galeriHataMetni(h)); }
   },
   async kelimelerAc() {
-    pencereAc(`<h2>🚫 Yasaklı kelimeler</h2><p class="onay-metin">Hazır filtreye ek olarak engellenecek kelimeler. <b>Parça</b>: kelimenin içinde geçerse engellenir. <b>Tam</b>: yalnızca tek başına yazılırsa.</p>
+    pencereAc(`<h2>🚫 Yasaklı kelimeler</h2><p class="onay-metin">Türkçe küfür ve hakaretlerin hazır listesi (<span id="hazirSay">yüzlerce yazım</span>) sunucuda her zaman açık. Buraya eklediklerin ona eklenir. <b>Parça</b>: kelimenin içinde geçerse engellenir. <b>Tam</b>: yalnızca tek başına yazılırsa.</p>
 <div class="kelime-ekle"><input id="kelimeKutu" class="ad-kutu" maxlength="24" autocomplete="off" placeholder="kelime"><select id="kelimeTur" class="ad-kutu"><option value="parca">Parça</option><option value="tam">Tam</option></select><button class="btn yesil kucuk" data-eylem="kelimeEkle">Ekle</button></div>
 <div id="kelimeListe" class="kelime-liste">Yükleniyor...</div>
 <div id="taramaSonuc"></div>
 <div class="pencere-dugmeler" style="margin-top:.6em"><button class="btn gri" data-eylem="ayarlar">◀ Geri</button><button class="btn mavi" data-eylem="yonTara">🔎 Galeriyi tara</button></div>`, "genis");
-    try { kelimeListesiCiz((await galeriIstek("/yonetici/kelimeler", { yonetici: true })).liste); }
+    try { const j = await galeriIstek("/yonetici/kelimeler", { yonetici: true }); kelimeListesiCiz(j.liste); if (j.hazir) document.getElementById("hazirSay").textContent = j.hazir + " kelime ve yazım"; }
     catch (h) { document.getElementById("kelimeListe").textContent = galeriHataMetni(h); }
   },
   async kelimeEkle() {
