@@ -5087,12 +5087,21 @@ Sahneler.sonuc = {
    ========================================================== */
 const YARIS = {
   BASE_HIZ: 38, BASE_IVME: 8, ARABA_L: 16, SURE: 40, KONI: .35, YAG: .5, NITRO_SIK: .3,
+  /* kacis: rakiplerin engelden kaçma olasılığı (hata oranı = 1 − kacis), kademe zorlaştıkça rakipler daha az hata yapar;
+     nitro: rakiplerin nitro kullanma sıklığı; dagilim: her rakibin kendi beceri sapması (bazı rakipler sakar, bazıları usta) */
   ayar: {
-    kolay:  { pist: "pist1", bosluk: [88, 108], ikili: 0,   yag: .30, kacis: .50 },
-    orta:   { pist: "pist2", bosluk: [78, 98],  ikili: .15, yag: .38, kacis: .55 },
-    zor:    { pist: "pist3", bosluk: [70, 88],  ikili: .30, yag: .45, kacis: .60 },
-    cokZor: { pist: "pist4", bosluk: [62, 80],  ikili: .40, yag: .50, kacis: .62 }
+    kolay:  { pist: "pist1", bosluk: [88, 108], ikili: 0,   yag: .30, kacis: .42, nitro: .18, dagilim: .14 },
+    orta:   { pist: "pist2", bosluk: [78, 98],  ikili: .15, yag: .38, kacis: .55, nitro: .28, dagilim: .12 },
+    zor:    { pist: "pist3", bosluk: [70, 88],  ikili: .30, yag: .45, kacis: .70, nitro: .40, dagilim: .10 },
+    cokZor: { pist: "pist4", bosluk: [62, 80],  ikili: .40, yag: .50, kacis: .90, nitro: .60, dagilim: .06 }
   },
+  /* Lastik bandı: oyuncunun GERİSİNDE kalan rakipler sessizce hızlanıp yaklaşır, son düzlükte daha da yaklaşır.
+     Yalnızca geride olan rakibe uygulanır ve iki emniyet kemeri vardır:
+       1) yaklaştıkça etki söner (oyuncuya ~1 araba boyu kala sıfır) ve rakip zaten geçecek durumdaysa itiş hiç verilmez,
+       2) itişle kazanılan her metre borç yazılır; rakip borcunu ödemeden (o kadar yol arkada tutulmadan) oyuncuyu geçemez.
+     Böylece sonuç değişmez, yalnızca fark kapanır; oyuncu son anda çarparsa rakip borcunu ödeyip doğal hızıyla geçebilir.
+     Oyuncu gerideyse hiçbir yardım yok: araba yetersizse yarış kaybedilir. */
+  bant: { normal: .16, son: .28, sonBaslangic: .70, sonmeNormal: 14, sonmeSon: 8, menzil: 55, pay: .35 },
   rakipAdlari: ["Turbo Tilki", "Şimşek Kaplan", "Rüzgâr Kuşu", "Hızlı Kirpi", "Mavi Bulut", "Kum Fırtınası", "Kar Leoparı", "Neon Panter",
     "Gece Kartalı", "Zıpzıp Tavşan", "Pırpır Kelebek", "Ateş Böceği", "Çılgın Kaplumbağa", "Gökkuşağı Atı", "Yıldız Tozu", "Fırtına Kedisi"]
 };
@@ -5127,7 +5136,12 @@ function yarisKur(kademeId, parcalar, tohum = (Date.now() ^ Math.floor(Math.rand
   const guclar = [0, .5, 1].map(f => Math.round(Math.max(20, Math.min(100, K.min + (K.max - K.min) * f + (rnd() * 4 - 2)))));
   const oyuncu = aracKur(parcalar, 1, 0);
   const rakipler = [aracKur(gucParca(guclar[0]), 0, 0), aracKur(gucParca(guclar[1]), 2, 0), aracKur(gucParca(guclar[2]), 1, -26)];
-  rakipler.forEach((r, i) => { r.guc = guclar[i]; r.rakip = true; });
+  [oyuncu, ...rakipler].forEach(c => { c.rnd = rastgeleUretec(Math.floor(rnd() * 2147483647)); });   // her sürücünün kendi zar torbası
+  rakipler.forEach((r, i) => {
+    r.guc = guclar[i]; r.rakip = true;
+    r.kacis = Math.max(.2, Math.min(.98, A.kacis + (rnd() - .5) * 2 * A.dagilim));   // kişilik: sakar ya da usta
+    r.yakinlik = [0, .6, 1][Math.floor(rnd() * 3)];                                   // bu yarışta ne kadar "yapışkan" (bazen hiç)
+  });
   oyuncu.oyuncu = true;
   return { kademe: kademeId, A, K, L, t: 0, engeller, nitrolar, dalgalar, oyuncu, rakipler, araclar: [oyuncu, ...rakipler], rnd, olaylar: [] };
 }
@@ -5151,16 +5165,17 @@ function surucuKarar(st, c, dt, kacis, nitroSik) {
     if (d.x - c.x > bakis) break;
     if (c.kararlar.has(i)) continue;
     c.kararlar.add(i);
-    if (d.bloklu.includes(c.hedefSerit) && c.kayKalan <= 0 && st.rnd() < kacis)
-      c.hedefSerit = d.bos.slice().sort((a, b) => Math.abs(a - c.hedefSerit) - Math.abs(b - c.hedefSerit) || st.rnd() - .5)[0];
+    const zar = c.rnd || st.rnd;
+    if (d.bloklu.includes(c.hedefSerit) && c.kayKalan <= 0 && zar() < kacis)
+      c.hedefSerit = d.bos.slice().sort((a, b) => Math.abs(a - c.hedefSerit) - Math.abs(b - c.hedefSerit) || zar() - .5)[0];
   }
   if (nitroSik === "hemen") { if (c.kayKalan <= 0) nitroKullan(c); }
-  else if (c.nitroSarj > 0 && c.nitroKalan <= 0 && c.kayKalan <= 0 && st.t > 2 && st.rnd() < dt * nitroSik) nitroKullan(c);
+  else if (c.nitroSarj > 0 && c.nitroKalan <= 0 && c.kayKalan <= 0 && st.t > 2 && (c.rnd || st.rnd)() < dt * nitroSik) nitroKullan(c);
 }
 function yarisAdim(st, dt) {
   st.t += dt;
   for (const c of st.araclar) {
-    if (c.rakip && c.bitis === null) surucuKarar(st, c, dt, st.A.kacis, YARIS.NITRO_SIK);
+    if (c.rakip && c.bitis === null) surucuKarar(st, c, dt, c.kacis, st.A.nitro);
     // şerit değiştirme (yumuşak geçiş)
     const adim = dt / .17, fark = c.hedefSerit - c.seritF;
     c.seritF += Math.max(-adim, Math.min(adim, fark));
@@ -5169,10 +5184,21 @@ function yarisAdim(st, dt) {
     let hedef = c.vmax, a = c.ivme;
     if (c.nitroKalan > 0) { c.nitroKalan -= dt; hedef = c.vmax * 1.3; a = c.ivme * 2.2; }
     if (c.kayKalan > 0) { c.kayKalan -= dt; hedef *= .8; }
+    let bant = 0;
+    if (c.rakip && st.bant !== false) {
+      bant = lastikBandi(st, c);
+      if (bant > 0) { c.bantli = true; hedef *= 1 + bant; a *= 1 + bant; }
+      else if (c.bantli && c.v > hedef) c.v = hedef;        // itiş bitince kazanılmış ivme de biter (süzülerek geçemez)
+    }
     if (c.sarsinti > 0) c.sarsinti -= dt;
     if (c.v < hedef) c.v = Math.min(hedef, c.v + a * dt);
     else c.v = Math.max(hedef, c.v - (c.v - hedef) * Math.min(1, 1.6 * dt));
     c.x += c.v * dt; c.tekerAci += c.v * dt / 1.13;
+    if (bant > 0) c.borc = (c.borc || 0) + c.v * dt * bant / (1 + bant);   // itişle kazanılan yol "borç" yazılır
+    if (c.borc > 0 && st.oyuncu.bitis === null) {                          // borç bitmeden oyuncuyu geçemez: tutulduğu her metre borcu öder
+      const sinir = st.oyuncu.x - YARIS.bant.sonmeSon * .6;
+      if (c.x > sinir) { c.borc -= c.x - sinir; c.x = sinir; if (c.nitroKalan > 0) c.nitroKalan += dt; }   // tutulurken nitrosu boşa yanmaz
+    }
     // engeller (x'e göre sıralı; araba yalnızca ileri gider)
     const arka = c.x - YARIS.ARABA_L * .72;
     while (c.ei < st.engeller.length && st.engeller[c.ei].x < arka) c.ei++;
@@ -5197,16 +5223,38 @@ function yarisAdim(st, dt) {
     if (c.bitis === null && c.x >= st.L) { c.bitis = st.t - (c.x - st.L) / Math.max(c.v, 1); st.olaylar.push({ tur: "bitis", arac: c }); }
   }
 }
+// Rakip kendi gücüyle oyuncuyu geçemeyecek durumda mı? (itişin öne geçirmesini önleyen emniyet)
+function lastikBandiGeride(st, c) {
+  const o = st.oyuncu;
+  if (o.bitis !== null || c.bitis !== null) return false;
+  const oyuncuSure = (st.L - o.x) / Math.max(o.v, 5), izinHiz = (st.L - c.x) / (oyuncuSure + YARIS.bant.pay);
+  const dogal = c.nitroKalan > 0 ? c.vmax * 1.3 : c.vmax;
+  return dogal < izinHiz;
+}
+// Geride kalan rakip için hız itişi (0 … bant.son). Ayrıntı: YARIS.bant açıklaması.
+function lastikBandi(st, c) {
+  const o = st.oyuncu, B = YARIS.bant;
+  if (!c.yakinlik || o.bitis !== null || c.bitis !== null || o.x <= c.x) return 0;
+  const ara = o.x - c.x, son = c.x / st.L > B.sonBaslangic;
+  const sonme = son ? B.sonmeSon : B.sonmeNormal;
+  const b = (son ? B.son : B.normal) * c.yakinlik * Math.max(0, Math.min(1, (ara - sonme) / B.menzil));
+  if (b <= 0 || !lastikBandiGeride(st, c)) return 0;
+  const oyuncuSure = (st.L - o.x) / Math.max(o.v, 5), izinHiz = (st.L - c.x) / (oyuncuSure + B.pay);
+  const dogal = c.nitroKalan > 0 ? c.vmax * 1.3 : c.vmax;
+  return Math.min(b, izinHiz / dogal - 1);
+}
 function yarisSiralama(st) {
   return st.araclar.map(c => ({ c, zaman: c.bitis !== null ? c.bitis : st.t + (st.L - c.x) / Math.max(c.v, 12) }))
     .sort((a, b) => a.zaman - b.zaman);
 }
 const anlikSira = st => 1 + st.rakipler.filter(r => r.bitis !== null ? (st.oyuncu.bitis === null || r.bitis < st.oyuncu.bitis) : (st.oyuncu.bitis === null && r.x > st.oyuncu.x)).length;
 // Test ve denge ayarı için: oyuncuyu belirli bir beceriyle süren bot
-function botYaris(kademeId, parcalar, beceri, tohum) {
-  const st = yarisKur(kademeId, parcalar, tohum);
+function botYaris(kademeId, parcalar, beceri, tohum, bant = true) {
+  const st = yarisKur(kademeId, parcalar, tohum); st.bant = bant;
   while (st.oyuncu.bitis === null && st.t < 150) { surucuKarar(st, st.oyuncu, 1 / 60, beceri, "hemen"); yarisAdim(st, 1 / 60); }
-  return { sira: yarisSiralama(st).findIndex(s => s.c.oyuncu) + 1, sure: st.oyuncu.bitis, carpma: st.oyuncu.carpma };
+  const sira = yarisSiralama(st);
+  const ben = sira.findIndex(s => s.c.oyuncu), komsu = sira[ben === 0 ? 1 : ben - 1];
+  return { sira: ben + 1, sure: st.oyuncu.bitis, carpma: st.oyuncu.carpma, fark: Math.abs(komsu.zaman - sira[ben].zaman) };
 }
 
 /* ==========================================================
