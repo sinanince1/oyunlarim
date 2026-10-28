@@ -1150,6 +1150,47 @@
       .kk-kedi, .kk-soru, .kk-cevap, .kk-yildiz { animation: none; }
     }
 
+    /* ---- 29 Ekim karşılama ---- */
+    .kt-ov { position: fixed; inset: 0; z-index: 12000; display: flex; align-items: center; justify-content: center; padding: 18px; overflow: hidden;
+      background: radial-gradient(ellipse at 50% 0%, #2B1650 0%, #140A2A 55%, #3A0A14 100%); font-family: 'Nunito', sans-serif; color: #fff;
+      animation: ktGir .6s ease both; }
+    .kt-ov.kt-cik { animation: ktCik .45s ease forwards; }
+    @keyframes ktGir { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes ktCik { to { opacity: 0; transform: scale(1.04); } }
+    .kt-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .kt-yildizlar { position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(1.5px 1.5px at 12% 18%, #fff8, transparent), radial-gradient(1px 1px at 28% 8%, #fff9, transparent), radial-gradient(1.5px 1.5px at 66% 14%, #fff7, transparent), radial-gradient(1px 1px at 84% 24%, #fffa, transparent), radial-gradient(1px 1px at 46% 30%, #fff6, transparent), radial-gradient(1.5px 1.5px at 92% 6%, #fff8, transparent), radial-gradient(1px 1px at 6% 40%, #fff6, transparent); }
+    .kt-icerik { position: relative; text-align: center; max-width: 560px; width: 100%; }
+    .kt-bayrak-alan { position: relative; width: min(74vw, 440px); margin: 0 auto 6px; padding-left: 14px; animation: ktBayrakGir 1s cubic-bezier(.2,1.3,.4,1) .15s both; }
+    @keyframes ktBayrakGir { from { transform: translateY(40px) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+    .kt-direk { position: absolute; left: 0; top: -14px; bottom: -40px; width: 9px; border-radius: 5px; background: linear-gradient(90deg, #8C7A55, #F4E3B0, #A8926A); }
+    .kt-direk::before { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFF3C4, #D4A43A); }
+    .kt-bayrak { position: relative; aspect-ratio: 3 / 2; width: 100%; filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+    .kt-serit { position: absolute; top: 0; height: 100%; background-repeat: no-repeat; background-size: var(--bw) 100%; backface-visibility: hidden; animation: ktDalga 1.6s ease-in-out infinite; will-change: transform; }
+    @keyframes ktDalga {
+      0%, 100% { transform: translateY(calc(var(--a) * -1)); filter: brightness(1.1); }
+      50% { transform: translateY(var(--a)); filter: brightness(.82); }
+    }
+    .kt-tarih { margin-top: 26px; font-weight: 900; letter-spacing: 6px; font-size: clamp(.95rem, 3.6vw, 1.15rem); color: #FFD27A; opacity: 0; animation: ktYukari .6s ease .9s forwards; }
+    .kt-yil { font-weight: 900; font-size: clamp(3.4rem, 15vw, 5.6rem); line-height: 1; margin: 4px 0 2px; font-variant-numeric: tabular-nums;
+      background: linear-gradient(180deg, #FFFFFF 30%, #FFD27A); -webkit-background-clip: text; background-clip: text; color: transparent;
+      text-shadow: 0 0 40px rgba(255,210,122,.25); opacity: 0; animation: ktYukari .6s ease 1s forwards; }
+    .kt-rozet { display: inline-block; background: #E30A17; color: #fff; font-weight: 900; font-size: clamp(1rem, 4vw, 1.25rem); padding: 6px 18px; border-radius: 99px; box-shadow: 0 4px 0 #9E0610, 0 0 30px rgba(227,10,23,.5); transform: scale(0); }
+    .kt-rozet.goster { animation: ktPat .55s cubic-bezier(.2,1.6,.4,1) forwards; }
+    @keyframes ktPat { to { transform: scale(1); } }
+    .kt-baslik { font-weight: 900; font-size: clamp(1.4rem, 6vw, 2.1rem); margin: 16px 0 4px; opacity: 0; animation: ktYukari .6s ease 1.2s forwards; }
+    .kt-alt { font-weight: 800; font-size: clamp(.98rem, 3.8vw, 1.15rem); color: #E9DDF7; margin: 0 auto 22px; max-width: 420px; text-wrap: balance; opacity: 0; animation: ktYukari .6s ease 1.4s forwards; }
+    @keyframes ktYukari { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .kt-butonlar { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; opacity: 0; animation: ktYukari .6s ease 1.7s forwards; }
+    .kt-btn { font-family: inherit; font-weight: 900; font-size: 1.1rem; padding: 14px 24px; border-radius: 99px; border: none; cursor: pointer; transition: transform .15s; }
+    .kt-btn:hover { transform: translateY(-2px); }
+    .kt-btn:active { transform: scale(.95); }
+    .kt-btn-oyun { background: linear-gradient(135deg, #E30A17, #FF5A3C); color: #fff; box-shadow: 0 5px 0 #8E0610; }
+    .kt-btn-gir { background: #fff; color: #2D2D2D; box-shadow: 0 5px 0 rgba(0,0,0,.25); }
+    .kt-kapat { position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.14); color: #fff; font-size: 1.1rem; font-weight: 900; z-index: 2; }
+    @media (max-height: 640px) { .kt-bayrak-alan { width: min(52vw, 300px); } .kt-tarih { margin-top: 16px; } .kt-alt { margin-bottom: 14px; } }
+    @media (prefers-reduced-motion: reduce) { .kt-serit { animation: none; } .kt-ov, .kt-bayrak-alan, .kt-tarih, .kt-yil, .kt-baslik, .kt-alt, .kt-butonlar { animation-duration: .01s; animation-delay: 0s; } }
+
     /* ---- Geri bildirim ---- */
     .geri-btn {
       position: fixed; right: 18px; bottom: 18px; z-index: 900;
@@ -4230,8 +4271,121 @@ buildPage();
 addFloaties();
 adrestenOyunAc();
 
-// Konfeti sadece sayfaya ilk girişte
-if (!sessionStorage.getItem('confettiShown')) {
+// ============================================================
+// 29 EKİM KARŞILAMA — her yıl 28–29 Ekim'de (Türkiye saati) cihaz başına günde bir kez
+// Önizleme: sinanince.com/?kutlama=1
+// ============================================================
+function kutlamaGoster() {
+  let gun;
+  try { gun = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+  catch (e) { gun = new Date().toISOString().slice(0, 10); }
+  const zorla = /[?&]kutlama=1/.test(location.search);
+  if (!zorla) {
+    if (!['10-28', '10-29'].includes(gun.slice(5))) return false;
+    if (location.hash.length > 1) return false; // doğrudan oyun bağlantısıyla gelene engel olma
+    try { if (localStorage.getItem('kutlama-' + gun)) return false; localStorage.setItem('kutlama-' + gun, '1'); } catch (e) {}
+  }
+  const yil = +gun.slice(0, 4), kacinci = yil - 1923, arife = gun.slice(5) === '10-28' && !zorla;
+  const az = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Türk bayrağı (TS 2050 oranları: yükseklik G=200, en 300)
+  const yld = [];
+  for (let i = 0; i < 10; i++) { const r = i % 2 ? 9.55 : 25, a = Math.PI + i * Math.PI / 5; yld.push((210.83 + r * Math.cos(a)).toFixed(2) + ',' + (100 + r * Math.sin(a)).toFixed(2)); }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect width="300" height="200" fill="#E30A17"/><circle cx="100" cy="100" r="50" fill="#fff"/><circle cx="112.5" cy="100" r="40" fill="#E30A17"/><polygon points="${yld.join(' ')}" fill="#fff"/></svg>`;
+  const url = "url('data:image/svg+xml," + encodeURIComponent(svg) + "')";
+  const N = 36;
+  let seritler = '';
+  for (let i = 0; i < N; i++) {
+    const a = (1.2 + i / N * 7).toFixed(2) + 'px';
+    seritler += `<div class="kt-serit" style="--a:${a};left:calc(100% * ${i} / ${N});width:calc(100% / ${N} + ${i < N - 1 ? 1 : 0}px);background-image:${url};background-position:calc(var(--bw) * ${-i} / ${N}) 0;animation-delay:${(-i * 0.06).toFixed(2)}s"></div>`;
+  }
+
+  const ov = document.createElement('div');
+  ov.className = 'kt-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', '29 Ekim Cumhuriyet Bayramı kutlaması');
+  ov.innerHTML = `<div class="kt-yildizlar"></div><canvas class="kt-canvas"></canvas>
+    <button class="kt-kapat" title="Kapat" aria-label="Kapat">✕</button>
+    <div class="kt-icerik">
+      <div class="kt-bayrak-alan"><div class="kt-direk"></div><div class="kt-bayrak">${seritler}</div></div>
+      <div class="kt-tarih">${arife ? 'YARIN · ' : ''}29 EKİM</div>
+      <div class="kt-yil" id="kt-yil">1923</div>
+      <span class="kt-rozet" id="kt-rozet">Cumhuriyetimiz ${kacinci} yaşında!</span>
+      <div class="kt-baslik">Cumhuriyet Bayramımız kutlu olsun!</div>
+      <p class="kt-alt">29 Ekim 1923'te kurulan Cumhuriyetimizin ${kacinci}. yılını hep birlikte coşkuyla kutluyoruz. 🇹🇷</p>
+      <div class="kt-butonlar">
+        <button class="kt-btn kt-btn-oyun" data-k="oyun">🏮 Fener Alayına Katıl</button>
+        <button class="kt-btn kt-btn-gir" data-k="gir">🎉 Siteye Gir</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  document.body.style.overflow = 'hidden';
+  const bayrakEl = ov.querySelector('.kt-bayrak');
+  const bayrakBoyut = () => bayrakEl.style.setProperty('--bw', bayrakEl.clientWidth + 'px');
+  bayrakBoyut(); window.addEventListener('resize', bayrakBoyut);
+
+  // 1923 → bu yıl sayacı
+  const yilEl = ov.querySelector('#kt-yil'), rozet = ov.querySelector('#kt-rozet');
+  if (az) { yilEl.textContent = yil; rozet.classList.add('goster'); }
+  else setTimeout(() => {
+    const t0 = performance.now(), sure = 1600;
+    (function ad(t) {
+      const p = Math.min(1, (t - t0) / sure), e = 1 - Math.pow(1 - p, 3);
+      yilEl.textContent = Math.round(1923 + (yil - 1923) * e);
+      if (p < 1) requestAnimationFrame(ad); else { rozet.classList.add('goster'); patlat(innerWidth / 2, innerHeight * .25, 90); }
+    })(t0);
+  }, 1100);
+
+  // Havai fişekler
+  const cv = ov.querySelector('canvas'), cx = cv.getContext('2d');
+  let W, H, dpr = Math.min(2, window.devicePixelRatio || 1), parcaciklar = [], roketler = [], calisiyor = !az, sonRoket = 0;
+  function boyut() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  boyut(); window.addEventListener('resize', boyut);
+  const RENK = ['#FF1F2E', '#FFFFFF', '#FFD27A', '#FF6B6B', '#FFFFFF'];
+  function patlat(x, y, n) {
+    const renk = RENK[Math.floor(Math.random() * RENK.length)];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, h = 1.5 + Math.random() * 4.5;
+      parcaciklar.push({ x, y, vx: Math.cos(a) * h, vy: Math.sin(a) * h, o: 1, r: 1.4 + Math.random() * 1.8, c: Math.random() < .25 ? '#FFFFFF' : renk });
+    }
+  }
+  function roket() { roketler.push({ x: W * (.12 + Math.random() * .76), y: H + 10, vy: -(8 + Math.random() * 4), hedef: H * (.12 + Math.random() * .35) }); }
+  function kare(t) {
+    if (!calisiyor) return;
+    if (t - sonRoket > 650 + Math.random() * 500) { roket(); sonRoket = t; }
+    cx.globalCompositeOperation = 'destination-out'; cx.fillStyle = 'rgba(0,0,0,.22)'; cx.fillRect(0, 0, W, H);
+    cx.globalCompositeOperation = 'lighter';
+    roketler = roketler.filter(r => {
+      r.y += r.vy; r.vy *= .985;
+      cx.fillStyle = '#FFE3A8'; cx.beginPath(); cx.arc(r.x, r.y, 2.2, 0, 7); cx.fill();
+      if (r.y <= r.hedef || r.vy > -2) { patlat(r.x, r.y, 60 + Math.random() * 40 | 0); return false; }
+      return true;
+    });
+    parcaciklar = parcaciklar.filter(p => {
+      p.x += p.vx; p.y += p.vy; p.vx *= .97; p.vy = p.vy * .97 + .06; p.o -= .012;
+      if (p.o <= 0) return false;
+      cx.globalAlpha = p.o; cx.fillStyle = p.c; cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 7); cx.fill(); cx.globalAlpha = 1;
+      return true;
+    });
+    requestAnimationFrame(kare);
+  }
+  if (!az) requestAnimationFrame(kare);
+
+  function kapat(sonra) {
+    if (ov.classList.contains('kt-cik')) return;
+    ov.classList.add('kt-cik');
+    setTimeout(() => { calisiyor = false; window.removeEventListener('resize', boyut); window.removeEventListener('resize', bayrakBoyut); ov.remove(); document.body.style.overflow = ''; if (sonra) sonra(); }, 420);
+  }
+  ov.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (b && b.dataset.k === 'oyun') kapat(() => openGame('cumhuriyet_fener_alayi.html', 'Cumhuriyet Fener Alayı'));
+    else if (b) kapat();
+  });
+  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { kapat(); document.removeEventListener('keydown', esc); } });
+  return true;
+}
+const kutlamaVar = kutlamaGoster();
+
+// Konfeti sadece sayfaya ilk girişte (29 Ekim karşılaması açıldıysa gerek yok)
+if (!kutlamaVar && !sessionStorage.getItem('confettiShown')) {
   sessionStorage.setItem('confettiShown', '1');
   setTimeout(launchConfetti, 200);
 }
