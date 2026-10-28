@@ -276,8 +276,8 @@
 <!-- İstatistik sayfası: rozete üst üste 3 kez dokun, şifreyi gir -->
 <div id="ist-overlay" role="dialog" aria-modal="true" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(20,20,40,.55);align-items:center;justify-content:center;padding:16px">
   <div id="ist-kutu" style="background:#fff;border-radius:24px;padding:28px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.15);font-family:'Nunito',sans-serif">
-    <div style="font-size:2.6rem">📊</div>
-    <h3 style="font-weight:900;font-size:1.5rem;color:#2D2D2D;margin:6px 0 14px">Öğretmen Şifresi</h3>
+    <div style="font-size:2.6rem">🛠️</div>
+    <h3 style="font-weight:900;font-size:1.5rem;color:#2D2D2D;margin:6px 0 14px">Yönetici Paneli</h3>
     <input id="ist-sifre" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="••••••" style="width:100%;font-family:'Nunito',sans-serif;font-size:1.6rem;font-weight:900;text-align:center;letter-spacing:4px;padding:12px;border-radius:14px;border:3px solid #E8DFF5;outline:none;box-sizing:border-box">
     <p id="ist-hata" style="color:#FF4D8D;font-weight:800;min-height:1.3em;margin:8px 0"></p>
     <div style="display:flex;gap:10px">
@@ -365,7 +365,7 @@
   window.istKontrol = () => {
     if (ozet(inp.value.trim()) === OZET) {
       try { sessionStorage.setItem('istatistikAcik', '1'); } catch (e) {}
-      location.href = 'istatistik.html';
+      location.href = 'yonetim.html';
     } else {
       hata.textContent = 'Şifre yanlış.'; inp.value = ''; inp.focus();
       const k = document.getElementById('ist-kutu');

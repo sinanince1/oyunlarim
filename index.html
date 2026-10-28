@@ -1601,7 +1601,7 @@
       <div class="fk-ikon">🎉</div>
       <h3>Teşekkürler!</h3>
       <p>Fikrin Sinan Öğretmen'e ulaştı. Belki bir gün oyunu burada görürsün!</p>
-      <button class="fk-gonder" onclick="fikirYeni()">✏️ Yeni fikir yaz</button>
+      <button class="fk-gonder" onclick="fikirBitir()">💛 Vakit ayırdığın için teşekkürler!</button>
     </div>
   </div>
 </div>
@@ -4074,14 +4074,19 @@ function geriAc() {
   fbDb().catch(() => {});
   setTimeout(() => { const a = document.getElementById('fk-form').hidden ? null : document.getElementById('fk-ad'); if (a && !a.value) a.focus(); }, 80);
 }
-function geriKapat() { document.getElementById('geri-overlay').classList.remove('active'); }
+function geriKapat() {
+  document.getElementById('geri-overlay').classList.remove('active');
+  if (!document.getElementById('fk-tamam').hidden) { document.getElementById('fk-metin').value = ''; document.getElementById('fk-sayac').textContent = '0 / 600'; document.getElementById('fk-tamam').hidden = true; document.getElementById('fk-form').hidden = false; }
+}
 document.getElementById('geri-overlay').addEventListener('click', function (e) { if (e.target === this) geriKapat(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') geriKapat(); });
-function fikirYeni() {
+function fikirBitir() {
+  // Formu sıfırla, pencereyi kapat, ana sayfanın başına dön
   document.getElementById('fk-metin').value = ''; document.getElementById('fk-sayac').textContent = '0 / 600';
   document.getElementById('fk-hata').textContent = '';
   document.getElementById('fk-tamam').hidden = true; document.getElementById('fk-form').hidden = false;
-  document.getElementById('fk-metin').focus();
+  geriKapat();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function fikirGonder() {
   const hata = t => { document.getElementById('fk-hata').textContent = t; };
