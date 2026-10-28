@@ -1162,13 +1162,33 @@
     .geri-btn:hover { transform: translateY(-3px); }
     .geri-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
     @media (max-width: 600px) { .geri-btn { padding: 11px 15px; font-size: .9rem; right: 12px; bottom: 12px; } }
-    .geri-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(20,20,40,.55); align-items: center; justify-content: center; padding: 16px; }
+    .geri-overlay { display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(20,20,40,.55); align-items: center; justify-content: center; padding: 16px; }
     .geri-overlay.active { display: flex; animation: fadeIn .2s ease; }
-    .geri-kutu { background: #fff; border-radius: 24px; width: 100%; max-width: 680px; height: min(85vh, 760px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 0 rgba(0,0,0,.15); }
-    .geri-ust { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 3px dashed #F0E8DC; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.1rem; color: #2D2D2D; }
+    .geri-kutu { background: #fff; border-radius: 24px; width: 100%; max-width: 560px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 0 rgba(0,0,0,.15); }
+    .geri-ust { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 3px dashed #F0E8DC; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.15rem; color: #2D2D2D; }
     .geri-ust span { margin-right: auto; }
     .geri-ust button { font-family: 'Nunito', sans-serif; font-weight: 900; width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer; background: #F0ECF7; color: #2D2D2D; font-size: 1rem; }
-    .geri-kutu iframe { flex: 1; border: none; width: 100%; background: #fff; }
+    .fk-govde { padding: 16px 20px 20px; overflow-y: auto; font-family: 'Nunito', sans-serif; color: #2D2D2D; }
+    .fk-etiket { display: block; font-weight: 900; font-size: 1rem; margin: 14px 0 8px; }
+    .fk-etiket small { font-weight: 800; color: #A89C8E; font-size: .82rem; }
+    .fk-etiket:first-child { margin-top: 0; }
+    .fk-girdi { width: 100%; font-family: inherit; font-weight: 800; font-size: 1.05rem; padding: 12px 14px; border-radius: 16px; border: 3px solid #EADFD3; outline: none; color: #2D2D2D; background: #FFFCF8; }
+    .fk-girdi:focus { border-color: #A855F7; background: #fff; }
+    textarea.fk-girdi { min-height: 130px; resize: vertical; line-height: 1.45; }
+    .fk-secenek { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fk-secenek button { font-family: inherit; font-weight: 900; font-size: .98rem; padding: 10px 16px; border-radius: 99px; border: 3px solid #EADFD3; background: #fff; cursor: pointer; color: #2D2D2D; transition: transform .12s; }
+    .fk-secenek button:active { transform: scale(.94); }
+    .fk-secenek button.secili { background: linear-gradient(135deg, #A855F7, #FF4D8D); color: #fff; border-color: transparent; }
+    .fk-sayac { text-align: right; font-weight: 800; font-size: .8rem; color: #B9AEA0; margin-top: 4px; }
+    .fk-hata { color: #FF4D8D; font-weight: 900; min-height: 1.3em; margin: 10px 0 0; text-align: center; }
+    .fk-gonder { width: 100%; margin-top: 10px; font-family: inherit; font-weight: 900; font-size: 1.2rem; padding: 14px; border-radius: 99px; border: none; cursor: pointer; color: #fff; background: linear-gradient(135deg, #00C9A7, #4D9FFF); box-shadow: 0 5px 0 rgba(0,0,0,.15); }
+    .fk-gonder:disabled { opacity: .6; cursor: wait; }
+    .fk-tamam { text-align: center; padding: 26px 10px 10px; }
+    .fk-tamam .fk-ikon { font-size: 4rem; animation: fkZipla .7s ease; }
+    .fk-tamam h3 { font-weight: 900; font-size: 1.5rem; margin: 8px 0 6px; }
+    .fk-tamam p { font-weight: 800; color: #8A7F74; margin: 0 0 18px; }
+    .fk-gizli { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+    @keyframes fkZipla { 0% { transform: scale(.3); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
     /* ---- Sınıf seçme çubuğu ---- */
     .sinif-bar {
@@ -1555,15 +1575,38 @@
 </div>
 
 <!-- GERİ BİLDİRİM -->
-<button class="geri-btn" id="geri-btn" onclick="geriAc()" hidden>💬 Geri Bildirim</button>
-<div class="geri-overlay" id="geri-overlay" role="dialog" aria-modal="true" aria-label="Geri bildirim formu">
+<button class="geri-btn" id="geri-btn" onclick="geriAc()">💡 Oyun Fikrim Var</button>
+<div class="geri-overlay" id="geri-overlay" role="dialog" aria-modal="true" aria-label="Oyun fikri gönder">
   <div class="geri-kutu">
-    <div class="geri-ust"><span>💬 Görüş, hata ya da oyun fikri</span><button onclick="geriKapat()" title="Kapat">✕</button></div>
-    <iframe id="geri-frame" src="" loading="lazy" title="Geri bildirim formu"></iframe>
+    <div class="geri-ust"><span>💡 Oyun fikrini yaz!</span><button onclick="geriKapat()" title="Kapat">✕</button></div>
+    <div class="fk-govde" id="fk-form">
+      <label class="fk-etiket" for="fk-ad">Adın <small>(sadece ilk adın, soyadını yazma)</small></label>
+      <input class="fk-girdi" id="fk-ad" maxlength="20" autocomplete="off" placeholder="Örnek: Elif">
+      <span class="fk-etiket">Kaçıncı sınıftasın?</span>
+      <div class="fk-secenek" id="fk-sinif">
+        <button type="button" data-v="1">1. Sınıf</button><button type="button" data-v="2">2. Sınıf</button><button type="button" data-v="3">3. Sınıf</button><button type="button" data-v="4">4. Sınıf</button>
+      </div>
+      <span class="fk-etiket">Hangi ders için? <small>(istersen seç)</small></span>
+      <div class="fk-secenek" id="fk-ders">
+        <button type="button" data-v="Matematik">🔢 Matematik</button><button type="button" data-v="Türkçe">📖 Türkçe</button><button type="button" data-v="Hayat Bilgisi">🌱 Hayat Bilgisi</button><button type="button" data-v="Başka">✨ Başka</button>
+      </div>
+      <label class="fk-etiket" for="fk-metin">Oyun fikrin ne?</label>
+      <textarea class="fk-girdi" id="fk-metin" maxlength="600" placeholder="Nasıl bir oyun olsun? Neler olsun, nasıl oynansın? Hangi oyunu nasıl daha güzel yapabilirim?"></textarea>
+      <div class="fk-sayac" id="fk-sayac">0 / 600</div>
+      <input class="fk-gizli" id="fk-web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="fk-hata" id="fk-hata"></p>
+      <button class="fk-gonder" id="fk-gonder" onclick="fikirGonder()">🚀 Gönder</button>
+    </div>
+    <div class="fk-govde fk-tamam" id="fk-tamam" hidden>
+      <div class="fk-ikon">🎉</div>
+      <h3>Teşekkürler!</h3>
+      <p>Fikrin Sinan Öğretmen'e ulaştı. Belki bir gün oyunu burada görürsün!</p>
+      <button class="fk-gonder" onclick="fikirYeni()">✏️ Yeni fikir yaz</button>
+    </div>
   </div>
 </div>
 
-<footer>Tüm oyunlar <span>❤️</span> ile yapıldı · <a href="#" onclick="geriAc();return false" style="color:inherit">Geri bildirim gönder</a></footer>
+<footer>Tüm oyunlar <span>❤️</span> ile yapıldı · <a href="#" onclick="geriAc();return false" style="color:inherit">Oyun fikri gönder</a></footer>
 
 <script>
 // ============================================================
@@ -4007,19 +4050,59 @@ function makeSection(cat, ci) {
 
 
 // ============================================================
-// GERİ BİLDİRİM — Google Form linki (boşsa buton görünmez)
+// OYUN FİKİRLERİ — Firestore (hikayesehri projesi), koleksiyon: oyun_fikirleri
+// Okuma: mesajlar.html (Google girişi + Firestore kuralı ile yalnızca öğretmen)
 // ============================================================
-const GERI_BILDIRIM_FORM = '';
-if (GERI_BILDIRIM_FORM) document.getElementById('geri-btn').hidden = false;
+const FK_GUNLUK_SINIR = 3;
+let fkSinif = 0, fkDers = '';
+function fkSecenek(id, cb) {
+  document.getElementById(id).addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const ayni = b.classList.contains('secili');
+    b.parentNode.querySelectorAll('button').forEach(x => x.classList.remove('secili'));
+    if (!ayni || id === 'fk-sinif') b.classList.add('secili');
+    cb(ayni && id !== 'fk-sinif' ? '' : b.dataset.v);
+    document.getElementById('fk-hata').textContent = '';
+  });
+}
+fkSecenek('fk-sinif', v => { fkSinif = +v; });
+fkSecenek('fk-ders', v => { fkDers = v; });
+document.getElementById('fk-metin').addEventListener('input', function () { document.getElementById('fk-sayac').textContent = this.value.length + ' / 600'; document.getElementById('fk-hata').textContent = ''; });
+function fkKayit() { try { return JSON.parse(localStorage.getItem('fikirGonderim') || '[]'); } catch (e) { return []; } }
 function geriAc() {
-  if (!GERI_BILDIRIM_FORM) return;
-  const f = document.getElementById('geri-frame');
-  if (!f.src) f.src = GERI_BILDIRIM_FORM.replace(/\/viewform.*$/, '/viewform?embedded=true');
   document.getElementById('geri-overlay').classList.add('active');
+  fbDb().catch(() => {});
+  setTimeout(() => { const a = document.getElementById('fk-form').hidden ? null : document.getElementById('fk-ad'); if (a && !a.value) a.focus(); }, 80);
 }
 function geriKapat() { document.getElementById('geri-overlay').classList.remove('active'); }
 document.getElementById('geri-overlay').addEventListener('click', function (e) { if (e.target === this) geriKapat(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') geriKapat(); });
+function fikirYeni() {
+  document.getElementById('fk-metin').value = ''; document.getElementById('fk-sayac').textContent = '0 / 600';
+  document.getElementById('fk-hata').textContent = '';
+  document.getElementById('fk-tamam').hidden = true; document.getElementById('fk-form').hidden = false;
+  document.getElementById('fk-metin').focus();
+}
+function fikirGonder() {
+  const hata = t => { document.getElementById('fk-hata').textContent = t; };
+  const ad = document.getElementById('fk-ad').value.trim().replace(/\s+/g, ' ');
+  const metin = document.getElementById('fk-metin').value.trim();
+  if (!fkSinif) return hata('Sınıfını seçer misin? 🙂');
+  if (metin.length < 10) return hata('Fikrini biraz daha anlatır mısın? ✏️');
+  if (document.getElementById('fk-web').value) return; // bot tuzağı
+  const simdi = Date.now(), kayit = fkKayit().filter(t => simdi - t < 864e5);
+  if (kayit.length >= FK_GUNLUK_SINIR) return hata('Bugün ' + FK_GUNLUK_SINIR + ' fikir gönderdin. Yarın yenilerini bekliyorum! 🌙');
+  if (kayit.length && simdi - kayit[kayit.length - 1] < 30000) return hata('Biraz bekle, sonra tekrar gönder. ⏳');
+  const btn = document.getElementById('fk-gonder'); btn.disabled = true; btn.textContent = 'Gönderiliyor…'; hata('');
+  fbDb().then(db => db.collection('oyun_fikirleri').add({
+    ad: ad.slice(0, 20), sinif: fkSinif, ders: fkDers, metin: metin.slice(0, 600),
+    tarih: firebase.firestore.FieldValue.serverTimestamp(), durum: 'yeni', yildiz: false
+  })).then(() => {
+    kayit.push(simdi); try { localStorage.setItem('fikirGonderim', JSON.stringify(kayit)); } catch (e) {}
+    document.getElementById('fk-form').hidden = true; document.getElementById('fk-tamam').hidden = false;
+  }).catch(() => hata('Gönderilemedi. İnternetini kontrol edip tekrar dener misin?'))
+    .finally(() => { btn.disabled = false; btn.textContent = '🚀 Gönder'; });
+}
 
 // ============================================================
 // MODAL
