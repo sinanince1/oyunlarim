@@ -65,10 +65,10 @@
     '@keyframes akSalin{0%,100%{transform:translate(31px,0) skewY(0deg) scaleX(1)}50%{transform:translate(31px,0) skewY(2.2deg) scaleX(.97)}}' +
     '.ak-dalga{animation:akDalga 3.2s linear infinite}@keyframes akDalga{to{transform:translateX(150px)}}' +
     '.ak-metin{flex:1 1 auto;max-width:640px;text-align:center;display:flex;flex-direction:column;align-items:center}' +
-    '.ak-foto{display:none;width:clamp(120px,19vh,190px);aspect-ratio:4/5;border-radius:50%/42%;overflow:hidden;margin-bottom:clamp(10px,2.4vh,22px);' +
-      'box-shadow:0 0 0 3px rgba(226,181,67,.75),0 0 0 9px rgba(226,181,67,.12),0 18px 50px rgba(0,0,0,.6)}' +
+    '.ak-foto{display:none;flex:0 0 auto;height:min(64vh,500px);aspect-ratio:278/400;' +
+      '-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 48%,transparent 88%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 48%,transparent 88%)}' +
     '.ak-foto.var{display:block}' +
-    '.ak-foto img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05) brightness(.95);animation:akYakin 22s ease-out forwards}' +
+    '.ak-foto img{display:block;width:100%;height:100%;object-fit:cover;filter:sepia(.25) saturate(.8) contrast(1.05);animation:akYakin 22s ease-out forwards}' +
     '@keyframes akYakin{from{transform:scale(1.12)}to{transform:scale(1)}}' +
     '.ak-s{opacity:0;transform:translateY(14px);animation:akYukari 1.4s ease forwards}' +
     '@keyframes akYukari{to{opacity:1;transform:none}}@keyframes akBelir{to{opacity:1}}' +
@@ -86,9 +86,11 @@
     '.ak-gec{position:absolute;top:16px;right:18px;font:700 .85rem Nunito,system-ui,sans-serif;color:rgba(255,255,255,.55);background:none;border:0;cursor:pointer;padding:8px 10px;opacity:0;animation:akBelir .8s 1.5s forwards}' +
     '.ak-gec:hover{color:#fff}' +
     '.ak-imza{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-weight:700;font-size:.8rem;letter-spacing:.14em;color:rgba(255,255,255,.3);opacity:0;animation:akBelir 1.5s 9s forwards}' +
-    '@media (max-width:720px){.ak-sahne{flex-direction:column;gap:6px}.ak-direk{height:30vh}.ak-foto{width:clamp(90px,15vh,130px)}}' +
+    '@media (max-width:720px){.ak-sahne{flex-direction:column;gap:6px}.ak-direk{height:30vh}}' +
     '@media (max-width:720px) and (max-height:700px){.ak-soz{display:none}}' +
-    '@media (max-width:720px){#akAnma:has(.ak-foto.var) .ak-soz{display:none}#akAnma:has(.ak-foto.var) .ak-direk{height:24vh}}' +
+    '@media (max-width:720px){#akAnma:has(.ak-foto.var) .ak-sahne{display:grid;grid-template-columns:auto auto;grid-template-areas:"d f" "m m";justify-content:center;align-items:end;column-gap:4px}' +
+      '#akAnma:has(.ak-foto.var) .ak-direk{grid-area:d;height:28vh}.ak-foto{grid-area:f;height:28vh}.ak-metin{grid-area:m}#akAnma:has(.ak-foto.var) .ak-soz{display:none}#akAnma:has(.ak-foto.var) .ak-yazi{font-size:1rem}}' +
+    '@media (min-width:721px) and (max-width:1100px){#akAnma:has(.ak-foto.var) .ak-foto{height:min(46vh,380px)}#akAnma:has(.ak-foto.var) .ak-soz{display:none}#akAnma:has(.ak-foto.var) .ak-yazi{font-size:1rem}}' +
     '@media (prefers-reduced-motion:reduce){#akAnma *{animation-duration:.01s!important;animation-delay:0s!important}.ak-bayrak{animation:none}.ak-dalga,.ak-toz{display:none}}';
 
   function kur() {
@@ -112,14 +114,14 @@
       '<button class="ak-gec" type="button">Geç ✕</button>' +
       '<div class="ak-sahne">' + bayrak +
         '<div class="ak-metin">' +
-          '<div class="ak-s ak-foto" style="animation-delay:1.6s"><img alt="Mustafa Kemal Atatürk"></div>' +
           '<div class="ak-s ak-tarih" style="animation-delay:2.2s">10 Kasım 1938 · 09.05</div>' +
           '<div class="ak-cizgi" style="animation-delay:2.8s"></div>' +
           '<h1 class="ak-s ak-isim" style="animation-delay:3.4s">Mustafa Kemal Atatürk</h1>' +
-          '<p class="ak-s ak-yazi" style="animation-delay:5s">Cumhuriyetimizin kurucusu Ulu Önder\'i,<br>aramızdan ayrılışının ' + yil + '. yılında<br><b>saygı, sevgi ve minnetle anıyoruz.</b></p>' +
+          '<p class="ak-s ak-yazi" style="animation-delay:5s">Cumhuriyetimizin kurucusu Ulu&nbsp;Önder\'i,<br>aramızdan ayrılışının ' + yil + '. yılında<br><b>saygı, sevgi ve minnetle anıyoruz.</b></p>' +
           '<p class="ak-s ak-soz" style="animation-delay:7.2s">“Küçük hanımlar, küçük beyler! Sizler hepiniz geleceğin bir gülü, yıldızı, bir ikbal ışığısınız.”<span>— M. KEMAL ATATÜRK</span></p>' +
           '<button class="ak-s ak-gir" type="button" style="animation-delay:9s">Siteye Gir</button>' +
         '</div>' +
+        '<div class="ak-s ak-foto" style="animation-delay:1.6s"><img alt="Mustafa Kemal Atatürk"></div>' +
       '</div>' +
       '<div class="ak-imza">SİNAN ÖĞRETMEN AKADEMİ</div>';
 
