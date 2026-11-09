@@ -1019,6 +1019,22 @@
     @keyframes pdfile { 0%, 76%, 100% { transform: scaleY(1); } 84% { transform: scaleY(1.35); } }
     @media (prefers-reduced-motion: reduce) { .pd-top, .pd-file { animation: none; } .pd-top { transform: translate(158px,22px); } }
     /* ---- Aç Timsah kart animasyonu: timsah büyük sayıyı (45) yer, "<" işareti belirir ---- */
+    /* Buz Yolu küçük resmi: Pıtır sayı doğrusunda 2'şer zıplar */
+    .buz-yolu-thumb { position: absolute; inset: 0; overflow: hidden; }
+    .by-sahne { width: 100%; height: 100%; }
+    .by-x { transform-box: view-box; animation: byx 4s ease-in-out infinite; }
+    .by-y { transform-box: view-box; animation: byy 4s ease-in-out infinite; }
+    .by-iz2 { animation: byiz2 4s linear infinite; }
+    .by-iz3 { animation: byiz3 4s linear infinite; }
+    .by-balik { transform-box: view-box; animation: bybalik 4s ease-in-out infinite; }
+    .by-isik { animation: byisik 5s ease-in-out infinite alternate; }
+    @keyframes byx { 0%,14% { transform: translateX(0); opacity: 1; } 28%,42% { transform: translateX(44px); } 56%,86% { transform: translateX(88px); opacity: 1; } 92% { transform: translateX(88px); opacity: 0; } 94% { transform: translateX(0); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes byy { 0%,14% { transform: translateY(0); } 21% { transform: translateY(-20px); } 28%,42% { transform: translateY(0); } 49% { transform: translateY(-20px); } 56%,100% { transform: translateY(0); } }
+    @keyframes byiz2 { 0%,27% { opacity: 0; } 30%,90% { opacity: 1; } 94%,100% { opacity: 0; } }
+    @keyframes byiz3 { 0%,55% { opacity: 0; } 58%,90% { opacity: 1; } 94%,100% { opacity: 0; } }
+    @keyframes bybalik { 0%,58% { transform: translate(0,0) rotate(0); opacity: 0; } 62% { opacity: 1; } 72% { transform: translate(-10px,-30px) rotate(-60deg); opacity: 1; } 80%,100% { transform: translate(-20px,-6px) rotate(-120deg); opacity: 0; } }
+    @keyframes byisik { from { opacity: .35; } to { opacity: .8; } }
+    @media (prefers-reduced-motion: reduce) { .by-x, .by-y, .by-balik, .by-isik, .by-iz2, .by-iz3 { animation: none; } }
     .ac-timsah-thumb { position: absolute; inset: 0; overflow: hidden; }
     .at-sahne { width: 100%; height: 100%; }
     .at-ust, .at-alt { transform-box: view-box; transform-origin: 208px 104px; }
@@ -2343,6 +2359,62 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Buz Yolu",
+        file: "buz_yolu.html",
+        desc: "Penguen Pıtır ile sayı doğrusunda zıpla! Buzların yerini bul, kayıp balıkları yerleştir, ritmik say ve Kutup Yıldızı'na ulaş.",
+        sinif: "2. Sınıf — Sayı doğrusu (ritmik sayma)",
+        eklenme: "2026-11-09",
+        thumbBg: "linear-gradient(180deg, #123566 0%, #7DB8E6 42%, #2A7AB8 43%, #1B5A92 76%, #F4FBFF 77%)",
+        customThumb: `
+<div class="buz-yolu-thumb">
+<svg class="by-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="byGok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#123566"/><stop offset="1" stop-color="#7DB8E6"/></linearGradient>
+    <linearGradient id="byDeniz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B8FCC"/><stop offset="1" stop-color="#1B5A92"/></linearGradient>
+  </defs>
+  <!-- gökyüzü, kuzey ışığı, buzdağları -->
+  <rect width="240" height="64" fill="url(#byGok)"/>
+  <g class="by-isik" fill="none" stroke-linecap="round"><path d="M-5 22Q50-2 110 18T245 12" stroke="#3DFFB0" stroke-width="9" opacity=".5"/><path d="M-5 34Q70 12 140 30T245 24" stroke="#A855F7" stroke-width="6" opacity=".4"/></g>
+  <g fill="#DCEFFB"><path d="M8 64 30 40 38 46 46 36 66 64Z"/><path d="M160 64 186 34 196 42 204 32 230 64Z"/></g>
+  <g fill="#B5DAF2"><path d="M38 46 46 36 66 64Z"/><path d="M196 42 204 32 230 64Z"/></g>
+  <!-- deniz -->
+  <rect y="63" width="240" height="52" fill="url(#byDeniz)"/>
+  <g stroke="#fff" stroke-opacity=".3" stroke-width="1.5" fill="none" stroke-linecap="round"><path d="M10 74q5-3 10 0M70 108q5-3 10 0M150 76q5-3 10 0M206 106q5-3 10 0"/></g>
+  <!-- buz kütleleri (0–10) -->
+  <g transform="translate(20 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(42 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(64 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(86 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(108 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(130 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(152 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(174 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(196 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(218 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g><g transform="translate(240 92)"><rect x="-9" y="0" width="18" height="5" rx="2.5" fill="#9ED3EE"/><ellipse cx="0" cy="0" rx="9" ry="3.6" fill="#F4FBFF" stroke="#CDEBFA" stroke-width="1"/></g>
+  <!-- ayak izi yayları: +2 -->
+  <g fill="none" stroke="#C9B6FF" stroke-width="1.6" stroke-dasharray="1.5 3" stroke-linecap="round">
+    <path d="M20 89Q42 70 64 89"/><path class="by-iz2" d="M64 89Q86 70 108 89"/><path class="by-iz3" d="M108 89Q130 70 152 89"/>
+  </g>
+  <g font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-size="9" font-weight="900" fill="#fff" stroke="#6B3FC9" stroke-width="2.5" paint-order="stroke" text-anchor="middle">
+    <text x="42" y="77">+2</text><text class="by-iz2" x="86" y="77">+2</text><text class="by-iz3" x="130" y="77">+2</text>
+  </g>
+  <!-- sudan sıçrayan balık -->
+  <g class="by-balik"><g transform="translate(178 104)"><path d="M-7 0Q-2-4.5 4 0Q-2 4.5-7 0Z" fill="#FF9F1C"/><path d="M3.5 0 8-3.5V3.5Z" fill="#FF9F1C"/></g></g>
+  <!-- kar şeridi ve sayı doğrusu -->
+  <path d="M0 116Q15 110 30 116T60 116T90 116T120 116T150 116T180 116T210 116T240 116V150H0Z" fill="#F4FBFF"/>
+  <g stroke="#14213D" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="124" x2="232" y2="124"/><line x1="20" y1="118" x2="20" y2="130"/><line x1="42" y1="120" x2="42" y2="128"/><line x1="64" y1="120" x2="64" y2="128"/><line x1="86" y1="120" x2="86" y2="128"/><line x1="108" y1="120" x2="108" y2="128"/><line x1="130" y1="118" x2="130" y2="130"/><line x1="152" y1="120" x2="152" y2="128"/><line x1="174" y1="120" x2="174" y2="128"/><line x1="196" y1="120" x2="196" y2="128"/><line x1="218" y1="120" x2="218" y2="128"/><line x1="240" y1="118" x2="240" y2="130"/></g>
+  <path d="M234 124l-6-4v8Z" fill="#14213D"/>
+  <g font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-size="11" font-weight="900" fill="#14213D" text-anchor="middle"><text x="20" y="143">0</text><text x="64" y="143">2</text><text x="108" y="143">4</text><text x="152" y="143">6</text><text x="196" y="143">8</text><text x="240" y="143">10</text></g>
+  <!-- Pıtır (2'şer zıplar) -->
+  <g class="by-x"><g class="by-y">
+      <g transform="translate(49 57) scale(.3)">
+        <ellipse cx="37" cy="112" rx="11" ry="5.5" fill="#FF9F1C"/><ellipse cx="63" cy="112" rx="11" ry="5.5" fill="#FF9F1C"/>
+        <path d="M22 56C8 68 6 88 13 98 19 90 24 78 26 64Z" fill="#162E50"/><path d="M78 56C92 68 94 88 87 98 81 90 76 78 74 64Z" fill="#162E50"/>
+        <path d="M50 16C79 16 87 50 85 80 83 104 69 114 50 114 31 114 17 104 15 80 13 50 21 16 50 16Z" fill="#1F3A5F"/>
+        <path d="M50 46C68 46 74 66 72 86 70 103 61 109 50 109 39 109 30 103 28 86 26 66 32 46 50 46Z" fill="#fff"/>
+        <ellipse cx="39.5" cy="45" rx="11.5" ry="12.5" fill="#fff"/><ellipse cx="60.5" cy="45" rx="11.5" ry="12.5" fill="#fff"/>
+        <circle cx="41" cy="46" r="5.2" fill="#14213D"/><circle cx="59" cy="46" r="5.2" fill="#14213D"/>
+        <circle cx="43" cy="44" r="1.9" fill="#fff"/><circle cx="61" cy="44" r="1.9" fill="#fff"/>
+        <path d="M44 55Q50 51 56 55 50 63 44 55Z" fill="#FF9F1C"/>
+        <path d="M24 61Q50 73 76 61L76 70Q50 82 24 70Z" fill="#E63946"/>
+      </g>
+  </g></g>
+</svg>
+</div>
+`
+      },
       {
         name: "Aç Timsah",
         file: "ac_timsah.html",
@@ -3817,7 +3889,7 @@ const SINIF_RENK = {
   3: { renk: '#00C9A7', grad: 'linear-gradient(135deg,#00C9A7,#4D9FFF)' },
   4: { renk: '#4D9FFF', grad: 'linear-gradient(135deg,#4D9FFF,#A855F7)' }
 };
-const KONU_SIRASI = ['Hayat Bilgisi', 'Türkçe', 'Matematik', 'Fen Bilimleri', 'PYP', 'Diğer Oyunlar'];
+const KONU_SIRASI = ['Matematik', 'Türkçe', 'Hayat Bilgisi', 'Fen Bilimleri', 'PYP', 'Diğer Oyunlar'];
 
 let seciliSinif = 2; // ilk girişte 2. sınıf açılır
 try {
