@@ -498,28 +498,33 @@ Modal.arka.addEventListener('pointerdown', e => { if (e.target === Modal.arka) M
    ========================================================= */
 function onluk() { const d = rnd(1, 9); return { bas: d * 10, son: d * 10 + 10 }; }
 const BOLGELER = [
-  { id: 'b1', ad: 'Buz Cetveli', ikon: '🧊', renk: '#4D9FFF', x: 13, y: 66, seviyeler: [
+  { id: 'b1', ad: 'Buz Cetveli', ikon: '🧊', renk: '#4D9FFF', x: 10, y: 66, seviyeler: [
     { aralik: '0–10', acik: 'Tüm buzlar numaralı', yol: () => ({ bas: 0, son: 10, adim: 1, etiket: 'hepsi' }) },
     { aralik: '0–20', acik: 'Yalnız 0, 5, 10, 15, 20', yol: () => ({ bas: 0, son: 20, adim: 1, etiket: 'besler' }) },
     { aralik: '0–20', acik: 'Yalnız baş ve son', yol: () => ({ bas: 0, son: 20, adim: 1, etiket: 'uclar' }) } ] },
-  { id: 'b2', ad: 'Kayıp Balıklar', ikon: '🐟', renk: '#00C9A7', x: 33, y: 34, seviyeler: [
+  { id: 'b2', ad: 'Kayıp Balıklar', ikon: '🐟', renk: '#00C9A7', x: 27, y: 34, seviyeler: [
     { aralik: '0–20', acik: '2 boş buz', yol: () => ({ bas: 0, son: 20, adim: 1, etiket: 'hepsi', bos: rastgeleSec(aralik(1, 19), 2) }) },
     { aralik: '100’e kadar', acik: 'Onluk parçada 3 boş buz', yol: () => ({ ...onluk(), adim: 1, etiket: 'hepsi', bos: rastgeleSec(aralik(1, 9), 3) }) },
     { aralik: '100’e kadar', acik: '4 boş buz + şaşırtmaca balık', yol: () => ({ ...onluk(), adim: 1, etiket: 'hepsi', bos: rastgeleSec(aralik(1, 9), 4) }) } ] },
-  { id: 'b3', ad: 'Zıp Zıp Pıtır', ikon: '👣', renk: '#A855F7', x: 54, y: 64, seviyeler: [
+  { id: 'b3', ad: 'Zıp Zıp Pıtır', ikon: '👣', renk: '#A855F7', x: 44, y: 64, seviyeler: [
     { aralik: "2'şer · 10'ar", acik: "20'ye kadar ikişer, 100'e kadar onar", yol: () => ({ bas: 0, son: 20, adim: 1, etiket: 'hepsi' }) },
     { aralik: "3'er · 5'er", acik: "30'a kadar üçer, 100'e kadar beşer", yol: () => ({ bas: 0, son: 30, adim: 3, etiket: 'hepsi' }) },
     { aralik: "4'er · geriye", acik: "40'a kadar dörder, geriye zıplama", yol: () => ({ bas: 0, son: 100, adim: 10, etiket: 'hepsi' }) } ] },
-  { id: 'b4', ad: 'Büyük Buzdağı', ikon: '🏔️', renk: '#FF6B35', x: 75, y: 33, seviyeler: [
+  { id: 'b4', ad: 'Büyük Buzdağı', ikon: '🏔️', renk: '#FF6B35', x: 61, y: 33, seviyeler: [
     { aralik: '0–100', acik: 'Onar onar buzlar', yol: () => ({ bas: 0, son: 100, adim: 10, etiket: 'hepsi' }) },
     { aralik: '100’e kadar', acik: 'Onluk parçada birlikler', yol: () => ({ ...onluk(), adim: 1, etiket: 'uclar' }) },
-    { aralik: '100’e kadar', acik: 'Karışık görevler', yol: () => ({ ...onluk(), adim: 1, etiket: 'besler' }) } ] }
+    { aralik: '100’e kadar', acik: 'Karışık görevler', yol: () => ({ ...onluk(), adim: 1, etiket: 'besler' }) } ] },
+  // ek mod: en yakın onluk (final kilidine dahil değil)
+  { id: 'b5', ad: 'Yakın Yuva', ikon: '❄️', renk: '#FF4D8D', x: 77, y: 64, ekMod: true, seviyeler: [
+    { aralik: 'En yakın onluk', acik: 'Tüm buzlar numaralı' },
+    { aralik: 'En yakın onluk', acik: 'Tam ortadakiler de var' },
+    { aralik: '0–100', acik: 'Onar onar büyük yol' } ] }
 ];
-const FINAL = { id: 'final', ad: 'Kutup Yıldızı', ikon: '⭐', renk: '#FFD600', x: 90, y: 66, seviyeler: [
+const FINAL = { id: 'final', ad: 'Kutup Yıldızı', ikon: '⭐', renk: '#FFD600', x: 91, y: 34, seviyeler: [
   { aralik: 'Karışık', acik: '10 karışık görev', yol: () => ({ bas: 0, son: 20, adim: 1, etiket: 'besler' }) } ] };
 const bolgeBul = id => id === 'final' ? FINAL : BOLGELER.find(b => b.id === id);
 const yildizAl = (b, s) => kayit.yildiz[b + '-' + s] || 0;
-const finalAcikMi = () => BOLGELER.every(b => [1, 2, 3].some(s => yildizAl(b.id, s) > 0));
+const finalAcikMi = () => BOLGELER.filter(b => !b.ekMod).every(b => [1, 2, 3].some(s => yildizAl(b.id, s) > 0));
 
 /* =========================================================
    G. PITIR (SVG karakter) — viewBox 0 0 100 120, ayaklar (50,118)
@@ -579,7 +584,7 @@ class BuzYolu {
   kur(cfg) {
     this.cfg = cfg;
     this.n = Math.round((cfg.son - cfg.bas) / cfg.adim) + 1;
-    this.pi = cfg.pitir ?? 0; this.yon = cfg.yon || 1; this.mesgul = false; this.gecici.clear(); this.izler = [];
+    this.pi = cfg.pitir ?? 0; this.yon = cfg.yon || 1; this.mesgul = false; this.gecici.clear(); this.izler = []; this.pinler = [];
     this.ciz();
   }
   deger(i) { return this.cfg.bas + i * this.cfg.adim; }
@@ -662,6 +667,19 @@ class BuzYolu {
       // buz ile çentik arasında kesik kılavuz çizgi
       el('line', { x1: x, y1: yF + yanH + 8, x2: x, y2: yL - 12, stroke: 'rgba(255,255,255,.45)', 'stroke-width': 2, 'stroke-dasharray': '3 5' }, buzlar);
     });
+    // --- yuvalar (iglo) ve "orta" bayrağı (Yakın Yuva bölgesi)
+    (this.cfg.yuvalar || []).forEach(i => {
+      const x = this.xs[i], w = fw * 1.05, h = fw * 0.62, y = yF - fw * 0.06;
+      const g = el('g', {}, D);
+      el('path', { d: `M${x - w / 2} ${y} A${w / 2} ${h} 0 0 1 ${x + w / 2} ${y}Z`, fill: '#F4FBFF', stroke: '#9ED3EE', 'stroke-width': 2.5 }, g);
+      el('path', { d: `M${x - w * 0.42} ${y - h * 0.35} H${x + w * 0.42} M${x - w * 0.3} ${y - h * 0.7} H${x + w * 0.3} M${x - w * 0.2} ${y} V${y - h * 0.35} M${x + w * 0.2} ${y} V${y - h * 0.35} M${x} ${y - h * 0.35} V${y - h * 0.7}`, stroke: '#CDEBFA', 'stroke-width': 2, fill: 'none' }, g);
+      el('path', { d: `M${x - w * 0.13} ${y} V${y - h * 0.28} A${w * 0.13} ${w * 0.13} 0 0 1 ${x + w * 0.13} ${y - h * 0.28} V${y}Z`, fill: '#1F3A5F' }, g);
+    });
+    if (this.cfg.orta != null) {
+      const x = this.xs[this.cfg.orta], g = el('g', {}, D), hy = Math.min(fw * 1.1, H * 0.14);
+      el('line', { x1: x + fw * 0.32, y1: yF, x2: x + fw * 0.32, y2: yF - hy, stroke: '#6B4F3A', 'stroke-width': 3, 'stroke-linecap': 'round' }, g);
+      el('path', { d: `M${x + fw * 0.32} ${yF - hy} l${fw * 0.42} ${hy * 0.14} l${-fw * 0.42} ${hy * 0.14}Z`, fill: '#FF4D8D' }, g);
+    }
 
     // --- sayı doğrusu: çizgi, oklar, çentikler
     const cizgi = el('g', { stroke: '#14213D', 'stroke-width': 3, 'stroke-linecap': 'round' }, D);
@@ -685,6 +703,8 @@ class BuzYolu {
     this.izKat = el('g', {}, D);
     this.vurguKat = el('g', {}, D);
     this.okKat = el('g', {}, D);
+    this.pinKat = el('g', {}, D);
+    (this.pinler || []).forEach(p => this.isaretKoy(p.x, p.metin, true));
     if (this.vurguI != null) this.vurgula(this.vurguI);
     (this.izler || []).forEach(z => this.izCiz(z));
     // --- Pıtır ve balon katmanı
@@ -745,7 +765,7 @@ class BuzYolu {
     if (i == null) return;
     el('ellipse', { cx: this.xs[i], cy: this.yF, rx: this.fw * 0.68, ry: this.fw * 0.3, fill: 'none', stroke: '#FFD600', 'stroke-width': 5, class: 'parilti' }, this.vurguKat);
   }
-  temizle() { this.vurgula(null); if (this.okKat) this.okKat.innerHTML = ''; if (this.balonKat) this.balonKat.innerHTML = ''; }
+  temizle() { this.vurgula(null); this.pinler = []; if (this.pinKat) this.pinKat.innerHTML = ''; if (this.okKat) this.okKat.innerHTML = ''; if (this.balonKat) this.balonKat.innerHTML = ''; }
   // a buzundan b buzuna adım adım yay çiz, her inişte sayıyı yaz
   async adimOklari(a, b, sayac = false) {   // sayac: yayların üstüne değer yerine 1, 2, 3… yaz
     this.okKat.innerHTML = '';
@@ -763,9 +783,10 @@ class BuzYolu {
     }
   }
   // Doğru üstünde bir değerin yerini iğne + etiketle göster (x dünya koordinatı)
-  isaretKoy(x, metin) {
+  isaretKoy(x, metin, yeniden = false) {
+    if (!yeniden) (this.pinler = this.pinler || []).push({ x, metin });
     const fs = Math.max(15, Math.min(this.fs * 0.95, 28)), y = this.yL;
-    const g = el('g', { class: 'balon' }, this.okKat);
+    const g = el('g', { class: 'balon' }, this.pinKat);
     el('line', { x1: x, y1: y - 26, x2: x, y2: y, stroke: '#FF6B35', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
     el('circle', { cx: x, cy: y, r: 6, fill: '#FF6B35', stroke: '#fff', 'stroke-width': 2 }, g);
     const w = String(metin).length * fs * 0.62 + 16, h = fs * 1.3;
@@ -926,7 +947,7 @@ function finalDugumBagla(d, kilitli) {
     if (uzun) return;
     Ses.tik();
     if (!kilitli) { oyunBaslat('final', 1); return; }
-    const liste = BOLGELER.map(b => {
+    const liste = BOLGELER.filter(b => !b.ekMod).map(b => {
       const ok = [1, 2, 3].some(s => yildizAl(b.id, s) > 0);
       return `<div class="ayar-satir"><span>${b.ikon} ${b.ad}</span><span>${ok ? '✅' : '⬜'}</span></div>`;
     }).join('');
@@ -970,6 +991,7 @@ Ekran.oyun = () => {
   if (aktif.bolge === 'b2') { requestAnimationFrame(() => B2.basla(aktif.seviye)); return; }
   if (aktif.bolge === 'b3') { requestAnimationFrame(() => B3.basla(aktif.seviye)); return; }
   if (aktif.bolge === 'b4') { requestAnimationFrame(() => B4.basla(aktif.seviye)); return; }
+  if (aktif.bolge === 'b5') { requestAnimationFrame(() => B5.basla(aktif.seviye)); return; }
   if (aktif.bolge === 'final') { requestAnimationFrame(() => FINAL_MOTOR.basla()); return; }
 };
 /* =========================================================
@@ -1650,10 +1672,152 @@ const B4 = {
 MOTORLAR.push(B4);
 
 /* =========================================================
+   L6b. BÖLGE 5 — YAKIN YUVA (en yakın onluk)
+   Seviye 1: onluk parça, tüm buzlar numaralı, 5'liler yok
+   Seviye 2: yalnız baş-orta-son numaralı, 5'liler de var (tam orta → büyük onluk)
+   Seviye 3: 0–100 onar yol, sayının yeri iğneyle; en yakın onluk buzuna dokun
+   ========================================================= */
+const B5 = {
+  seviye: 1, oturum: 0,
+  devam(o) { if (o !== this.oturum || Sahne.aktif !== 'oyun') return; Tur.kilit = false; this.sonraki(); },
+  basla(seviye) {
+    this.oturum++; this.seviye = seviye;
+    const gorulen = new Set(), gorevler = [];
+    const birlikler = [1, 2, 3, 4, 6, 7, 8, 9];
+    const besliSira = seviye === 1 ? [] : seviye === 2 ? [2, 6] : [3];   // hangi görevler 5 ile bitsin
+    for (let k = 0; k < GOREV_SAYISI; k++) {
+      let v, t = 0;
+      do {
+        const d = seviye === 3 ? rnd(0, 9) : rnd(0, 9);
+        const b = besliSira.includes(k) ? 5 : birlikler[rnd(0, 7)];
+        v = d * 10 + b;
+      } while ((gorulen.has(v) || (v === 5 && seviye < 3)) && ++t < 40);
+      gorulen.add(v);
+      gorevler.push(seviye === 3 ? { tur: 'buyuk', v } : { tur: 'parca', v });
+    }
+    Tur.sifirla(gorevler); Tur.zorluk = {};
+    this.sonraki();
+  },
+  sonraki() {
+    Tur.ilerleme(); yolu.temizle();
+    const g = Tur.gorevler[Tur.k];
+    if (!g) return this.bitir();
+    if (g.tur === 'parca') this.parca(g); else this.buyuk(g);
+  },
+  /* ---------- onluk parçada en yakın yuva ---------- */
+  parca(g) {
+    const o = this.oturum, v = g.v, d = Math.floor(v / 10) * 10, b = v - d;
+    const dogruI = b >= 5 ? 10 : 0;
+    yolu.kur({ bas: d, son: d + 10, adim: 1, etiket: this.seviye === 1 ? 'hepsi' : [d, d + 5, d + 10], yuvalar: [0, 10], orta: 5, dolu: [b], pitir: b, yon: b >= 5 ? 1 : -1 });
+    yolu.temizle();
+    $('#oyunAlt').innerHTML = `<span class="ipucu">🏠 Pıtır en yakın yuvaya kaysın! Yuvalar onluklarda.</span>`;
+    gorevYaz(`<b>${v}</b> hangi onluğa daha yakın?`, `${v} hangi onluğa daha yakın?`);
+    let deneme = 1;
+    yolu.onDokun = async i => {
+      if (Tur.kilit) return;
+      if (i !== 0 && i !== 10) {
+        Ses.tik(); gorevYaz(`Yuvalar <b>${d}</b> ve <b>${d + 10}</b>. Birine dokun!`); return;
+      }
+      Tur.kilit = true;
+      if (i === dogruI) {
+        Ses.dogru();
+        await yolu.adimOklari(b, i, true);
+        if (o !== this.oturum) return;
+        await new Promise(r => yolu.zipla(i, r));
+        await yolu.balikVer(i);
+        yolu.balon(i, `${v} ≈ ${d + i}`, 1500);
+        gorevYaz(`✓ <b>${v}</b> en yakın onluk: <b>${d + i}</b>`);
+        Tur.sonuc(deneme);
+        await bekle(1500); return this.devam(o);
+      }
+      Ses.yanlis();
+      const uzakT = d + i, yakinT = d + dogruI, uzak = Math.abs(i - b), yakin = Math.abs(dogruI - b);
+      if (b === 5) {
+        Tur.zorluk.orta = (Tur.zorluk.orta || 0) + 1;
+        gorevYaz(`<b>${v}</b> tam ortada! Ortadakiler <b>büyük onluğa</b> gider.`, `${v} tam ortada! Ortadakiler büyük onluğa gider.`);
+        yolu.vurgula(dogruI);
+      } else {
+        Tur.zorluk.uzak = (Tur.zorluk.uzak || 0) + 1;
+        await yolu.adimOklari(b, i, true);
+        if (o !== this.oturum) return;
+        await bekle(500);
+        await yolu.adimOklari(b, dogruI, true);
+        if (o !== this.oturum) return;
+        gorevYaz(`${ek(uzakT, 'dat')} <b>${uzak} adım</b>, ${ek(yakinT, 'dat')} <b>${yakin} adım</b>. Hangisi yakın?`,
+          `${ek(uzakT, 'dat')} ${uzak} adım, ${ek(yakinT, 'dat')} ${yakin} adım. Hangisi yakın?`);
+      }
+      if (deneme === 1) { deneme = 2; Tur.kilit = false; return; }
+      // ikinci yanlış: birlikte kay
+      await bekle(1200);
+      if (o !== this.oturum) return;
+      await new Promise(r => yolu.zipla(dogruI, r));
+      yolu.balon(dogruI, `${v} ≈ ${yakinT}`, 1500);
+      Tur.sonuc(3);
+      await bekle(1600); this.devam(o);
+    };
+  },
+  /* ---------- 0–100 onar yolda en yakın onluk ---------- */
+  buyuk(g) {
+    const o = this.oturum, v = g.v, t = Math.floor(v / 10) * 10, b = v - t;
+    const dogruT = b >= 5 ? t + 10 : t, dogruI = dogruT / 10;
+    const pit = v < 50 ? 10 : 0;
+    yolu.kur({ bas: 0, son: 100, adim: 10, etiket: 'hepsi', pitir: pit, yon: pit ? -1 : 1 });
+    yolu.temizle();
+    yolu.isaretKoy(yolu.xs[t / 10] + b / 10 * yolu.ara, v);
+    $('#oyunAlt').innerHTML = `<span class="ipucu">📍 İğne sayının yerini gösteriyor. En yakın onluk buzuna zıpla!</span>`;
+    gorevYaz(`<b>${v}</b> en yakın hangi onluğa?`, `${v} en yakın hangi onluğa?`);
+    let deneme = 1;
+    yolu.onDokun = async i => {
+      if (Tur.kilit) return;
+      Tur.kilit = true;
+      await new Promise(r => yolu.zipla(i, r));
+      if (o !== this.oturum) return;
+      if (i === dogruI) {
+        Ses.dogru();
+        await yolu.balikVer(i);
+        yolu.balon(i, `${v} ≈ ${dogruT}`, 1500);
+        gorevYaz(`✓ <b>${v}</b> en yakın onluk: <b>${dogruT}</b>`);
+        Tur.sonuc(deneme);
+        await bekle(1500); return this.devam(o);
+      }
+      Ses.yanlis();
+      const w = i * 10;
+      if (w !== t && w !== t + 10) {
+        Tur.zorluk.uzak = (Tur.zorluk.uzak || 0) + 1;
+        gorevYaz(`<b>${v}</b>, <b>${t}</b> ile <b>${t + 10}</b> arasında. Bu ikisinden birini seç!`, `${v}, ${t} ile ${t + 10} arasında. Bu ikisinden birini seç!`);
+      } else if (b === 5) {
+        Tur.zorluk.orta = (Tur.zorluk.orta || 0) + 1;
+        gorevYaz(`<b>${v}</b> tam ortada! Ortadakiler <b>büyük onluğa</b> gider.`, `${v} tam ortada! Ortadakiler büyük onluğa gider.`);
+      } else {
+        Tur.zorluk.uzak = (Tur.zorluk.uzak || 0) + 1;
+        gorevYaz(`${ek(v, 'abl')} ${ek(t, 'dat')} <b>${b} adım</b>, ${ek(t + 10, 'dat')} <b>${10 - b} adım</b>. Hangisi yakın?`,
+          `${ek(v, 'abl')} ${ek(t, 'dat')} ${b} adım, ${ek(t + 10, 'dat')} ${10 - b} adım. Hangisi yakın?`);
+      }
+      if (deneme === 1) { deneme = 2; yolu.vurgula(null); Tur.kilit = false; return; }
+      await bekle(1400);
+      if (o !== this.oturum) return;
+      yolu.vurgula(dogruI);
+      await new Promise(r => yolu.zipla(dogruI, r));
+      yolu.balon(dogruI, `${v} ≈ ${dogruT}`, 1500);
+      Tur.sonuc(3);
+      await bekle(1600); this.devam(o);
+    };
+  },
+  bitir() {
+    yolu.onDokun = null;
+    let ozet = 'Harika! Pıtır hep en yakın yuvayı buldu. 🏠';
+    if ((Tur.zorluk.orta || 0) > 0) ozet = 'Unutma: tam ortadaki sayılar (25, 45…) büyük onluğa yuvarlanır.';
+    else if ((Tur.zorluk.uzak || 0) > 0) ozet = 'İki yuvaya kaç adım olduğunu say; az olan daha yakın!';
+    seviyeBitti({ yildiz: Tur.yildiz(), balik: Tur.balik, ozet });
+  }
+};
+MOTORLAR.push(B5);
+
+/* =========================================================
    L7. FİNAL — KUTUP YILDIZI (10 karışık görev, süre yok)
    Her görev ilgili bölgenin kodunu ödünç alır (call ile).
    ========================================================= */
-const FINAL_PLAN = ['bul20', 'yol', 'balik', 'kosu', 'kesit', 'arasinda', 'bul20zor', 'kosuGeri', 'onluk', 'balik'];
+const FINAL_PLAN = ['bul20', 'yol', 'balik', 'kosu', 'kesit', 'arasinda', 'bul20zor', 'kosuGeri', 'onluk', 'yuvarla'];
 const FINAL_MOTOR = {
   seviye: 2, oturum: 0, cfg: null,
   // ödünç alınan yardımcılar
@@ -1661,6 +1825,7 @@ const FINAL_MOTOR = {
   gorev: B2.gorev, kartBagla: B2.kartBagla, sec: B2.sec, dene: B2.dene, gorevUret: B2.gorevUret,
   kosu: B3.kosu, hazirla: B3.hazirla, gosterZipla: B3.gosterZipla, zipla: B3.zipla, dokunusBekle: B3.dokunusBekle, kosuUret: B3.kosuUret,
   arasinda: B4.arasinda,
+  parca: B5.parca,
   devam(o) { if (o !== this.oturum || Sahne.aktif !== 'oyun') return; Tur.kilit = false; this.sonraki(); },
   basla() {
     this.oturum++;
@@ -1674,6 +1839,7 @@ const FINAL_MOTOR = {
     if (t === 'yol') return { tip: 'yol', ft: t, seviye: rnd(1, 3) };
     if (t === 'balik') return { tip: 'balik', ft: t, seviye: 2, ...B2.gorevUret(2, rnd(1, 9)) };
     if (t === 'kosu') return { tip: 'kosu', ft: t, ...B3.kosuUret([2, 3, 4, 5, 10][rnd(0, 4)]) };
+    if (t === 'yuvarla') { let v; do { v = rnd(10, 99); } while (v % 10 === 0); return { tip: 'yuvarla', ft: t, tur: 'parca', v, seviye: 2 }; }
     if (t === 'kosuGeri') return { tip: 'kosu', ft: t, ...B3.kosuUret([-2, -5, -10][rnd(0, 2)]) };
     const g = b4GorevUret(t === 'onluk' ? 'onluk' : t === 'kesit' ? 'kesit' : 'arasinda', 3);
     return { ...g, ft: t, seviye: 3 };
@@ -1696,6 +1862,7 @@ const FINAL_MOTOR = {
     if (g.tip === 'balik') return this.gorev(g);
     if (g.tip === 'kosu') { $('#oyunAlt').innerHTML = '<span class="ipucu">⭐ Pıtır hep aynı sayıda buz atlar.</span>'; return this.kosu(g); }
     if (g.tip === 'arasinda') return this.arasinda(g);
+    if (g.tip === 'yuvarla') return this.parca(g);
   },
   bitir() {
     yolu.onDokun = null;
