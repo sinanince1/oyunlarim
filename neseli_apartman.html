@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Neşeli Apartman — İstek mi İhtiyaç mı?</title>
+<style>
+/* =========================================================
+   1) TEMEL DEĞİŞKENLER VE SIFIRLAMA
+   ========================================================= */
+:root{
+  --turuncu:#FF6B35; --sari:#FFD600; --pembe:#FF4D8D; --yesil:#00C9A7;
+  --mavi:#4D9FFF; --mor:#A855F7; --zemin:#FFF8F0; --koyu:#3B2416;
+  --kahve:#7a3b1d; --golge:0 6px 0 rgba(59,36,22,.18);
+  --yaricap:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--zemin);color:var(--koyu);
+  font-family:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit}
+button:focus-visible{outline:4px solid var(--mavi);outline-offset:3px}
+
+/* =========================================================
+   2) SAHNE YÖNETİCİSİ İÇİN KAPSAYICI
+   ========================================================= */
+#uygulama{position:relative;width:100%;height:100dvh;overflow:hidden}
+.sahne{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;
+  padding:clamp(10px,2vw,22px);padding-bottom:34px}
+.sahne.aktif{display:flex;animation:belir .28s ease-out}
+@keyframes belir{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* =========================================================
+   3) ORTAK BİLEŞENLER: DÜĞMELER, ÜST BAR, KARTLAR
+   ========================================================= */
+.dugme{min-height:64px;padding:12px 28px;border-radius:999px;font-size:clamp(20px,2.4vw,28px);
+  font-weight:900;background:var(--turuncu);color:#fff;box-shadow:var(--golge);
+  transition:transform .1s}
+.dugme:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(59,36,22,.18)}
+.dugme.ikincil{background:#fff;color:var(--koyu);border:3px solid #f0dccb}
+.dugme.yesil{background:var(--yesil)}
+.dugme.mavi{background:var(--mavi)}
+.dugme.pembe{background:var(--pembe)}
+.dugme.mor{background:var(--mor)}
+
+.ust-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-shrink:0}
+.ust-bar h2{flex:1;font-size:clamp(20px,2.6vw,32px);font-weight:900;text-align:center}
+.geri{min-height:56px;min-width:56px;padding:8px 18px;border-radius:999px;background:#fff;
+  border:3px solid #f0dccb;font-size:20px;font-weight:800;box-shadow:var(--golge)}
+.yildiz-rozet{min-height:56px;display:flex;align-items:center;gap:6px;padding:8px 18px;
+  border-radius:999px;background:var(--sari);font-size:22px;font-weight:900;box-shadow:var(--golge)}
+
+.sesli{min-width:52px;min-height:52px;border-radius:50%;background:#fff;border:3px solid #f0dccb;
+  font-size:24px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+.sesli.gizli{display:none}
+
+.altbilgi{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-size:13px;
+  font-weight:700;opacity:.55;pointer-events:none;z-index:5}
+
+/* =========================================================
+   4) GİRİŞ EKRANI
+   ========================================================= */
+#s-giris{align-items:center;justify-content:center;gap:clamp(8px,2vh,18px);text-align:center}
+#s-giris .bina-kutu{height:min(46dvh,420px);aspect-ratio:360/520}
+#s-giris h1{font-size:clamp(38px,6vw,72px);font-weight:900;color:var(--turuncu);
+  text-shadow:0 4px 0 #ffd9c4;line-height:1}
+#s-giris .alt-baslik{font-size:clamp(18px,2.4vw,26px);font-weight:800;display:flex;
+  align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
+.giris-dugmeler{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+
+/* =========================================================
+   5) APARTMAN (ANA MENÜ)
+   ========================================================= */
+.apt-izgara{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
+  gap:clamp(12px,2.5vw,32px);align-items:center;min-height:0}
+.apt-izgara .bina-kutu{height:100%;max-height:calc(100dvh - 120px);display:flex;justify-content:center}
+.bina-svg{height:100%;width:auto;max-width:100%;display:block}
+.mod-kartlar{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.6vw,18px)}
+.mod-kart{border-radius:var(--yaricap);padding:clamp(12px,1.8vw,20px);text-align:left;color:#fff;
+  box-shadow:var(--golge);display:flex;gap:12px;align-items:center;min-height:96px;transition:transform .1s}
+.mod-kart:active{transform:translateY(4px)}
+.mod-kart.genis{grid-column:1/-1}
+.mod-kart svg{width:clamp(48px,6vw,72px);height:clamp(48px,6vw,72px);flex-shrink:0}
+.mod-kart b{display:block;font-size:clamp(19px,2.2vw,26px);font-weight:900}
+.mod-kart span{display:block;font-size:clamp(14px,1.5vw,17px);font-weight:700;opacity:.95}
+.mod-kart.ek{min-height:76px;background:#fff;color:var(--koyu);border:3px solid #f0dccb}
+.k-a{background:var(--turuncu)} .k-b{background:var(--mavi)} .k-c{background:var(--mor)}
+.apt-alt{display:flex;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+.sus-dugme{flex:1;min-height:64px;border-radius:999px;background:#fff;border:3px solid #f0dccb;box-shadow:var(--golge);
+  display:flex;align-items:center;gap:10px;padding:6px 16px;text-align:left;font-size:clamp(15px,1.6vw,18px);font-weight:800}
+.sus-dugme .cubuk{flex:1;height:12px;border-radius:6px;background:#F3E3D3;overflow:hidden;min-width:60px}
+.sus-dugme .cubuk i{display:block;height:100%;background:linear-gradient(90deg,var(--sari),var(--turuncu));border-radius:6px}
+.en-iyi{display:block;font-style:normal;font-size:clamp(13px,1.4vw,15px);font-weight:800;opacity:.9;margin-top:2px}
+/* süs paneli */
+#sus-panel{position:fixed;inset:0;background:rgba(59,36,22,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+#sus-panel.goster{display:flex}
+.sus-kutu{background:#fff;border-radius:28px;padding:20px;max-width:560px;width:100%;max-height:92dvh;overflow:auto}
+.sus-kutu h3{font-size:26px;font-weight:900;text-align:center;margin-bottom:4px}
+.sus-kutu .not{text-align:center;font-weight:700;opacity:.7;margin-bottom:12px}
+.sus-liste{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sus-ogesi{border-radius:18px;padding:10px 12px;background:#FFF3B0;border:3px solid var(--sari);display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+.sus-ogesi .em{font-size:30px}
+.sus-ogesi.kilitli{background:#F3E3D3;border-color:#e8cdb6;opacity:.75}
+.sus-ogesi small{display:block;font-size:14px;opacity:.75}
+.yeni-sus{background:linear-gradient(90deg,#FFF3B0,#FFE0EC);border:4px solid var(--sari);border-radius:22px;padding:12px 18px;
+  font-size:clamp(19px,2.3vw,24px);font-weight:900;text-align:center;animation:parla .6s ease-in-out 2}
+/* süs animasyonları */
+.ampul{animation:ampulYan 1.2s ease-in-out infinite}
+@keyframes ampulYan{50%{opacity:.35}}
+.kuslar{animation:kusUc 9s ease-in-out infinite}
+@keyframes kusUc{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-8px)}}
+.kedi-kuyruk{animation:kuyruk 2s ease-in-out infinite;transform-box:fill-box;transform-origin:left bottom}
+@keyframes kuyruk{50%{transform:rotate(-14deg)}}
+
+/* =========================================================
+   6) BİNA ÇİZİMİ ANİMASYONLARI
+   ========================================================= */
+.bulut{animation:bulutKay 14s linear infinite}
+@keyframes bulutKay{0%{transform:translateX(-100px)}100%{transform:translateX(420px)}}
+.isik{animation:isikYan 5s ease-in-out infinite}
+@keyframes isikYan{0%,100%{fill:#FFF3B0}50%{fill:#FFE066}}
+.kapici{animation:zipla 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom}
+@keyframes zipla{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.gunes-isin{animation:don 18s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes don{to{transform:rotate(360deg)}}
+
+/* =========================================================
+   7) OYUN EKRANI YER TUTUCULARI (sonraki aşamalarda dolacak)
+   ========================================================= */
+.oyun-govde{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.yonerge{font-size:clamp(19px,2.3vw,26px);font-weight:800;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* =========================================================
+   7b) MOD B — İSTEK Mİ İHTİYAÇ MI?
+   ========================================================= */
+.ilerleme{display:flex;gap:8px;justify-content:center;margin-bottom:6px;flex-shrink:0}
+.ilerleme i{width:18px;height:18px;border-radius:50%;background:#efdccc;display:block}
+.ilerleme i.simdi{outline:4px solid var(--mavi);outline-offset:2px;background:#fff}
+.ilerleme i.d{background:var(--yesil)} .ilerleme i.y{background:var(--pembe)}
+.b-alan{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.4vh,26px);position:relative}
+.b-sahne{display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,40px);flex-wrap:wrap}
+.sakin-kart{background:#fff;border-radius:var(--yaricap);padding:16px 22px;display:flex;align-items:center;gap:16px;
+  box-shadow:var(--golge);max-width:520px}
+.sakin-kart .portre{width:clamp(84px,11vw,130px);height:clamp(84px,11vw,130px);flex-shrink:0}
+.sakin-kart h3{font-size:clamp(22px,2.8vw,32px);font-weight:900}
+.sakin-kart .bilgi{font-size:clamp(17px,2vw,22px);font-weight:700;opacity:.85}
+.sakin-kart .durum{font-size:clamp(18px,2.1vw,23px);font-weight:800;color:var(--mavi);margin-top:4px}
+.esya-kart{background:#FFF3B0;border:4px solid var(--sari);border-radius:var(--yaricap);padding:14px 22px;text-align:center;
+  box-shadow:var(--golge);min-width:170px;animation:paketGel .45s ease-out}
+@keyframes paketGel{from{transform:translateY(-30px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.esya-kart .emoji{font-size:clamp(56px,8vw,96px);line-height:1.1}
+.esya-kart .ad{font-size:clamp(20px,2.4vw,28px);font-weight:900}
+.b-soru{font-size:clamp(20px,2.5vw,30px);font-weight:900;text-align:center;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.cevaplar{display:flex;gap:clamp(14px,3vw,40px);flex-wrap:wrap;justify-content:center}
+.cevap{min-width:clamp(190px,24vw,300px);min-height:clamp(78px,11vh,104px);border-radius:28px;font-size:clamp(24px,3vw,36px);
+  font-weight:900;color:#fff;box-shadow:var(--golge);transition:transform .1s, opacity .2s}
+.cevap:active{transform:translateY(4px)}
+.cevap.ihtiyac{background:var(--yesil)} .cevap.istek{background:var(--turuncu)}
+.cevap.soluk{opacity:.35} .cevap.parla{animation:parla .5s ease-in-out 2}
+@keyframes parla{50%{transform:scale(1.08)}}
+.arti{position:absolute;top:8%;font-size:clamp(34px,5vw,56px);font-weight:900;color:var(--turuncu);
+  animation:artiUc 1s ease-out forwards;pointer-events:none}
+@keyframes artiUc{from{opacity:0;transform:translateY(20px)}20%{opacity:1}to{opacity:0;transform:translateY(-40px)}}
+.gb-panel{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(720px,100%);background:#fff;
+  border-radius:28px 28px 20px 20px;border:4px solid var(--pembe);padding:18px 22px;display:flex;gap:16px;align-items:center;
+  box-shadow:0 -6px 24px rgba(59,36,22,.18);animation:yukari .3s ease-out;z-index:4}
+@keyframes yukari{from{transform:translate(-50%,40px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+.gb-panel .portre{width:84px;height:84px;flex-shrink:0}
+.gb-panel .gb-metin{flex:1;font-size:clamp(18px,2.2vw,23px);font-weight:800;line-height:1.35}
+.gb-panel .gb-baslik{color:var(--pembe);font-size:clamp(20px,2.4vw,26px);font-weight:900}
+.gb-panel .gb-dugmeler{display:flex;flex-direction:column;gap:8px;align-items:center}
+@media (max-width:620px){ .gb-panel{flex-wrap:wrap;justify-content:center;text-align:center} .gb-panel .gb-dugmeler{flex-direction:row} }
+
+/* =========================================================
+   7c) MOD A — KAPIYA TESLİM
+   ========================================================= */
+.a-alan{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:clamp(10px,2vh,22px);position:relative;min-height:0}
+.a-yonerge{text-align:center}
+.kapilar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,2vw,26px);max-width:1000px;width:100%;margin:0 auto}
+.kapi{background:#fff;border-radius:22px 22px 16px 16px;border:4px solid #e8cdb6;box-shadow:var(--golge);
+  display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 8px 12px;overflow:hidden;
+  transition:transform .15s,border-color .15s;cursor:pointer;min-height:clamp(170px,30vh,250px);position:relative}
+.kapi .ust-serit{width:calc(100% + 16px);height:16px;margin-bottom:8px}
+.kapi .portre{width:clamp(60px,9vw,104px);height:clamp(60px,9vw,104px)}
+.kapi h3{font-size:clamp(16px,2.1vw,25px);font-weight:900;line-height:1.15;margin-top:4px}
+.kapi .bilgi{font-size:clamp(13px,1.6vw,18px);font-weight:700;opacity:.85;line-height:1.2}
+.kapi.hedef{border-color:var(--mavi);transform:scale(1.04)}
+.kapi.secime-hazir{border-style:dashed;border-color:var(--mavi)}
+.kapi.ipucu{animation:parla .6s ease-in-out 3;border-color:var(--yesil)}
+.kapi.titre{animation:titre .4s}
+@keyframes titre{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.kapi .teslim{position:absolute;top:22px;right:8px;background:var(--yesil);color:#fff;border-radius:16px;padding:2px 8px;
+  font-size:clamp(22px,3vw,34px);animation:paketGel .35s ease-out}
+.tepsi{display:flex;gap:clamp(10px,2.5vw,30px);justify-content:center;flex-wrap:wrap;min-height:clamp(110px,18vh,160px);
+  align-items:center;background:#F3E3D3;border-radius:var(--yaricap);padding:12px;max-width:900px;width:100%;margin:0 auto}
+.paket{background:#FFF3B0;border:4px solid var(--sari);border-radius:20px;padding:8px 14px;text-align:center;min-width:clamp(110px,15vw,170px);
+  box-shadow:var(--golge);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;animation:paketGel .4s ease-out}
+.paket .emoji{font-size:clamp(40px,6vw,70px);line-height:1.1;pointer-events:none}
+.paket .ad{font-size:clamp(16px,1.9vw,22px);font-weight:900;pointer-events:none}
+.paket.secili{border-color:var(--mavi);transform:translateY(-6px);box-shadow:0 10px 0 rgba(77,159,255,.35)}
+.paket.tasiniyor{opacity:.3}
+.hayalet{position:fixed;z-index:30;pointer-events:none;transform:translate(-50%,-50%) rotate(-4deg) scale(1.05);animation:none}
+.a-mesaj{position:absolute;left:50%;top:0;transform:translateX(-50%);background:#fff;border:4px solid var(--pembe);border-radius:22px;
+  padding:14px 20px;font-size:clamp(18px,2.2vw,24px);font-weight:800;box-shadow:0 8px 24px rgba(59,36,22,.2);z-index:6;
+  display:flex;gap:10px;align-items:center;width:max-content;max-width:min(760px,96%);animation:mesajGel .25s ease-out}
+@keyframes mesajGel{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translateX(-50%)}}
+.a-mesaj.iyi{border-color:var(--yesil)}
+@media (max-width:620px){ .kapi .bilgi{font-size:12px} .kapi{min-height:150px;padding:0 4px 10px} .kapi h3{font-size:15px} }
+
+/* =========================================================
+   7d) MOD C — HERKESE SOR
+   ========================================================= */
+.c-alan{flex:1;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.8vh,18px);min-height:0}
+.c-ust{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
+.c-ust .esya-kart{min-width:150px;padding:8px 18px}
+.c-ust .esya-kart .emoji{font-size:clamp(44px,6vw,72px)}
+.c-sonuc{font-size:clamp(20px,2.5vw,28px);font-weight:900;color:var(--mor);text-align:center;min-height:1.3em}
+.c-kartlar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,1.6vw,18px);width:100%;max-width:1200px}
+.c-kart{background:#fff;border-radius:22px;border:4px solid #f0dccb;box-shadow:var(--golge);padding:10px;display:flex;flex-direction:column;
+  align-items:center;text-align:center;gap:4px;position:relative;transition:border-color .2s}
+.c-kart .portre{width:clamp(56px,7vw,86px);height:clamp(56px,7vw,86px)}
+.c-kart h3{font-size:clamp(16px,1.9vw,22px);font-weight:900;line-height:1.15}
+.c-kart .bilgi{font-size:clamp(12px,1.4vw,16px);font-weight:700;opacity:.8;line-height:1.2}
+.c-kart .durum{font-size:clamp(13px,1.5vw,17px);font-weight:800;color:var(--mavi);line-height:1.2}
+.c-kart .sesli{position:absolute;top:6px;right:6px;min-width:40px;min-height:40px;font-size:18px}
+.c-secim{display:flex;gap:6px;width:100%;margin-top:auto;padding-top:6px}
+.c-secim button{flex:1;min-height:56px;border-radius:16px;font-size:clamp(15px,1.7vw,20px);font-weight:900;background:#F3E3D3;color:var(--koyu);
+  border:3px solid transparent;transition:background .15s}
+.c-secim button.ihtiyac.sec{background:var(--yesil);color:#fff}
+.c-secim button.istek.sec{background:var(--turuncu);color:#fff}
+.c-secim button:disabled{cursor:default}
+.c-kart.dogru{border-color:var(--yesil)} .c-kart.yanlis{border-color:var(--pembe)}
+.c-kart .rozet{position:absolute;top:-12px;left:-8px;width:40px;height:40px;border-radius:50%;color:#fff;font-size:22px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;animation:paketGel .3s ease-out}
+.c-kart.dogru .rozet{background:var(--yesil)} .c-kart.yanlis .rozet{background:var(--pembe)}
+.c-kart .c-aciklama{font-size:clamp(13px,1.5vw,16px);font-weight:800;background:#FFE9F1;border-radius:12px;padding:6px 8px;margin-top:4px;line-height:1.25}
+.c-dugme{min-width:260px}
+.c-dugme:disabled{opacity:.4;cursor:default}
+@media (max-width:820px), (orientation:portrait){ .c-kartlar{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:420px){ .c-secim{flex-direction:column} .c-secim button{min-height:48px} }
+
+/* =========================================================
+   7e) BENİM İHTİYACIM (puansız)
+   ========================================================= */
+.bn-alan{flex:1;display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2vh,18px);width:100%;max-width:1100px;margin:0 auto}
+.av-izgara{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;width:100%;max-width:820px}
+.av-sec{background:#fff;border-radius:22px;border:4px solid #f0dccb;padding:8px;box-shadow:var(--golge)}
+.av-sec svg{width:100%;height:auto;display:block}
+.av-sec.sec{border-color:var(--mavi);transform:translateY(-4px)}
+.ad-giris{min-height:60px;border-radius:999px;border:3px solid #f0dccb;padding:8px 22px;font:800 22px 'Nunito','Segoe UI',sans-serif;
+  text-align:center;width:min(360px,90%);color:var(--koyu);background:#fff}
+.sepetler{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,22px);width:100%}
+.sepet{border-radius:22px;padding:10px;border:4px solid;background:#fff}
+.sepet.ihtiyac{border-color:var(--yesil)} .sepet.istek{border-color:var(--turuncu)}
+.sepet h3{font-size:clamp(18px,2.2vw,24px);font-weight:900;text-align:center;margin-bottom:6px}
+.sepet.ihtiyac h3{color:#00a88b} .sepet.istek h3{color:var(--turuncu)}
+.yuvalar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.yuva{min-height:clamp(70px,11vh,96px);border-radius:16px;border:3px dashed #e8cdb6;background:#FFF8F0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:clamp(13px,1.5vw,16px);font-weight:800;padding:4px}
+.yuva .emoji{font-size:clamp(30px,4vw,44px);line-height:1.1}
+.yuva.dolu{border-style:solid;background:#FFF3B0;border-color:var(--sari);cursor:pointer}
+.esya-izgara{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;width:100%}
+.esya-sec{background:#FFF3B0;border:3px solid var(--sari);border-radius:16px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;
+  font-size:clamp(12px,1.3vw,15px);font-weight:800;min-height:76px;justify-content:center}
+.esya-sec .emoji{font-size:clamp(28px,3.4vw,40px);line-height:1.1}
+.esya-sec:disabled{opacity:.3}
+#bn-pop{position:fixed;inset:0;background:rgba(59,36,22,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+#bn-pop.goster{display:flex}
+.pop-kutu{background:#fff;border-radius:28px;padding:22px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;width:min(420px,100%)}
+.pop-kutu .emoji{font-size:72px;line-height:1}
+.pop-kutu b{font-size:26px}
+.pop-kutu .cevap{min-width:260px;min-height:70px;font-size:24px}
+.pop-kutu .cevap:disabled{opacity:.35}
+.bn-kart{background:#fff;border-radius:28px;border:5px solid var(--sari);box-shadow:var(--golge);padding:18px;width:100%;max-width:820px;
+  display:flex;flex-direction:column;gap:12px;align-items:center}
+.bn-kart .kimlik{display:flex;align-items:center;gap:14px;font-size:clamp(24px,3vw,32px);font-weight:900}
+.bn-kart .kimlik svg{width:90px;height:90px}
+.bn-kart .sepetler .yuva{border-style:solid}
+.dusun{width:100%;background:#F1E6FF;border-radius:18px;padding:12px 16px;font-size:clamp(16px,1.9vw,20px);font-weight:800;line-height:1.4}
+.dusun b{color:var(--mor)}
+@media (max-width:820px){ .esya-izgara{grid-template-columns:repeat(6,minmax(0,1fr))} .av-izgara{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:480px){ .esya-izgara{grid-template-columns:repeat(4,minmax(0,1fr))} .sepetler{grid-template-columns:1fr} }
+
+/* =========================================================
+   7f) 2 KİŞİLİK DÜELLO (akıllı tahta)
+   ========================================================= */
+.d-izgara{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.7fr) minmax(0,1fr);gap:clamp(10px,2vw,24px);align-items:stretch;min-height:0}
+.takim{border-radius:28px;border:6px solid;padding:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;position:relative;
+  transition:opacity .2s}
+.takim.t0{border-color:var(--yesil);background:#E3FBF6} .takim.t1{border-color:var(--pembe);background:#FFE6EF}
+.takim h3{font-size:clamp(20px,2.4vw,30px);font-weight:900}
+.takim .puan{font-size:clamp(54px,8vw,96px);font-weight:900;line-height:1}
+.takim.t0 .puan{color:#00a88b} .takim.t1 .puan{color:var(--pembe)}
+.takim .cevap{min-width:0;width:100%;min-height:clamp(70px,12vh,110px)}
+.takim.kilitli .cevap{opacity:.3}
+.takim .durum-t{font-size:clamp(17px,2vw,22px);font-weight:900;min-height:1.4em;text-align:center}
+.takim.bildi{animation:takimParla .5s ease-in-out 2}
+@keyframes takimParla{50%{transform:scale(1.025)}}
+.d-orta{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);text-align:center}
+.d-orta .sakin-kart{padding:10px 16px;gap:12px}
+.d-orta .sakin-kart .portre{width:clamp(70px,8vw,100px);height:clamp(70px,8vw,100px)}
+.d-orta .esya-kart{padding:6px 18px}
+.d-orta .esya-kart .emoji{font-size:clamp(44px,6vw,70px)}
+.d-orta .b-soru{font-size:clamp(18px,2.2vw,26px)}
+.d-sonuc{background:#fff;border-radius:20px;border:4px solid var(--mor);padding:12px 16px;font-size:clamp(17px,2vw,22px);font-weight:800;line-height:1.35;max-width:560px}
+.d-bitis{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.d-bitis .kupa{font-size:clamp(70px,12vw,130px);line-height:1}
+.d-bitis h3{font-size:clamp(30px,4.5vw,52px);font-weight:900}
+.d-bitis .skorlar{font-size:clamp(24px,3vw,36px);font-weight:900}
+@media (orientation:portrait){
+  .d-izgara{grid-template-columns:1fr 1fr;grid-template-areas:"orta orta" "t0 t1";align-content:start}
+  .d-orta{grid-area:orta} .takim.t0{grid-area:t0} .takim.t1{grid-area:t1}
+  .takim .puan{font-size:48px}
+}
+
+/* =========================================================
+   8) TUR SONU ÖZETİ
+   ========================================================= */
+.ozet-govde{flex:1;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:760px;width:100%;margin:0 auto}
+.ozet-skor{font-size:clamp(34px,5vw,56px);font-weight:900;color:var(--turuncu)}
+.ozet-liste{width:100%;display:flex;flex-direction:column;gap:10px}
+.ozet-madde{background:#fff;border-radius:18px;padding:14px 18px;font-size:clamp(17px,2vw,21px);
+  font-weight:700;border-left:8px solid var(--pembe);box-shadow:0 3px 0 rgba(59,36,22,.1);text-align:left}
+.ozet-tamam{font-size:22px;font-weight:800;color:var(--yesil)}
+.ozet-dugmeler{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:auto;padding-top:10px}
+
+/* =========================================================
+   9) AYARLAR VE ONAY PENCERESİ
+   ========================================================= */
+.ayar-liste{display:flex;flex-direction:column;gap:14px;max-width:560px;width:100%;margin:0 auto}
+.ayar-satir{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;
+  border-radius:20px;padding:14px 18px;font-size:22px;font-weight:800;box-shadow:0 3px 0 rgba(59,36,22,.1)}
+.anahtar{min-width:130px;min-height:58px;border-radius:999px;font-size:20px;font-weight:900;color:#fff;background:#b9a597}
+.anahtar.acik{background:var(--yesil)}
+.ayar-not{font-size:15px;font-weight:700;opacity:.7}
+#onay{position:fixed;inset:0;background:rgba(59,36,22,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
+#onay.goster{display:flex}
+.onay-kutu{background:#fff;border-radius:28px;padding:28px;max-width:440px;text-align:center;display:flex;flex-direction:column;gap:18px}
+.onay-kutu p{font-size:22px;font-weight:800}
+.onay-kutu div{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* =========================================================
+   10) DİKEY EKRAN (telefon / dik tablet)
+   ========================================================= */
+@media (orientation:portrait){
+  .apt-izgara{grid-template-columns:1fr;align-items:start}
+  .apt-izgara .bina-kutu{height:36dvh}
+}
+@media (max-width:520px){
+  .mod-kartlar{grid-template-columns:1fr}
+  .mod-kart{min-height:80px}
+}
+</style>
+</head>
+<body>
+<div id="uygulama">
+
+  <!-- ===================== EKRAN 1: GİRİŞ ===================== -->
+  <section class="sahne" id="s-giris" aria-label="Giriş">
+    <div class="bina-kutu" data-bina></div>
+    <h1>Neşeli Apartman</h1>
+    <p class="alt-baslik">Herkesin isteği ve ihtiyacı farklı!
+      <button class="sesli" data-oku="Neşeli Apartman. Herkesin isteği ve ihtiyacı farklı!" aria-label="Sesli oku">🔊</button></p>
+    <div class="giris-dugmeler">
+      <button class="dugme" data-git="apartman">Başla ▶</button>
+      <button class="dugme ikincil" data-git="ayarlar">⚙️ Ayarlar</button>
+    </div>
+  </section>
+
+  <!-- ===================== EKRAN 2: APARTMAN (ANA MENÜ) ===================== -->
+  <section class="sahne" id="s-apartman" aria-label="Apartman">
+    <div class="ust-bar">
+      <button class="geri" data-git="giris" aria-label="Girişe dön">←</button>
+      <h2>Bugün kime ne lazım?</h2>
+      <div class="yildiz-rozet">⭐ <span class="yildiz-sayi">0</span></div>
+    </div>
+    <div class="apt-izgara">
+      <div class="bina-kutu" data-bina></div>
+      <div>
+        <div class="mod-kartlar">
+          <button class="mod-kart k-a" data-git="modA">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="22" width="34" height="30" rx="4" fill="#FFD9C4" stroke="#7a3b1d" stroke-width="3"/><path d="M8 32h34M25 22v30" stroke="#7a3b1d" stroke-width="3"/><path d="M44 37h14m-6-6 6 6-6 6" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div><b>Kapıya Teslim</b><span>Eşyayı ihtiyacı olana götür</span><em class="en-iyi" data-eniyi="A"></em></div>
+          </button>
+          <button class="mod-kart k-b" data-git="modB">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="18" width="26" height="28" rx="10" fill="#00C9A7" stroke="#fff" stroke-width="3"/><path d="M10 32l5 5 9-10" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="34" y="18" width="26" height="28" rx="10" fill="#FF6B35" stroke="#fff" stroke-width="3"/><path d="M47 24l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" fill="#fff"/></svg>
+            <div><b>İstek mi İhtiyaç mı?</b><span>Bu kişi için hangisi?</span><em class="en-iyi" data-eniyi="B"></em></div>
+          </button>
+          <button class="mod-kart k-c genis" data-git="modC">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="22" y="22" width="20" height="20" rx="4" fill="#FFD600" stroke="#fff" stroke-width="3"/><circle cx="12" cy="12" r="7" fill="#fff"/><circle cx="52" cy="12" r="7" fill="#fff"/><circle cx="12" cy="52" r="7" fill="#fff"/><circle cx="52" cy="52" r="7" fill="#fff"/></svg>
+            <div><b>Herkese Sor</b><span>Aynı eşya, farklı kişiler</span><em class="en-iyi" data-eniyi="C"></em></div>
+          </button>
+          <button class="mod-kart ek" data-git="benim">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="24" r="12" fill="#FFD600" stroke="#7a3b1d" stroke-width="3"/><path d="M12 56c2-14 38-14 40 0" fill="#4D9FFF" stroke="#7a3b1d" stroke-width="3"/></svg>
+            <div><b>Benim İhtiyacım</b><span>Kendin için seç</span></div>
+          </button>
+          <button class="mod-kart ek" data-git="duello">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="18" cy="24" r="9" fill="#00C9A7"/><path d="M4 54c1-13 27-13 28 0" fill="#00C9A7"/><circle cx="46" cy="24" r="9" fill="#FF4D8D"/><path d="M32 54c1-13 27-13 28 0" fill="#FF4D8D"/></svg>
+            <div><b>2 Kişilik</b><span>Akıllı tahtada yarış</span></div>
+          </button>
+        </div>
+        <div class="apt-alt">
+          <button class="sus-dugme" id="sus-ac" aria-label="Apartman süsleri"><span id="sus-yazi">🎀 Süsler</span><span class="cubuk"><i id="sus-cubuk"></i></span></button>
+          <button class="dugme ikincil" data-git="ayarlar">⚙️ Ayarlar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EKRAN 3–5 + EKLER: OYUN EKRANLARI (yer tutucu) ===================== -->
+  <section class="sahne" id="s-modA" aria-label="Kapıya Teslim" data-mod="A" data-baslik="Kapıya Teslim"
+    data-yonerge="Her eşyayı ona ihtiyacı olan kişinin kapısına sürükle." data-asama="3"></section>
+  <section class="sahne" id="s-modB" aria-label="İstek mi İhtiyaç mı" data-mod="B" data-baslik="İstek mi İhtiyaç mı?"
+    data-yonerge="Bu eşya bu kişi için ihtiyaç mı, istek mi?" data-asama="2"></section>
+  <section class="sahne" id="s-modC" aria-label="Herkese Sor" data-mod="C" data-baslik="Herkese Sor"
+    data-yonerge="Her komşuya dokun: bu eşya onun için ihtiyaç mı, istek mi?" data-asama="4"></section>
+  <section class="sahne" id="s-benim" aria-label="Benim İhtiyacım" data-mod="benim" data-baslik="Benim İhtiyacım"
+    data-yonerge="Kendin için 3 ihtiyaç ve 3 istek seç." data-asama="7"></section>
+  <section class="sahne" id="s-duello" aria-label="2 Kişilik" data-mod="duello" data-baslik="2 Kişilik Yarış"
+    data-yonerge="İki takım aynı soruya yarışarak cevap verir." data-asama="7"></section>
+
+  <!-- ===================== EKRAN 6: TUR SONU ÖZETİ ===================== -->
+  <section class="sahne" id="s-ozet" aria-label="Tur sonu">
+    <div class="ust-bar">
+      <button class="geri" data-git="apartman" aria-label="Apartmana dön">←</button>
+      <h2>Tur Bitti!</h2>
+      <div class="yildiz-rozet">⭐ <span class="yildiz-sayi">0</span></div>
+    </div>
+    <div class="ozet-govde">
+      <div class="ozet-skor" id="ozet-skor">⭐ 0 / 0</div>
+      <div id="ozet-sus"></div>
+      <div class="ozet-liste" id="ozet-liste"></div>
+      <div class="ozet-dugmeler">
+        <button class="dugme" id="ozet-tekrar">↻ Tekrar Oyna</button>
+        <button class="dugme ikincil" data-git="apartman">🏠 Apartmana Dön</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EKRAN 7: AYARLAR ===================== -->
+  <section class="sahne" id="s-ayarlar" aria-label="Ayarlar">
+    <div class="ust-bar">
+      <button class="geri" data-git="geri" aria-label="Geri">←</button>
+      <h2>Ayarlar</h2>
+      <div style="min-width:56px"></div>
+    </div>
+    <div class="ayar-liste">
+      <div class="ayar-satir">🔔 Sesler <button class="anahtar" id="ayar-ses"></button></div>
+      <div class="ayar-satir"><span>🔊 Sesli okuma<br><span class="ayar-not" id="sesli-not">Yazılar okunur</span></span>
+        <button class="anahtar" id="ayar-sesli"></button></div>
+      <div class="ayar-satir">🗑️ İlerlemeyi sıfırla <button class="dugme pembe" id="ayar-sifirla" style="min-height:58px;padding:8px 22px">Sıfırla</button></div>
+    </div>
+  </section>
+
+  <!-- Süs paneli (süsler yalnızca kozmetiktir) -->
+  <div id="sus-panel" role="dialog" aria-modal="true" aria-label="Apartman süsleri">
+    <div class="sus-kutu">
+      <h3>🎀 Apartman Süsleri</h3>
+      <p class="not">Yıldız topladıkça apartmanın süslenir!</p>
+      <div class="sus-liste" id="sus-liste"></div>
+      <div style="text-align:center;margin-top:14px"><button class="dugme" id="sus-kapat">Tamam</button></div>
+    </div>
+  </div>
+
+  <!-- Benim İhtiyacım: eşya seçme penceresi -->
+  <div id="bn-pop" role="dialog" aria-modal="true">
+    <div class="pop-kutu">
+      <div class="emoji" id="bn-pop-emoji"></div><b id="bn-pop-ad"></b>
+      <button class="cevap ihtiyac" id="bn-pop-ihtiyac">✔ Benim ihtiyacım</button>
+      <button class="cevap istek" id="bn-pop-istek">★ Benim isteğim</button>
+      <button class="dugme ikincil" id="bn-pop-vazgec">Vazgeç</button>
+    </div>
+  </div>
+
+  <!-- Onay penceresi (tarayıcı uyarısı yerine) -->
+  <div id="onay" role="dialog" aria-modal="true">
+    <div class="onay-kutu">
+      <p>Emin misin? Tüm yıldızlar ve süsler silinecek.</p>
+      <div><button class="dugme pembe" id="onay-evet">Evet, sil</button><button class="dugme ikincil" id="onay-hayir">Vazgeç</button></div>
+    </div>
+  </div>
+
+  <div class="altbilgi">Sinan İnce 2026</div>
+</div>
+
+<script>
+/* =========================================================
+   A) VERİ: APARTMAN SAKİNLERİ
+   (bilgi satırları ve portreler 5. aşamada son hâlini alacak)
+   ========================================================= */
+const SAKINLER = [
+  {id:'can',    ad:'Bebek Can',        kisa:'Can',       bilgi:'1 yaşında bir bebek.',            renk:'#FF9EC4'},
+  {id:'elif',   ad:'Öğrenci Elif',     kisa:'Elif',      bilgi:'2. sınıfa gidiyor.',              renk:'#A855F7'},
+  {id:'riza',   ad:'Rıza Dede',        kisa:'Rıza Dede', bilgi:'Gözleri iyi görmüyor.',           renk:'#8D6E63'},
+  {id:'zeynep', ad:'İtfaiyeci Zeynep', kisa:'Zeynep',    bilgi:'Yangınları söndürüyor.',          renk:'#E53935'},
+  {id:'mehmet', ad:'Aşçı Mehmet',      kisa:'Mehmet',    bilgi:'Lokantada yemek pişiriyor.',      renk:'#F5F5F5'},
+  {id:'deniz',  ad:'Ressam Deniz',     kisa:'Deniz',     bilgi:'Resim yaparak çalışıyor.',        renk:'#4D9FFF'},
+  {id:'hasan',  ad:'Çiftçi Hasan',     kisa:'Hasan',     bilgi:'Tarlada sebze yetiştiriyor.',     renk:'#6D9F3A'},
+  {id:'kerem',  ad:'Futbolcu Kerem',   kisa:'Kerem',     bilgi:'Bir takımda futbol oynuyor.',     renk:'#00C9A7'},
+  {id:'ayla',   ad:'Ayla',             kisa:'Ayla',      bilgi:'Karlı bir dağ köyünde yaşıyor.',  renk:'#90CAF9'},
+  {id:'ali',    ad:'Ali',              kisa:'Ali',       bilgi:'Okula bisikletle gidiyor.',       renk:'#FF6B35'},
+  {id:'selin',  ad:'Kemancı Selin',    kisa:'Selin',     bilgi:'Orkestrada keman çalıyor.',       renk:'#C2185B'},
+  {id:'mert',   ad:'Mert',             kisa:'Mert',      bilgi:'Sıcak bir sahil kasabasında yaşıyor.', renk:'#FFD600'}
+];
+const DAIRE_RENK = ['#FFE3D3','#E3F2FF','#F1E6FF','#DFF8F2','#FFF6C9','#FFE0EC'];
+const sakinBul = id => SAKINLER.find(s => s.id === id);
+
+/* Apartman süsleri — YALNIZCA KOZMETİK; toplam yıldız eşiğe ulaşınca kendiliğinden açılır */
+const SUSLER = [
+  {id:'cicek',     ad:'Balkon çiçekleri', e:'🌷', yildiz:5},
+  {id:'isiklar',   ad:'Işık zinciri',     e:'💡', yildiz:15},
+  {id:'kedi',      ad:'Çatıdaki kedi',    e:'🐱', yildiz:30},
+  {id:'agac',      ad:'Bahçe ağacı',      e:'🌳', yildiz:45},
+  {id:'bayraklar', ad:'Renkli bayraklar', e:'🎏', yildiz:65},
+  {id:'kuslar',    ad:'Kuşlar',           e:'🐦', yildiz:85},
+  {id:'bank',      ad:'Bahçe bankı',      e:'🪑', yildiz:110},
+  {id:'gokkusagi', ad:'Gökkuşağı',        e:'🌈', yildiz:140}
+];
+
+/* =========================================================
+   A2) VERİ: EŞYALAR VE MOD B SORULARI
+   (başlangıç havuzu — 5. aşamada genişleyecek)
+   cevap: 'ihtiyac' | 'istek'
+   ========================================================= */
+const ESYALAR = {
+  mama:{ad:'Mama',e:'🍼'}, canta:{ad:'Okul çantası',e:'🎒'}, konsol:{ad:'Oyun konsolu',e:'🎮'},
+  gozluk:{ad:'Gözlük',e:'👓'}, kask:{ad:'İtfaiyeci kaskı',e:'⛑️'}, tava:{ad:'Tava',e:'🍳'},
+  tohum:{ad:'Tohum',e:'🌱'}, mont:{ad:'Kalın mont',e:'🧥'}, sapka:{ad:'Şapka',e:'👒'},
+  su:{ad:'Su',e:'💧'}, yatak:{ad:'Yatak',e:'🛏️'}, seker:{ad:'Şeker',e:'🍬'},
+  dondurma:{ad:'Dondurma',e:'🍦'}, pasta:{ad:'Pasta',e:'🎂'}, ucurtma:{ad:'Uçurtma',e:'🪁'},
+  cikolata:{ad:'Çikolata',e:'🍫'}, ayi:{ad:'Oyuncak ayı',e:'🧸'},
+  defter:{ad:'Defter',e:'📓'}, sondurucu:{ad:'Yangın söndürücü',e:'🧯'}, firca:{ad:'Fırça',e:'🖌️'},
+  traktor:{ad:'Traktör',e:'🚜'}, ekmek:{ad:'Ekmek',e:'🍞'}, ev:{ad:'Ev',e:'🏠'}, nota:{ad:'Nota',e:'🎼'}, krampon:{ad:'Krampon',e:'👟'},
+  meyve:{ad:'Meyve',e:'🍎'}, sut:{ad:'Süt',e:'🥛'}, kalem:{ad:'Kalem',e:'✏️'}, discircasi:{ad:'Diş fırçası',e:'🪥'},
+  sabun:{ad:'Sabun',e:'🧼'}, tablet:{ad:'Tablet',e:'📱'}, atki:{ad:'Atkı',e:'🧣'}, krem:{ad:'Güneş kremi',e:'🧴'},
+  top:{ad:'Futbol topu',e:'⚽'}, boya:{ad:'Boya seti',e:'🎨'}, keman:{ad:'Keman',e:'🎻'}, bisiklet:{ad:'Bisiklet',e:'🚲'}
+};
+
+/* 1. kademe: açık durumlar */
+const B_KADEME1 = [
+  {id:'b1', sakin:'can',    esya:'mama',     cevap:'ihtiyac', durum:'Karnı acıktı.',            aciklama:'Can bir bebek. Mama onun beslenmesi için gerekli. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b2', sakin:'elif',   esya:'canta',    cevap:'ihtiyac', durum:'Yarın okula gidecek.',     aciklama:'Elif okula gidiyor. Kitaplarını taşımak için çanta gerekli. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b3', sakin:'elif',   esya:'konsol',   cevap:'istek',   durum:'Oyun oynamayı seviyor.',   aciklama:'Oyun konsolu eğlenceli ama Elif onsuz da yaşar. Bu bir <b>istek</b>.'},
+  {id:'b4', sakin:'riza',   esya:'gozluk',   cevap:'ihtiyac', durum:'Gazete okuyacak.',         aciklama:'Rıza Dede\'nin gözleri iyi görmüyor. Gözlükle görebilir. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b5', sakin:'zeynep', esya:'kask',     cevap:'ihtiyac', durum:'Yangına gidiyor.',         aciklama:'Zeynep itfaiyeci. Kask başını korur, işi için gerekli. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b6', sakin:'mehmet', esya:'tava',     cevap:'ihtiyac', durum:'Yemek pişirecek.',         aciklama:'Mehmet aşçı. Yemek pişirmek için tava gerekli. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b7', sakin:'hasan',  esya:'tohum',    cevap:'ihtiyac', durum:'Tarlayı ekecek.',          aciklama:'Hasan çiftçi. Sebze yetiştirmek için tohum gerekli. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b8', sakin:'ayla',   esya:'mont',     cevap:'ihtiyac', durum:'Dışarıda kar yağıyor.',    aciklama:'Ayla karlı bir köyde yaşıyor. Kalın mont onu soğuktan korur. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b9', sakin:'mert',   esya:'sapka',    cevap:'ihtiyac', durum:'Güneş çok yakıyor.',       aciklama:'Mert sıcak bir yerde yaşıyor. Şapka onu güneşten korur. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b10',sakin:'kerem',  esya:'su',       cevap:'ihtiyac', durum:'Çok susadı.',              aciklama:'Su herkes için bir <b>ihtiyaç</b>. Kerem de su içmeden yaşayamaz.'},
+  {id:'b11',sakin:'mehmet', esya:'yatak',    cevap:'ihtiyac', durum:'Çok yoruldu.',             aciklama:'Herkesin uyuyup dinlenmesi gerekir. Yatak bir <b>ihtiyaç</b>.'},
+  {id:'b12',sakin:'riza',   esya:'seker',    cevap:'istek',   durum:'Tatlı bir şey canı çekti.',aciklama:'Şeker tatlıdır ama yemesek de olur. Bu bir <b>istek</b>.'},
+  {id:'b13',sakin:'ayla',   esya:'dondurma', cevap:'istek',   durum:'Canı dondurma çekti.',     aciklama:'Dondurma lezzetli ama Ayla onsuz da yaşar. Bu bir <b>istek</b>.'},
+  {id:'b14',sakin:'deniz',  esya:'pasta',    cevap:'istek',   durum:'Pastaneden geçiyor.',      aciklama:'Pasta güzel ama gerekli değil. Bu bir <b>istek</b>.'},
+  {id:'b15',sakin:'mert',   esya:'ucurtma',  cevap:'istek',   durum:'Rüzgârlı günleri seviyor.',aciklama:'Uçurtma uçurmak eğlenceli ama gerekli değil. Bu bir <b>istek</b>.'},
+  {id:'b16',sakin:'selin',  esya:'cikolata', cevap:'istek',   durum:'Markete uğradı.',          aciklama:'Çikolata lezzetli ama Selin onsuz da yaşar. Bu bir <b>istek</b>.'},
+  {id:'b17',sakin:'elif',   esya:'ayi',      cevap:'istek',   durum:'Vitrinde gördü.',          aciklama:'Oyuncak ayı sevimli ama Elif\'in buna ihtiyacı yok. Bu bir <b>istek</b>.'},
+  {id:'b18',sakin:'zeynep', esya:'sondurucu',cevap:'ihtiyac', durum:'Yangın ihbarı geldi.',     aciklama:'Zeynep itfaiyeci. Yangını söndürmek için söndürücü gerekli. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b19',sakin:'deniz',  esya:'firca',    cevap:'ihtiyac', durum:'Resmine başlayacak.',      aciklama:'Deniz ressam. Resimlerini fırçayla yapar. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b20',sakin:'hasan',  esya:'traktor',  cevap:'ihtiyac', durum:'Tarlayı sürecek.',         aciklama:'Hasan çiftçi. Tarlasını traktörle sürer. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b21',sakin:'ayla',   esya:'atki',     cevap:'ihtiyac', durum:'Soğuk rüzgâr esiyor.',     aciklama:'Ayla karlı bir köyde yaşıyor. Atkı boynunu soğuktan korur. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b22',sakin:'mert',   esya:'krem',     cevap:'ihtiyac', durum:'Bütün gün güneşte olacak.',aciklama:'Mert sıcak bir yerde yaşıyor. Güneş kremi cildini korur. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b23',sakin:'selin',  esya:'ekmek',    cevap:'ihtiyac', durum:'Kahvaltı yapacak.',        aciklama:'Herkesin beslenmeye ihtiyacı var. Ekmek bir <b>ihtiyaç</b>.'},
+  {id:'b24',sakin:'elif',   esya:'defter',   cevap:'ihtiyac', durum:'Ödevini yazacak.',         aciklama:'Elif okula gidiyor. Ödevini deftere yazar. Bu bir <b>ihtiyaç</b>.'},
+  {id:'b25',sakin:'can',    esya:'ayi',      cevap:'istek',   durum:'Oyuncakları seviyor.',     aciklama:'Oyuncak ayı sevimli ama Can onsuz da yaşar. Bu bir <b>istek</b>.'},
+  {id:'b26',sakin:'zeynep', esya:'cikolata', cevap:'istek',   durum:'Tatlı bir şey canı çekti.',aciklama:'Çikolata lezzetli ama gerekli değil. Bu bir <b>istek</b>.'},
+  {id:'b27',sakin:'kerem',  esya:'konsol',   cevap:'istek',   durum:'Yeni bir oyun çıkmış.',    aciklama:'Oyun konsolu eğlenceli ama Kerem onsuz da yaşar. Bu bir <b>istek</b>.'},
+  {id:'b28',sakin:'ali',    esya:'ucurtma',  cevap:'istek',   durum:'Parkta uçurtma görmüş.',   aciklama:'Uçurtma eğlenceli ama Ali\'nin buna ihtiyacı yok. Bu bir <b>istek</b>.'},
+  {id:'b29',sakin:'hasan',  esya:'dondurma', cevap:'istek',   durum:'Hava çok sıcak.',          aciklama:'Dondurma serinletir ama gerekli değil; Hasan su içebilir. Bu bir <b>istek</b>.'}
+];
+
+/* 2. kademe: aynı eşya, iki farklı kişi (karşıtlık çiftleri) */
+const B_KARSITLIK = [
+  {id:'k1', esya:'top',
+    ihtiyac:{sakin:'kerem', durum:'Maçta oynayacak.',             aciklama:'Kerem futbolcu. Top onun işi için gerekli. Kerem için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'elif',  durum:'Parkta top oynamayı seviyor.', aciklama:'Elif top oynamayı seviyor ama top olmadan da yaşar. Elif için <b>istek</b>.'}},
+  {id:'k2', esya:'boya',
+    ihtiyac:{sakin:'deniz', durum:'Yeni bir resim yapacak.',       aciklama:'Deniz ressam. Boyalar onun işi için gerekli. Deniz için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'riza',  durum:'Boş zamanında resim yapmayı seviyor.', aciklama:'Rıza Dede resmi hobi olarak seviyor. Boya seti onun için <b>istek</b>.'}},
+  {id:'k3', esya:'keman',
+    ihtiyac:{sakin:'selin', durum:'Akşam konseri var.',            aciklama:'Selin kemancı. Keman onun işi için gerekli. Selin için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'ali',   durum:'Kemanın sesini çok beğeniyor.', aciklama:'Ali kemanı beğeniyor ama ona gerekli değil. Ali için <b>istek</b>.'}},
+  {id:'k4', esya:'bisiklet',
+    ihtiyac:{sakin:'ali',   durum:'Okulu evinden uzak.',           aciklama:'Ali okula bisikletle gidiyor. Bisiklet onun için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'mehmet',durum:'Hafta sonu gezmeyi seviyor.',   aciklama:'Mehmet gezmek için bisiklet istiyor ama işi için gerekmez. Mehmet için <b>istek</b>.'}},
+  {id:'k5', esya:'sapka',
+    ihtiyac:{sakin:'mert',  durum:'Güneş çok yakıyor.',            aciklama:'Mert sıcak bir yerde yaşıyor. Şapka onu güneşten korur. Mert için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'elif',  durum:'Vitrindeki çiçekli şapkayı beğendi.', aciklama:'Elif şapkayı süs için istiyor. Elif için <b>istek</b>.'}},
+  {id:'k6', esya:'sapka',
+    ihtiyac:{sakin:'hasan', durum:'Bütün gün güneşte çalışıyor.',  aciklama:'Hasan tarlada güneşin altında çalışıyor. Şapka onu korur. Hasan için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'selin', durum:'Konsere şık gitmek istiyor.',   aciklama:'Selin şapkayı süs için istiyor. Selin için <b>istek</b>.'}},
+  {id:'k7', esya:'kask',
+    ihtiyac:{sakin:'zeynep',durum:'Yangına gidiyor.',              aciklama:'Zeynep itfaiyeci. Kask başını korur. Zeynep için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'elif',  durum:'Kostüm partisine gidecek.',     aciklama:'Elif kaskı kostüm için istiyor. Elif için <b>istek</b>.'}},
+  {id:'k8', esya:'bisiklet',
+    ihtiyac:{sakin:'ali',   durum:'Okulu evinden uzak.',           aciklama:'Ali okula bisikletle gidiyor. Bisiklet onun için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'deniz', durum:'Sahilde bisiklet sürmek istiyor.', aciklama:'Deniz bisikleti eğlence için istiyor. Deniz için <b>istek</b>.'}},
+  {id:'k9', esya:'keman',
+    ihtiyac:{sakin:'selin', durum:'Prova yapacak.',                aciklama:'Selin kemancı. Keman onun işi için gerekli. Selin için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'zeynep',durum:'Keman çalmayı öğrenmek istiyor.', aciklama:'Zeynep itfaiyeci; keman işi için gerekli değil. Zeynep için <b>istek</b>.'}},
+  {id:'k10',esya:'top',
+    ihtiyac:{sakin:'kerem', durum:'Antrenmana gidiyor.',           aciklama:'Kerem futbolcu. Top onun işi için gerekli. Kerem için <b>ihtiyaç</b>.'},
+    istek:  {sakin:'mehmet',durum:'Hafta sonu maç yapmayı seviyor.', aciklama:'Mehmet aşçı; top işi için gerekli değil. Mehmet için <b>istek</b>.'}}
+];
+
+/* Mod A: kimin neye ihtiyacı var? Her eşya YALNIZCA bir sakinin ihtiyacıdır
+   (su, yatak gibi herkesin ihtiyacı olan eşyalar bu modda kullanılmaz) */
+const A_IHTIYACLAR = [
+  {id:'a1', sakin:'can',    esya:'mama',      aciklama:'Can bir bebek. Mama onun beslenmesi için gerekli.'},
+  {id:'a2', sakin:'elif',   esya:'canta',     aciklama:'Elif okula gidiyor. Kitaplarını çantayla taşır.'},
+  {id:'a3', sakin:'elif',   esya:'defter',    aciklama:'Elif okula gidiyor. Derste defterine yazı yazar.'},
+  {id:'a4', sakin:'riza',   esya:'gozluk',    aciklama:'Rıza Dede\'nin gözleri iyi görmüyor. Gözlükle görebilir.'},
+  {id:'a5', sakin:'zeynep', esya:'kask',      aciklama:'Zeynep itfaiyeci. Kask yangında başını korur.'},
+  {id:'a6', sakin:'zeynep', esya:'sondurucu', aciklama:'Zeynep itfaiyeci. Yangını söndürmek için söndürücü gerekli.'},
+  {id:'a7', sakin:'mehmet', esya:'tava',      aciklama:'Mehmet aşçı. Yemek pişirmek için tava gerekli.'},
+  {id:'a8', sakin:'deniz',  esya:'boya',      aciklama:'Deniz ressam. Resim yapmak için boya gerekli.'},
+  {id:'a9', sakin:'deniz',  esya:'firca',     aciklama:'Deniz ressam. Resimlerini fırçayla yapar.'},
+  {id:'a10',sakin:'hasan',  esya:'tohum',     aciklama:'Hasan çiftçi. Sebze yetiştirmek için tohum gerekli.'},
+  {id:'a11',sakin:'hasan',  esya:'traktor',   aciklama:'Hasan çiftçi. Tarlasını traktörle sürer.'},
+  {id:'a12',sakin:'kerem',  esya:'top',       aciklama:'Kerem futbolcu. Maçta oynamak için top gerekli.'},
+  {id:'a13',sakin:'ayla',   esya:'mont',      aciklama:'Ayla karlı bir köyde yaşıyor. Kalın mont onu soğuktan korur.'},
+  {id:'a14',sakin:'ayla',   esya:'atki',      aciklama:'Ayla karlı bir köyde yaşıyor. Atkı boynunu soğuktan korur.'},
+  {id:'a15',sakin:'ali',    esya:'bisiklet',  aciklama:'Ali okula bisikletle gidiyor. Bisiklet onun ihtiyacı.'},
+  {id:'a16',sakin:'selin',  esya:'keman',     aciklama:'Selin kemancı. Konserde çalmak için keman gerekli.'},
+  {id:'a17',sakin:'mert',   esya:'sapka',     aciklama:'Mert sıcak bir yerde yaşıyor. Şapka onu güneşten korur.'},
+  {id:'a18',sakin:'mert',   esya:'krem',      aciklama:'Mert sıcak bir yerde yaşıyor. Güneş kremi cildini korur.'},
+  {id:'a19',sakin:'selin',  esya:'nota',      aciklama:'Selin kemancı. Çalacağı şarkının notalarına bakar.'},
+  {id:'a20',sakin:'kerem',  esya:'krampon',   aciklama:'Kerem futbolcu. Sahada kayıp düşmemek için krampon giyer.'}
+];
+
+/* Mod C: aynı eşya, dört farklı kişi
+   tur: 'herkes' = herkes için ihtiyaç, 'karisik' = kişiye göre değişir, 'istek' = herkes için istek */
+const C_SORULAR = [
+  {id:'c1', esya:'su', tur:'herkes', sonuc:'Su herkes için ihtiyaç! 💧', kisiler:[
+    {sakin:'kerem', cevap:'ihtiyac', durum:'Antrenmandan geldi.',  aciklama:'Su içmeden kimse yaşayamaz. Kerem için de ihtiyaç.'},
+    {sakin:'can',   cevap:'ihtiyac', durum:'Susadı.',              aciklama:'Bebekler de suya ihtiyaç duyar.'},
+    {sakin:'riza',  cevap:'ihtiyac', durum:'Hava çok sıcak.',      aciklama:'Su içmeden kimse yaşayamaz. Rıza Dede için de ihtiyaç.'},
+    {sakin:'selin', cevap:'ihtiyac', durum:'Konserden çıktı.',     aciklama:'Su içmeden kimse yaşayamaz. Selin için de ihtiyaç.'}]},
+  {id:'c2', esya:'ekmek', tur:'herkes', sonuc:'Yiyecek herkes için ihtiyaç! 🍞', kisiler:[
+    {sakin:'hasan', cevap:'ihtiyac', durum:'Öğle yemeği vakti.',   aciklama:'Herkesin beslenmeye ihtiyacı var. Hasan için de ihtiyaç.'},
+    {sakin:'elif',  cevap:'ihtiyac', durum:'Kahvaltı yapacak.',    aciklama:'Herkesin beslenmeye ihtiyacı var. Elif için de ihtiyaç.'},
+    {sakin:'mehmet',cevap:'ihtiyac', durum:'Karnı acıktı.',        aciklama:'Aşçının da beslenmeye ihtiyacı var.'},
+    {sakin:'ayla',  cevap:'ihtiyac', durum:'Akşam yemeği hazırlıyor.', aciklama:'Herkesin beslenmeye ihtiyacı var. Ayla için de ihtiyaç.'}]},
+  {id:'c3', esya:'yatak', tur:'herkes', sonuc:'Uyumak herkes için ihtiyaç! 🛏️', kisiler:[
+    {sakin:'zeynep',cevap:'ihtiyac', durum:'Nöbetten döndü.',      aciklama:'Herkesin uyuyup dinlenmesi gerekir. Zeynep için de ihtiyaç.'},
+    {sakin:'ali',   cevap:'ihtiyac', durum:'Uykusu geldi.',        aciklama:'Herkesin uyuyup dinlenmesi gerekir. Ali için de ihtiyaç.'},
+    {sakin:'deniz', cevap:'ihtiyac', durum:'Çok yoruldu.',         aciklama:'Herkesin uyuyup dinlenmesi gerekir. Deniz için de ihtiyaç.'},
+    {sakin:'mert',  cevap:'ihtiyac', durum:'Gece oldu.',           aciklama:'Herkesin uyuyup dinlenmesi gerekir. Mert için de ihtiyaç.'}]},
+  {id:'c4', esya:'top', tur:'karisik', sonuc:'Aynı top: Kerem için ihtiyaç, diğerleri için istek!', kisiler:[
+    {sakin:'kerem', cevap:'ihtiyac', durum:'Maçta oynayacak.',             aciklama:'Kerem futbolcu. Top onun işi için gerekli. İhtiyaç.'},
+    {sakin:'elif',  cevap:'istek',   durum:'Parkta top oynamayı seviyor.', aciklama:'Elif top olmadan da yaşar. Top Elif için istek.'},
+    {sakin:'riza',  cevap:'istek',   durum:'Torunuyla oynamak istiyor.',   aciklama:'Top Rıza Dede için gerekli değil. İstek.'},
+    {sakin:'mehmet',cevap:'istek',   durum:'Hafta sonu maç yapmayı seviyor.', aciklama:'Mehmet aşçı; top işi için gerekli değil. İstek.'}]},
+  {id:'c5', esya:'boya', tur:'karisik', sonuc:'Aynı boya seti: Deniz için ihtiyaç, diğerleri için istek!', kisiler:[
+    {sakin:'deniz', cevap:'ihtiyac', durum:'Yeni bir resim yapacak.',            aciklama:'Deniz ressam. Boyalar onun işi için gerekli. İhtiyaç.'},
+    {sakin:'riza',  cevap:'istek',   durum:'Boş zamanında resim yapmayı seviyor.', aciklama:'Resim Rıza Dede\'nin hobisi. Boya seti onun için istek.'},
+    {sakin:'kerem', cevap:'istek',   durum:'Resim yapmayı merak ediyor.',        aciklama:'Kerem futbolcu; boya işi için gerekli değil. İstek.'},
+    {sakin:'selin', cevap:'istek',   durum:'Tatilde resim yapmak istiyor.',      aciklama:'Selin kemancı; boya işi için gerekli değil. İstek.'}]},
+  {id:'c6', esya:'keman', tur:'karisik', sonuc:'Aynı keman: Selin için ihtiyaç, diğerleri için istek!', kisiler:[
+    {sakin:'selin', cevap:'ihtiyac', durum:'Akşam konseri var.',          aciklama:'Selin kemancı. Keman onun işi için gerekli. İhtiyaç.'},
+    {sakin:'ali',   cevap:'istek',   durum:'Kemanın sesini çok beğeniyor.', aciklama:'Ali kemanı beğeniyor ama ona gerekli değil. İstek.'},
+    {sakin:'zeynep',cevap:'istek',   durum:'Keman çalmayı öğrenmek istiyor.', aciklama:'Zeynep itfaiyeci; keman işi için gerekli değil. İstek.'},
+    {sakin:'hasan', cevap:'istek',   durum:'Akşamları müzik yapmayı seviyor.', aciklama:'Hasan çiftçi; keman işi için gerekli değil. İstek.'}]},
+  {id:'c7', esya:'bisiklet', tur:'karisik', sonuc:'Aynı bisiklet: Ali için ihtiyaç, diğerleri için istek!', kisiler:[
+    {sakin:'ali',   cevap:'ihtiyac', durum:'Okulu evinden uzak.',            aciklama:'Ali okula bisikletle gidiyor. Bisiklet onun için ihtiyaç.'},
+    {sakin:'mehmet',cevap:'istek',   durum:'Hafta sonu gezmeyi seviyor.',    aciklama:'Mehmet bisikleti gezmek için istiyor. İstek.'},
+    {sakin:'elif',  cevap:'istek',   durum:'Okulu evinin hemen yanında.',    aciklama:'Elif okula yürüyerek gidiyor. Bisiklet onun için istek.'},
+    {sakin:'deniz', cevap:'istek',   durum:'Sahilde bisiklet sürmek istiyor.', aciklama:'Deniz bisikleti eğlence için istiyor. İstek.'}]},
+  {id:'c8', esya:'sapka', tur:'karisik', sonuc:'Aynı şapka: Mert ve Hasan için ihtiyaç, diğerleri için istek!', kisiler:[
+    {sakin:'mert',  cevap:'ihtiyac', durum:'Güneş çok yakıyor.',               aciklama:'Mert sıcak bir yerde yaşıyor. Şapka onu güneşten korur. İhtiyaç.'},
+    {sakin:'hasan', cevap:'ihtiyac', durum:'Bütün gün güneşte çalışıyor.',     aciklama:'Hasan tarlada güneşin altında. Şapka onu korur. İhtiyaç.'},
+    {sakin:'elif',  cevap:'istek',   durum:'Vitrindeki çiçekli şapkayı beğendi.', aciklama:'Elif şapkayı süs için istiyor. İstek.'},
+    {sakin:'selin', cevap:'istek',   durum:'Konsere şık gitmek istiyor.',      aciklama:'Selin şapkayı süs için istiyor. İstek.'}]},
+  {id:'c9', esya:'konsol', tur:'istek', sonuc:'Oyun konsolu herkes için istek! 🎮', kisiler:[
+    {sakin:'elif',  cevap:'istek', durum:'Oyun oynamayı seviyor.',       aciklama:'Oyun konsolu eğlenceli ama Elif onsuz da yaşar. İstek.'},
+    {sakin:'kerem', cevap:'istek', durum:'Maçtan sonra dinlenmek istiyor.', aciklama:'Oyun konsolu Kerem için gerekli değil. İstek.'},
+    {sakin:'mehmet',cevap:'istek', durum:'Yeni bir oyun görmüş.',        aciklama:'Oyun konsolu Mehmet için gerekli değil. İstek.'},
+    {sakin:'ayla',  cevap:'istek', durum:'Kış akşamları sıkılıyor.',     aciklama:'Oyun konsolu Ayla için gerekli değil. İstek.'}]},
+  {id:'c10', esya:'dondurma', tur:'istek', sonuc:'Dondurma herkes için istek! 🍦', kisiler:[
+    {sakin:'hasan', cevap:'istek', durum:'Hava çok sıcak.',              aciklama:'Dondurma serinletir ama gerekli değil; Hasan su içebilir. İstek.'},
+    {sakin:'elif',  cevap:'istek', durum:'Parkta dondurmacı gördü.',     aciklama:'Dondurma lezzetli ama Elif onsuz da yaşar. İstek.'},
+    {sakin:'zeynep',cevap:'istek', durum:'Tatlı bir şey canı çekti.',    aciklama:'Dondurma Zeynep için gerekli değil. İstek.'},
+    {sakin:'ali',   cevap:'istek', durum:'Arkadaşları dondurma yiyor.',  aciklama:'Dondurma Ali için gerekli değil. İstek.'}]},
+  {id:'c11', esya:'ev', tur:'herkes', sonuc:'Barınmak herkes için ihtiyaç! 🏠', kisiler:[
+    {sakin:'riza',  cevap:'ihtiyac', durum:'Kış geliyor.',               aciklama:'Herkesin barınacak bir eve ihtiyacı var. Rıza Dede için de ihtiyaç.'},
+    {sakin:'can',   cevap:'ihtiyac', durum:'Ailesiyle yaşıyor.',         aciklama:'Bebeklerin de korunacakları bir eve ihtiyacı var.'},
+    {sakin:'kerem', cevap:'ihtiyac', durum:'Maçtan sonra eve dönecek.',  aciklama:'Herkesin barınacak bir eve ihtiyacı var. Kerem için de ihtiyaç.'},
+    {sakin:'selin', cevap:'ihtiyac', durum:'Akşam konserden dönecek.',   aciklama:'Herkesin barınacak bir eve ihtiyacı var. Selin için de ihtiyaç.'}]},
+  {id:'c12', esya:'kask', tur:'karisik', sonuc:'Aynı kask: Zeynep için ihtiyaç, diğerleri için istek!', kisiler:[
+    {sakin:'zeynep',cevap:'ihtiyac', durum:'Yangına gidiyor.',                aciklama:'Zeynep itfaiyeci. Kask başını korur. İhtiyaç.'},
+    {sakin:'elif',  cevap:'istek',   durum:'Kostüm partisine gidecek.',       aciklama:'Elif kaskı kostüm için istiyor. İstek.'},
+    {sakin:'ali',   cevap:'istek',   durum:'İtfaiyeci olmayı hayal ediyor.',  aciklama:'Ali şimdi itfaiyeci değil; kask ona gerekli değil. İstek.'},
+    {sakin:'kerem', cevap:'istek',   durum:'Kaskı çok havalı buluyor.',       aciklama:'Kerem futbolcu; itfaiyeci kaskı işi için gerekli değil. İstek.'}]}
+];
+
+/* =========================================================
+   B) DEPO (localStorage)
+   ========================================================= */
+const Depo = {
+  anahtar:'neseli_apartman_v1',
+  varsayilan(){ return {yildiz:0, susler:[], enIyi:{A:0,B:0,C:0,duello:0}, sonCiftler:[], sonA:[], sonC:[], benim:null, ses:true, sesliOkuma:true}; },
+  v:null,
+  yukle(){
+    try{ const h = JSON.parse(localStorage.getItem(this.anahtar)); this.v = Object.assign(this.varsayilan(), h||{}); }
+    catch(e){ this.v = this.varsayilan(); }
+  },
+  kaydet(){ try{ localStorage.setItem(this.anahtar, JSON.stringify(this.v)); }catch(e){} },
+  sifirla(){
+    const ses = this.v.ses, sesli = this.v.sesliOkuma;   // ayarlar korunur, ilerleme silinir
+    this.v = this.varsayilan(); this.v.ses = ses; this.v.sesliOkuma = sesli; this.kaydet();
+  }
+};
+
+/* =========================================================
+   C) SES MOTORU (Web Audio API — ses dosyası yok)
+   ========================================================= */
+const Ses = {
+  ctx:null,
+  hazirla(){ if(!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+             if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); },
+  nota(frek, sure, tur='sine', gecikme=0, siddet=.18){
+    if(!Depo.v.ses || !this.ctx) return;
+    const t = this.ctx.currentTime + gecikme, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = tur; o.frequency.setValueAtTime(frek, t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(siddet, t+.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+sure);
+    o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t+sure+.05);
+  },
+  tik(){ this.nota(660,.08,'triangle',0,.12); },
+  dogru(){ [523,659,784].forEach((f,i)=>this.nota(f,.18,'triangle',i*.09)); },
+  yanlis(){ this.nota(220,.22,'sawtooth',0,.08); this.nota(180,.28,'sawtooth',.14,.08); },
+  zil(){ this.nota(988,.35,'sine',0,.15); this.nota(784,.45,'sine',.25,.15); },
+  sus(){ [784,988,1175,1568].forEach((f,i)=>this.nota(f,.16,'sine',i*.07,.12)); },
+  fanfar(){ [523,659,784,1047].forEach((f,i)=>this.nota(f,.22,'triangle',i*.12,.16)); this.nota(1047,.5,'triangle',.5,.14); }
+};
+
+/* =========================================================
+   D) SESLİ OKUMA (tarayıcının Türkçe sesi; yoksa düğmeler gizlenir)
+   ========================================================= */
+const Konus = {
+  destek: 'speechSynthesis' in window,
+  oku(metin){
+    if(!this.destek || !Depo.v.sesliOkuma) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(metin);
+    u.lang = 'tr-TR'; u.rate = .9;
+    const tr = speechSynthesis.getVoices().find(s => (s.lang||'').toLowerCase().startsWith('tr'));
+    if(tr) u.voice = tr;
+    speechSynthesis.speak(u);
+  },
+  dugmeleriGuncelle(){
+    const gorunur = this.destek && Depo.v.sesliOkuma;
+    document.querySelectorAll('.sesli').forEach(b => b.classList.toggle('gizli', !gorunur));
+  }
+};
+
+/* =========================================================
+   E) BİNA ÇİZİMİ (4 kat × 3 daire = 12 sakin)
+   ========================================================= */
+function binaSVG(){
+  const var_ = id => Depo.v.susler.includes(id);
+  let s = `<svg viewBox="-40 0 440 520" class="bina-svg" role="img" aria-label="Neşeli Apartman: dört katlı, on iki daireli bina">`;
+  // SÜS: gökkuşağı (binanın arkasında)
+  if(var_('gokkusagi')) ['#FF4D8D','#FF6B35','#FFD600','#00C9A7','#4D9FFF','#A855F7'].forEach((r,i) =>
+    s += `<path d="M${-30+i*7} 300 A${210-i*7} ${250-i*7} 0 0 1 ${390-i*7} 300" stroke="${r}" stroke-width="7" fill="none" opacity=".85"/>`);
+  // gökyüzü süsleri
+  s += `<g class="gunes-isin"><circle cx="322" cy="34" r="15" fill="#FFD600"/>`;
+  for(let i=0;i<8;i++){ const a=i*Math.PI/4; s+=`<line x1="${322+Math.cos(a)*20}" y1="${34+Math.sin(a)*20}" x2="${322+Math.cos(a)*27}" y2="${34+Math.sin(a)*27}" stroke="#FFD600" stroke-width="4" stroke-linecap="round"/>`; }
+  s += `</g><g class="bulut"><ellipse cx="40" cy="36" rx="24" ry="11" fill="#fff"/><ellipse cx="58" cy="30" rx="16" ry="11" fill="#fff"/><ellipse cx="24" cy="32" rx="12" ry="9" fill="#fff"/></g>`;
+  // SÜS: kuşlar
+  if(var_('kuslar')) s += `<g class="kuslar" stroke="#3B2416" stroke-width="2.5" fill="none" stroke-linecap="round">
+    <path d="M-20 70 q6 -7 12 0 q6 -7 12 0"/><path d="M14 52 q5 -6 10 0 q5 -6 10 0"/><path d="M-4 30 q4 -5 8 0 q4 -5 8 0"/></g>`;
+  // gövde ve çatı
+  s += `<rect x="22" y="80" width="316" height="424" rx="10" fill="#FFB98F" stroke="#7a3b1d" stroke-width="3"/>`;
+  s += `<path d="M10 86 L180 18 L350 86 Z" fill="#FF6B35" stroke="#7a3b1d" stroke-width="3" stroke-linejoin="round"/>`;
+  s += `<rect x="104" y="50" width="152" height="26" rx="9" fill="#FFD600" stroke="#7a3b1d" stroke-width="2.5"/>`;
+  s += `<text x="180" y="68" text-anchor="middle" font-size="14" font-weight="900" fill="#7a3b1d" font-family="Nunito,Segoe UI,sans-serif">NEŞELİ APARTMAN</text>`;
+  // SÜS: ışık zinciri (çatı kenarı)
+  if(var_('isiklar')){
+    s += `<path d="M14 84 L180 22 L346 84" stroke="#3B2416" stroke-width="1.5" fill="none"/>`;
+    const renk = ['#FF4D8D','#FFD600','#00C9A7','#4D9FFF'];
+    for(let i=0;i<=16;i++){ const t=i/16, x = t<=.5 ? 14+t*2*166 : 180+(t-.5)*2*166, y = t<=.5 ? 84-t*2*62 : 22+(t-.5)*2*62;
+      s += `<circle cx="${x}" cy="${y+4}" r="4" fill="${renk[i%4]}" class="ampul" style="animation-delay:-${(i%4)*0.3}s"/>`; }
+  }
+  // SÜS: renkli bayraklar (saçak altı)
+  if(var_('bayraklar')){
+    s += `<path d="M26 79 Q180 92 334 79" stroke="#7a3b1d" stroke-width="1.5" fill="none"/>`;
+    const renk = ['#FF6B35','#FFD600','#00C9A7','#4D9FFF','#A855F7','#FF4D8D'];
+    for(let i=0;i<14;i++){ const x = 34+i*21.5, y = 80 + 10*Math.sin(Math.PI*(x-26)/308) * 0.9;
+      s += `<path d="M${x-7} ${y} L${x+7} ${y} L${x} ${y+11} Z" fill="${renk[i%6]}" stroke="#7a3b1d" stroke-width="1"/>`; }
+  }
+  // SÜS: çatıdaki kedi
+  if(var_('kedi')) s += `<g transform="translate(222 16)">
+    <path class="kedi-kuyruk" d="M18 26 Q32 24 30 10" stroke="#F4A259" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="12" cy="24" rx="12" ry="9" fill="#F4A259" stroke="#7a3b1d" stroke-width="2"/>
+    <circle cx="6" cy="12" r="8" fill="#F4A259" stroke="#7a3b1d" stroke-width="2"/>
+    <path d="M0 8 L1 -2 L6 5 Z M8 5 L12 -2 L13 8 Z" fill="#F4A259" stroke="#7a3b1d" stroke-width="1.5" stroke-linejoin="round"/>
+    <circle cx="3.5" cy="11" r="1.4" fill="#3B2416"/><circle cx="8.5" cy="11" r="1.4" fill="#3B2416"/></g>`;
+  // daireler
+  SAKINLER.forEach((k,i)=>{
+    const r = Math.floor(i/3), c = i%3;
+    const x = 34 + c*100, y = 92 + r*88;
+    s += `<g data-daire="${k.id}">`;
+    s += `<rect x="${x}" y="${y}" width="92" height="80" rx="8" fill="${DAIRE_RENK[(i+r)%DAIRE_RENK.length]}" stroke="#7a3b1d" stroke-width="2"/>`;
+    s += `<rect x="${x+52}" y="${y+9}" width="32" height="26" rx="4" class="isik" fill="#FFF3B0" style="animation-delay:-${(i*0.7)%5}s" stroke="#7a3b1d" stroke-width="2"/>`;
+    s += `<path d="M${x+68} ${y+9}v26M${x+52} ${y+22}h32" stroke="#7a3b1d" stroke-width="1.5"/>`;
+    // sakinin portresi (pencereden bakıyor)
+    s += `<svg x="${x+4}" y="${y+6}" width="50" height="52" viewBox="0 0 100 100"><defs><clipPath id="bp-${k.id}-${i}"><circle cx="50" cy="50" r="48"/></clipPath></defs><g clip-path="url(#bp-${k.id}-${i})">${portreIc(k.id)}</g><circle cx="50" cy="50" r="48" fill="none" stroke="#7a3b1d" stroke-width="4"/></svg>`;
+    // SÜS: pencere altında çiçeklik
+    if(var_('cicek')){
+      s += `<rect x="${x+50}" y="${y+37}" width="36" height="7" rx="2" fill="#A1673A" stroke="#7a3b1d" stroke-width="1.2"/>`;
+      ['#FF4D8D','#FFD600','#A855F7','#FF6B35'].forEach((r,j) => s += `<circle cx="${x+56+j*8}" cy="${y+35}" r="3.3" fill="${r}"/>`);
+    }
+    // kapı tabelası
+    s += `<rect x="${x+8}" y="${y+60}" width="76" height="16" rx="5" fill="#fff" stroke="#7a3b1d" stroke-width="1.5"/>`;
+    s += `<text x="${x+46}" y="${y+72.5}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#3B2416" font-family="Nunito,Segoe UI,sans-serif">${k.kisa}</text>`;
+    s += `</g>`;
+  });
+  // zemin kat: giriş kapısı ve apartman görevlisi (oyuncu)
+  s += `<rect x="146" y="446" width="68" height="58" rx="8" fill="#8B5A2B" stroke="#7a3b1d" stroke-width="3"/>`;
+  s += `<line x1="180" y1="448" x2="180" y2="504" stroke="#5d3a19" stroke-width="2"/><circle cx="172" cy="478" r="3" fill="#FFD600"/><circle cx="188" cy="478" r="3" fill="#FFD600"/>`;
+  s += `<g class="kapici"><circle cx="82" cy="462" r="10" fill="#F5C6A0" stroke="#7a3b1d" stroke-width="2"/>`;
+  s += `<path d="M71 458 Q82 444 93 458 Z" fill="#4D9FFF" stroke="#7a3b1d" stroke-width="2"/><rect x="69" y="456" width="28" height="4" rx="2" fill="#2f6fcf"/>`;
+  s += `<rect x="70" y="472" width="24" height="30" rx="7" fill="#4D9FFF" stroke="#7a3b1d" stroke-width="2"/>`;
+  s += `<rect x="98" y="480" width="22" height="20" rx="3" fill="#E0A96D" stroke="#7a3b1d" stroke-width="2"/><path d="M98 488h22M109 480v20" stroke="#7a3b1d" stroke-width="1.5"/></g>`;
+  s += `<rect x="248" y="466" width="60" height="30" rx="6" fill="#DFF8F2" stroke="#7a3b1d" stroke-width="2"/><text x="278" y="485" text-anchor="middle" font-size="10" font-weight="800" fill="#3B2416" font-family="Nunito,Segoe UI,sans-serif">GİRİŞ</text>`;
+  s += `<rect x="-40" y="502" width="440" height="18" fill="#7BC67B"/>`;
+  // SÜS: bahçe ağacı
+  if(var_('agac')) s += `<rect x="-22" y="452" width="12" height="52" rx="3" fill="#8B5A2B" stroke="#7a3b1d" stroke-width="2"/>
+    <circle cx="-16" cy="430" r="22" fill="#5DBB63" stroke="#2e7d32" stroke-width="2.5"/><circle cx="-30" cy="448" r="13" fill="#4CAF50" stroke="#2e7d32" stroke-width="2"/>
+    <circle cx="-2" cy="448" r="13" fill="#4CAF50" stroke="#2e7d32" stroke-width="2"/><circle cx="-22" cy="424" r="3" fill="#FF4D8D"/><circle cx="-8" cy="436" r="3" fill="#FF4D8D"/>`;
+  // SÜS: bahçe bankı
+  if(var_('bank')) s += `<g stroke="#7a3b1d" stroke-width="2"><rect x="344" y="478" width="50" height="7" rx="2" fill="#E0A96D"/><rect x="344" y="468" width="50" height="6" rx="2" fill="#E0A96D"/>
+    <path d="M350 485 V502 M388 485 V502"/></g>`;
+  s += `</svg>`;
+  return s;
+}
+
+/* =========================================================
+   E1) SAKİN PORTRELERİ — her sakine özel SVG (viewBox 100×100)
+   ========================================================= */
+const CIZGI = 'stroke="#7a3b1d" stroke-width="3" stroke-linejoin="round"';
+const P = {
+  arka: r => `<circle cx="50" cy="50" r="48" fill="${r}"/>`,
+  govde: (r, ek='') => `<path d="M12 104 Q12 70 50 67 Q88 70 88 104 Z" fill="${r}" ${CIZGI}/>${ek}`,
+  boyun: t => `<rect x="44" y="56" width="12" height="13" rx="4" fill="${t}" ${CIZGI}/>`,
+  bas: (t, r=20, cy=42) => `<circle cx="50" cy="${cy}" r="${r}" fill="${t}" ${CIZGI}/>`,
+  yuz: (cy=42, gulus=true) => `<circle cx="43" cy="${cy-1}" r="2.6" fill="#3B2416"/><circle cx="57" cy="${cy-1}" r="2.6" fill="#3B2416"/>
+       <circle cx="38" cy="${cy+6}" r="3.2" fill="#FF8FA3" opacity=".45"/><circle cx="62" cy="${cy+6}" r="3.2" fill="#FF8FA3" opacity=".45"/>
+       ${gulus ? `<path d="M44 ${cy+8} Q50 ${cy+13} 56 ${cy+8}" stroke="#3B2416" stroke-width="2.5" fill="none" stroke-linecap="round"/>` : ''}`,
+  biyik: (r, cy=42) => `<path d="M40 ${cy+8} Q45 ${cy+4} 50 ${cy+7} Q55 ${cy+4} 60 ${cy+8} Q55 ${cy+11} 50 ${cy+9} Q45 ${cy+11} 40 ${cy+8} Z" fill="${r}" stroke="#7a3b1d" stroke-width="1.5"/>`
+};
+const PORTRE = {
+  /* Bebek Can: iri baş, perçem, önlük */
+  can: () => P.arka('#FFE0EC') + P.govde('#FF9EC4', `<path d="M36 72 Q50 90 64 72 Z" fill="#fff" ${CIZGI}/>`) +
+       P.bas('#FFD7B5', 23, 44) + `<path d="M50 21 Q58 14 52 9" stroke="#7a3b1d" stroke-width="3" fill="none" stroke-linecap="round"/>` +
+       P.yuz(45) ,
+  /* Öğrenci Elif: iki örgü, çanta askıları */
+  elif: () => P.arka('#F1E6FF') + `<circle cx="27" cy="46" r="8" fill="#5D3A1A" ${CIZGI}/><circle cx="73" cy="46" r="8" fill="#5D3A1A" ${CIZGI}/>` +
+       `<path d="M22 38 l-6 -4 l1 9 Z M78 38 l6 -4 l-1 9 Z" fill="#FF4D8D"/>` +
+       P.govde('#A855F7', `<path d="M33 70 L30 104 M67 70 L70 104" stroke="#FF6B35" stroke-width="6"/>`) + P.boyun('#F5C6A0') + P.bas('#F5C6A0') +
+       `<path d="M30 40 Q32 18 50 20 Q68 18 70 40 Q62 28 50 30 Q40 28 30 40 Z" fill="#5D3A1A" ${CIZGI}/>` + P.yuz(),
+  /* Rıza Dede: kasket, beyaz bıyık, kısık gözler, hırka */
+  riza: () => P.arka('#EFE6DD') + P.govde('#8D6E63', `<path d="M50 70 V104" stroke="#7a3b1d" stroke-width="2"/><circle cx="54" cy="80" r="2" fill="#FFD600"/><circle cx="54" cy="92" r="2" fill="#FFD600"/>`) +
+       P.boyun('#F5C6A0') + P.bas('#F5C6A0') +
+       `<path d="M31 44 Q28 36 33 34 M69 44 Q72 36 67 34" stroke="#fff" stroke-width="6" stroke-linecap="round"/>` +
+       `<path d="M29 32 Q32 16 52 18 Q70 20 72 30 Q78 31 80 34 L30 34 Z" fill="#78909C" ${CIZGI}/>` +
+       `<path d="M40 41 Q43 39 46 41 M54 41 Q57 39 60 41" stroke="#3B2416" stroke-width="2.5" fill="none" stroke-linecap="round"/>` +
+       P.biyik('#fff') + `<path d="M45 54 Q50 57 55 54" stroke="#3B2416" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+  /* İtfaiyeci Zeynep: kırmızı kask, reflektörlü ceket */
+  zeynep: () => P.arka('#FFE3D3') + `<path d="M64 40 Q80 46 74 66 Q70 52 62 50 Z" fill="#3B2416" ${CIZGI}/>` +
+       P.govde('#E53935', `<path d="M16 88 H84" stroke="#FFD600" stroke-width="5"/><path d="M50 70 V104" stroke="#7a3b1d" stroke-width="2"/>`) +
+       P.boyun('#E0AC7E') + P.bas('#E0AC7E') +
+       `<path d="M27 38 Q28 14 50 14 Q72 14 73 38 Z" fill="#E53935" ${CIZGI}/><path d="M22 38 H78" stroke="#7a3b1d" stroke-width="5" stroke-linecap="round"/><path d="M22 38 H78" stroke="#E53935" stroke-width="3" stroke-linecap="round"/>` +
+       `<path d="M50 18 l4 6 h-8 Z" fill="#FFD600"/><rect x="46" y="23" width="8" height="8" rx="2" fill="#FFD600"/>` + P.yuz(),
+  /* Aşçı Mehmet: aşçı şapkası, bıyık, fular */
+  mehmet: () => P.arka('#FFF6C9') + P.govde('#fff', `<circle cx="42" cy="82" r="2.4" fill="#7a3b1d"/><circle cx="58" cy="82" r="2.4" fill="#7a3b1d"/><circle cx="42" cy="94" r="2.4" fill="#7a3b1d"/><circle cx="58" cy="94" r="2.4" fill="#7a3b1d"/>`) +
+       `<path d="M40 66 L50 76 L60 66 Z" fill="#E53935" ${CIZGI}/>` + P.bas('#F5C6A0') +
+       `<rect x="33" y="22" width="34" height="10" rx="3" fill="#fff" ${CIZGI}/><circle cx="38" cy="16" r="8" fill="#fff" ${CIZGI}/><circle cx="50" cy="11" r="9" fill="#fff" ${CIZGI}/><circle cx="62" cy="16" r="8" fill="#fff" ${CIZGI}/><rect x="34" y="18" width="32" height="10" fill="#fff"/>` +
+       P.yuz(43, false) + P.biyik('#3B2416', 42),
+  /* Ressam Deniz: bere, boya lekeli önlük */
+  deniz: () => P.arka('#E3F2FF') + P.govde('#4D9FFF', `<circle cx="38" cy="84" r="4" fill="#FFD600"/><circle cx="60" cy="90" r="4" fill="#FF4D8D"/><circle cx="52" cy="78" r="3" fill="#00C9A7"/><circle cx="30" cy="96" r="3" fill="#FF6B35"/>`) +
+       P.boyun('#FFD7B5') + P.bas('#FFD7B5') +
+       `<path d="M31 40 Q30 26 40 24 L62 24 Q70 28 69 40 Q64 32 50 32 Q38 32 31 40 Z" fill="#FF6B35" ${CIZGI}/>` +
+       `<ellipse cx="46" cy="22" rx="22" ry="8" fill="#283593" ${CIZGI} transform="rotate(-12 46 22)"/><circle cx="44" cy="13" r="3" fill="#283593"/>` + P.yuz(),
+  /* Çiftçi Hasan: dağınık saç, bıyık, yeşil tulum */
+  hasan: () => P.arka('#E6F4D9') + P.govde('#FFD600', `<path d="M30 76 L34 104 H66 L70 76 L62 76 L60 90 H40 L38 76 Z" fill="#6D9F3A" ${CIZGI}/><circle cx="40" cy="86" r="2.5" fill="#FFD600"/><circle cx="60" cy="86" r="2.5" fill="#FFD600"/>`) +
+       P.boyun('#C68B59') + P.bas('#C68B59') +
+       `<path d="M30 38 Q28 20 42 20 Q46 14 54 18 Q62 14 66 22 Q74 26 70 38 Q66 30 58 30 Q50 26 42 30 Q34 30 30 38 Z" fill="#212121" ${CIZGI}/>` +
+       P.yuz(42, false) + P.biyik('#212121'),
+  /* Futbolcu Kerem: ter bandı, 10 numaralı forma */
+  kerem: () => P.arka('#DFF8F2') + P.govde('#00C9A7', `<text x="50" y="96" text-anchor="middle" font-size="18" font-weight="900" fill="#fff" font-family="Nunito,Segoe UI,sans-serif">10</text>`) +
+       P.boyun('#8D5524') + P.bas('#8D5524') +
+       `<path d="M30 36 Q30 20 50 20 Q70 20 70 36 Q60 28 50 28 Q40 28 30 36 Z" fill="#212121" ${CIZGI}/>` +
+       `<rect x="29" y="30" width="42" height="7" rx="3" fill="#fff" ${CIZGI}/>` + P.yuz(),
+  /* Ayla: ponponlu bere, şişme mont */
+  ayla: () => P.arka('#E3F2FF') + `<path d="M30 40 Q26 60 32 66 L40 50 Z M70 40 Q74 60 68 66 L60 50 Z" fill="#8D5524" ${CIZGI}/>` +
+       P.govde('#90CAF9', `<path d="M16 84 H84 M14 96 H86" stroke="#5c95c9" stroke-width="2.5"/><path d="M50 70 V104" stroke="#7a3b1d" stroke-width="2"/>`) +
+       P.boyun('#F5C6A0') + P.bas('#F5C6A0') +
+       `<path d="M29 38 Q29 14 50 14 Q71 14 71 38 Z" fill="#FF4D8D" ${CIZGI}/><rect x="27" y="32" width="46" height="8" rx="4" fill="#fff" ${CIZGI}/>` +
+       `<path d="M38 22 V31 M50 18 V31 M62 22 V31" stroke="#fff" stroke-width="2.5"/><circle cx="50" cy="10" r="6" fill="#fff" ${CIZGI}/>` + P.yuz(),
+  /* Ali: kıvırcık saç, turuncu tişört */
+  ali: () => P.arka('#FFE3D3') + P.govde('#FF6B35', `<path d="M40 70 Q50 78 60 70" stroke="#7a3b1d" stroke-width="2.5" fill="none"/>`) +
+       P.boyun('#E0AC7E') + P.bas('#E0AC7E') +
+       [[34,30],[40,23],[49,20],[58,22],[65,28],[68,36],[32,37]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="7" fill="#4E342E" ${CIZGI}/>`).join('') +
+       `<path d="M33 34 Q50 22 67 34 L66 30 Q50 18 34 30 Z" fill="#4E342E"/>` + P.yuz(),
+  /* Kemancı Selin: uzun saç, kurdele, nota */
+  selin: () => P.arka('#FFE0EC') + `<path d="M28 40 Q24 66 30 78 H70 Q76 66 72 40 Z" fill="#212121" ${CIZGI}/>` +
+       `<path d="M80 18 V32 M80 18 L88 16 V28" stroke="#C2185B" stroke-width="2.5" fill="none"/><circle cx="77" cy="32" r="3.5" fill="#C2185B"/><circle cx="85" cy="28" r="3.5" fill="#C2185B"/>` +
+       P.govde('#C2185B', `<path d="M38 70 L50 80 L62 70" stroke="#fff" stroke-width="3" fill="none"/>`) +
+       P.boyun('#FFD7B5') + P.bas('#FFD7B5') +
+       `<path d="M30 42 Q30 18 50 20 Q70 18 70 42 Q66 28 54 28 Q44 34 30 42 Z" fill="#212121" ${CIZGI}/>` +
+       `<path d="M62 22 l10 -6 l-2 10 Z M62 22 l4 -10 l6 6 Z" fill="#FF4D8D" ${CIZGI}/>` + P.yuz(),
+  /* Mert: atlet, alnında güneş gözlüğü */
+  mert: () => P.arka('#FFF6C9') + `<path d="M12 104 Q12 72 30 68 L70 68 Q88 72 88 104 Z" fill="#C68B59" ${CIZGI}/>` +
+       `<path d="M30 104 L32 70 Q50 78 68 70 L70 104 Z" fill="#FFD600" ${CIZGI}/>` + P.boyun('#C68B59') + P.bas('#C68B59') +
+       `<path d="M30 36 Q30 20 50 20 Q70 20 70 36 Q60 26 50 28 Q40 26 30 36 Z" fill="#A1887F" ${CIZGI}/>` +
+       `<rect x="34" y="27" width="14" height="8" rx="4" fill="#212121"/><rect x="52" y="27" width="14" height="8" rx="4" fill="#212121"/><path d="M48 30 H52" stroke="#212121" stroke-width="2"/>` + P.yuz()
+};
+/* Portrenin iç çizimi (bina pencerelerinde de kullanılır) */
+function portreIc(id){ return (PORTRE[id] || (() => P.arka('#FFF3E6') + P.govde('#ccc') + P.bas('#F5C6A0') + P.yuz()))(); }
+function portreSVG(id){
+  return `<svg class="portre" viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="kp-${id}"><circle cx="50" cy="50" r="48"/></clipPath></defs>
+    <g clip-path="url(#kp-${id})">${portreIc(id)}</g><circle cx="50" cy="50" r="48" fill="none" stroke="#f0dccb" stroke-width="3"/></svg>`;
+}
+
+/* =========================================================
+   E2) MOD B — İSTEK Mİ İHTİYAÇ MI?
+   Tur düzeni (8 görev): K1, K1, P1, K1, Q1, P2, K1, Q2
+   K1 = 1. kademe sorusu, P/Q = karşıtlık çiftinin iki yarısı
+   (aynı eşyanın iki görünüşü arasında 2 görev var)
+   ========================================================= */
+const karistir = d => { const a=[...d]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+const ModB = {
+  el:null, gorevler:[], sira:0, dogru:0, yanlislar:[], sonuclar:[], kilit:false, zaman:null,
+
+  kur(el){
+    this.el = el;
+    el.innerHTML = `
+      <div class="ust-bar">
+        <button class="geri" data-git="apartman" aria-label="Apartmana dön">←</button>
+        <h2>İstek mi İhtiyaç mı?</h2>
+        <div class="yildiz-rozet">⭐ <span class="yildiz-sayi">0</span></div>
+      </div>
+      <div class="ilerleme" id="b-ilerleme"></div>
+      <div class="b-alan" id="b-alan"></div>`;
+  },
+
+  /* Görev listesini kur — son turlarda görülenleri önce dışarıda bırakır */
+  turOlustur(){
+    const son = new Set(Depo.v.sonCiftler);
+    const sec = (havuz, n) => {
+      const taze = karistir(havuz.filter(x => !son.has(x.id)));
+      const eski = karistir(havuz.filter(x => son.has(x.id)));
+      return [...taze, ...eski].slice(0, n);
+    };
+    // 2 ihtiyaç + 2 istek: hep aynı düğmeye basarak geçilemesin
+    const k1 = karistir([...sec(B_KADEME1.filter(x=>x.cevap==='ihtiyac'), 2), ...sec(B_KADEME1.filter(x=>x.cevap==='istek'), 2)]);
+    const adaylar = sec(B_KARSITLIK, B_KARSITLIK.length);
+    const ciftler = [adaylar[0], adaylar.find(c => c.esya !== adaylar[0].esya)];   // iki farklı eşya
+    const yarilar = c => {
+      const g = ['ihtiyac','istek'].map(t => ({id:c.id, sakin:c[t].sakin, esya:c.esya, cevap:t, durum:c[t].durum, aciklama:c[t].aciklama, cift:true}));
+      return Math.random() < .5 ? g : g.reverse();
+    };
+    const [P1,P2] = yarilar(ciftler[0]), [Q1,Q2] = yarilar(ciftler[1]);
+    this.gorevler = [k1[0], k1[1], P1, k1[2], Q1, P2, k1[3], Q2];
+    // tekrar önleme: son 2 turun kimlikleri saklanır (en çok 12)
+    Depo.v.sonCiftler = [...k1.map(x=>x.id), ...ciftler.map(x=>x.id), ...Depo.v.sonCiftler].slice(0,12);
+    Depo.kaydet();
+  },
+
+  yeniTur(){
+    clearTimeout(this.zaman);
+    this.turOlustur();
+    this.sira = 0; this.dogru = 0; this.yanlislar = []; this.sonuclar = [];
+    this.goster();
+  },
+
+  ilerlemeCiz(){
+    document.getElementById('b-ilerleme').innerHTML = this.gorevler.map((_,i) =>
+      `<i class="${i<this.sira ? (this.sonuclar[i]?'d':'y') : i===this.sira ? 'simdi' : ''}"></i>`).join('');
+  },
+
+  goster(){
+    this.kilit = false;
+    const g = this.gorevler[this.sira], k = sakinBul(g.sakin), e = ESYALAR[g.esya];
+    const okunacak = `${k.ad}. ${k.bilgi} ${g.durum} Eşya: ${e.ad}. ${k.kisa} için ihtiyaç mı, istek mi?`;
+    this.ilerlemeCiz();
+    document.getElementById('b-alan').innerHTML = `
+      <div class="b-sahne">
+        <div class="sakin-kart">${portreSVG(g.sakin)}
+          <div><h3>${k.ad}</h3><div class="bilgi">${k.bilgi}</div><div class="durum">${g.durum}</div></div>
+        </div>
+        <div class="esya-kart"><div class="emoji">${e.e}</div><div class="ad">${e.ad}</div></div>
+      </div>
+      <p class="b-soru">${e.ad}, ${k.kisa} için ihtiyaç mı, istek mi?
+        <button class="sesli" data-oku="${okunacak}" aria-label="Sesli oku">🔊</button></p>
+      <div class="cevaplar">
+        <button class="cevap ihtiyac" data-cevap="ihtiyac">✔ İhtiyaç</button>
+        <button class="cevap istek" data-cevap="istek">★ İstek</button>
+      </div>`;
+    Konus.dugmeleriGuncelle();
+    this.el.querySelectorAll('[data-cevap]').forEach(b => b.onclick = () => this.cevapla(b.dataset.cevap));
+  },
+
+  cevapla(secim){
+    if(this.kilit) return; this.kilit = true;
+    const g = this.gorevler[this.sira], dogruMu = secim === g.cevap;
+    this.sonuclar[this.sira] = dogruMu;
+    this.el.querySelectorAll('[data-cevap]').forEach(b => {
+      if(b.dataset.cevap === g.cevap) b.classList.add('parla'); else b.classList.add('soluk');
+    });
+    const alan = document.getElementById('b-alan');
+    if(dogruMu){
+      this.dogru++; yildizEkle(1); Ses.dogru();
+      alan.insertAdjacentHTML('beforeend','<div class="arti">+1 ⭐</div>');
+      this.zaman = setTimeout(() => this.sonraki(), 1300);
+    } else {
+      Ses.yanlis();
+      this.yanlislar.push({metin:`${portreMini(g.sakin)} ${g.aciklama}`});
+      const dogruAd = g.cevap === 'ihtiyac' ? '✔ İhtiyaç' : '★ İstek';
+      const metinDuz = g.aciklama.replace(/<[^>]+>/g,'');
+      alan.insertAdjacentHTML('beforeend', `
+        <div class="gb-panel" role="alert">${portreSVG(g.sakin)}
+          <div class="gb-metin"><div class="gb-baslik">Doğrusu: ${dogruAd}</div>${g.aciklama}</div>
+          <div class="gb-dugmeler">
+            <button class="sesli" data-oku="${metinDuz}" aria-label="Sesli oku">🔊</button>
+            <button class="dugme mavi" id="b-anladim">Anladım ▶</button>
+          </div>
+        </div>`);
+      Konus.dugmeleriGuncelle();
+      document.getElementById('b-anladim').onclick = () => { Ses.tik(); this.sonraki(); };
+    }
+  },
+
+  sonraki(){
+    clearTimeout(this.zaman);
+    this.sira++;
+    if(this.sira < this.gorevler.length) this.goster();
+    else this.bitir();
+  },
+
+  bitir(){
+    Depo.v.enIyi.B = Math.max(Depo.v.enIyi.B||0, this.dogru); Depo.kaydet();
+    Ses.fanfar();
+    Sahne.git('ozet', {mod:'B', dogru:this.dogru, toplam:this.gorevler.length, yanlislar:this.yanlislar});
+  },
+
+  durdur(){ clearTimeout(this.zaman); }
+};
+
+/* =========================================================
+   E3) MOD A — KAPIYA TESLİM
+   Tur: 4 teslimat, her teslimatta 3 sakin + 3 eşya (12 eşya)
+   Sürükle-bırak VEYA önce pakete sonra kapıya dokunma
+   İlk denemede doğru teslim = +1 yıldız; 2 yanlıştan sonra doğru kapı parlar
+   ========================================================= */
+/* Tüm modlardaki verilerden "kimin neye ihtiyacı var" haritası */
+const IHTIYAC_HARITA = new Set([
+  ...A_IHTIYACLAR.map(x => x.sakin+'|'+x.esya),
+  ...B_KADEME1.filter(x => x.cevap==='ihtiyac').map(x => x.sakin+'|'+x.esya),
+  ...B_KARSITLIK.map(x => x.ihtiyac.sakin+'|'+x.esya),
+  ...C_SORULAR.flatMap(q => q.kisiler.filter(k => k.cevap==='ihtiyac').map(k => k.sakin+'|'+q.esya))
+]);
+const ihtiyacMi = (sakin, esya) => IHTIYAC_HARITA.has(sakin+'|'+esya);
+
+const ModA = {
+  el:null, setler:[], setNo:0, paketler:[], dogru:0, yanlislar:[], yanlisSay:{}, secili:null, surukle:null, zaman:null, kilit:false,
+  KAPI_RENK:['#FF6B35','#4D9FFF','#A855F7'],
+
+  kur(el){
+    this.el = el;
+    el.innerHTML = `
+      <div class="ust-bar">
+        <button class="geri" data-git="apartman" aria-label="Apartmana dön">←</button>
+        <h2>Kapıya Teslim</h2>
+        <div class="yildiz-rozet">⭐ <span class="yildiz-sayi">0</span></div>
+      </div>
+      <div class="ilerleme" id="a-ilerleme"></div>
+      <div class="a-alan" id="a-alan"></div>`;
+  },
+
+  /* 4 set kur: her sette 3 farklı sakin; tur içinde eşya tekrarı yok */
+  turOlustur(){
+    const son = new Set(Depo.v.sonA);
+    for(let deneme=0; deneme<30; deneme++){
+      const havuz = [...karistir(A_IHTIYACLAR.filter(x=>!son.has(x.id))), ...karistir(A_IHTIYACLAR.filter(x=>son.has(x.id)))];
+      const kullanildi = new Set(), setler = [];
+      for(let s=0; s<4; s++){
+        const set = [], sakinler = new Set();
+        for(const x of havuz){
+          if(set.length===3) break;
+          if(kullanildi.has(x.id) || sakinler.has(x.sakin)) continue;
+          // aynı teslimatta bir eşyanın iki doğru kapısı olmasın (ör. şapka: Mert ve Hasan)
+          if(set.some(y => ihtiyacMi(y.sakin, x.esya) || ihtiyacMi(x.sakin, y.esya))) continue;
+          set.push(x); sakinler.add(x.sakin); kullanildi.add(x.id);
+        }
+        if(set.length<3) break;
+        setler.push(set);
+      }
+      if(setler.length===4){
+        this.setler = setler;
+        Depo.v.sonA = setler.flat().map(x=>x.id).slice(0,12); Depo.kaydet();
+        return;
+      }
+    }
+  },
+
+  yeniTur(){
+    this.durdur();
+    this.turOlustur();
+    this.setNo = 0; this.dogru = 0; this.yanlislar = [];
+    this.setGoster();
+  },
+
+  ilerlemeCiz(){
+    document.getElementById('a-ilerleme').innerHTML = this.setler.map((_,i) =>
+      `<i class="${i<this.setNo ? 'd' : i===this.setNo ? 'simdi' : ''}"></i>`).join('');
+  },
+
+  setGoster(){
+    this.kilit = false; this.secili = null; this.yanlisSay = {};
+    const set = this.setler[this.setNo];
+    const kapiSirasi = karistir(set), paketSirasi = karistir(set);
+    this.paketler = set.map(x => x.id);
+    this.ilerlemeCiz();
+    const yon = 'Her eşyayı ona ihtiyacı olan komşunun kapısına götür.';
+    document.getElementById('a-alan').innerHTML = `
+      <p class="yonerge a-yonerge">${yon} <button class="sesli" data-oku="${yon}" aria-label="Sesli oku">🔊</button></p>
+      <div class="kapilar">${kapiSirasi.map((x,i) => { const k = sakinBul(x.sakin); return `
+        <div class="kapi" data-kapi="${x.sakin}" role="button" tabindex="0" aria-label="${k.ad}: ${k.bilgi}">
+          <div class="ust-serit" style="background:${this.KAPI_RENK[i]}"></div>
+          ${portreSVG(x.sakin)}<h3>${k.ad}</h3><div class="bilgi">${k.bilgi}</div>
+        </div>`; }).join('')}</div>
+      <div class="tepsi" id="a-tepsi">${paketSirasi.map(x => { const e = ESYALAR[x.esya]; return `
+        <div class="paket" data-paket="${x.id}" role="button" tabindex="0" aria-label="${e.ad}">
+          <div class="emoji">${e.e}</div><div class="ad">${e.ad}</div></div>`; }).join('')}</div>`;
+    Konus.dugmeleriGuncelle();
+    this.el.querySelectorAll('.paket').forEach(p => this.paketBagla(p));
+    this.el.querySelectorAll('.kapi').forEach(k => {
+      k.onclick = () => { if(this.secili && !this.surukle) this.teslim(this.secili, k); };
+      k.onkeydown = ev => { if(ev.key==='Enter' && this.secili) this.teslim(this.secili, k); };
+    });
+  },
+
+  /* ---- sürükle-bırak + dokun-seç ---- */
+  paketBagla(p){
+    p.onpointerdown = ev => {
+      if(this.kilit) return;
+      ev.preventDefault();
+      this.surukle = {p, x0:ev.clientX, y0:ev.clientY, hayalet:null};
+      p.setPointerCapture(ev.pointerId);
+    };
+    p.onpointermove = ev => {
+      const s = this.surukle; if(!s || s.p!==p) return;
+      if(!s.hayalet){
+        if(Math.hypot(ev.clientX-s.x0, ev.clientY-s.y0) < 10) return;
+        s.hayalet = p.cloneNode(true); s.hayalet.classList.add('hayalet'); s.hayalet.classList.remove('secili');
+        document.body.appendChild(s.hayalet); p.classList.add('tasiniyor'); this.seciliBirak();
+      }
+      s.hayalet.style.left = ev.clientX+'px'; s.hayalet.style.top = ev.clientY+'px';
+      const hedef = this.kapiBul(ev.clientX, ev.clientY);
+      this.el.querySelectorAll('.kapi').forEach(k => k.classList.toggle('hedef', k===hedef));
+    };
+    const bitir = ev => {
+      const s = this.surukle; if(!s || s.p!==p) return;
+      if(s.hayalet){
+        const hedef = this.kapiBul(ev.clientX, ev.clientY);
+        s.hayalet.remove(); p.classList.remove('tasiniyor');
+        this.el.querySelectorAll('.kapi').forEach(k => k.classList.remove('hedef'));
+        if(hedef && ev.type==='pointerup') this.teslim(p, hedef);
+      } else if(ev.type==='pointerup'){
+        // dokunma: paketi seç / bırak
+        if(this.secili===p) this.seciliBirak();
+        else { this.seciliBirak(); this.secili = p; p.classList.add('secili'); Ses.tik();
+               this.el.querySelectorAll('.kapi').forEach(k => k.classList.add('secime-hazir')); }
+      }
+      setTimeout(() => { this.surukle = null; }, 0);
+    };
+    p.onpointerup = bitir; p.onpointercancel = bitir;
+    p.onkeydown = ev => { if(ev.key==='Enter'){ this.seciliBirak(); this.secili = p; p.classList.add('secili'); } };
+  },
+
+  seciliBirak(){
+    if(this.secili) this.secili.classList.remove('secili');
+    this.secili = null;
+    this.el.querySelectorAll('.kapi').forEach(k => k.classList.remove('secime-hazir'));
+  },
+
+  kapiBul(x, y){
+    return [...this.el.querySelectorAll('.kapi')].find(k => {
+      const r = k.getBoundingClientRect(); return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+    }) || null;
+  },
+
+  /* ---- teslim kontrolü ---- */
+  teslim(paketEl, kapiEl){
+    if(this.kilit) return;
+    const g = A_IHTIYACLAR.find(x => x.id === paketEl.dataset.paket);
+    const kime = kapiEl.dataset.kapi;
+    this.seciliBirak();
+    if(kime === g.sakin){
+      const ilkDeneme = !this.yanlisSay[g.id];
+      if(ilkDeneme){ this.dogru++; yildizEkle(1); }
+      Ses.zil();
+      kapiEl.classList.remove('ipucu');
+      kapiEl.insertAdjacentHTML('beforeend', `<div class="teslim">${ESYALAR[g.esya].e}</div>`);
+      paketEl.remove();
+      this.paketler = this.paketler.filter(id => id !== g.id);
+      this.mesaj(`${ilkDeneme ? '+1 ⭐ ' : ''}${g.aciklama}`, true);
+      if(!this.paketler.length){ this.kilit = true; this.zaman = setTimeout(() => this.sonrakiSet(), 1800); }
+    } else {
+      Ses.yanlis();
+      this.yanlisSay[g.id] = (this.yanlisSay[g.id]||0) + 1;
+      if(this.yanlisSay[g.id] === 1) this.yanlislar.push({metin:`${portreMini(g.sakin)} ${ESYALAR[g.esya].ad}: ${g.aciklama}`});
+      kapiEl.classList.remove('titre'); void kapiEl.offsetWidth; kapiEl.classList.add('titre');
+      const yanlisK = sakinBul(kime), e = ESYALAR[g.esya];
+      this.mesaj(`${e.e} ${e.ad}, ${yanlisK.ad} için gerekli değil. Tekrar dene!`, false);
+      if(this.yanlisSay[g.id] >= 2){   // iki yanlıştan sonra doğru kapı parlar
+        const dogruKapi = this.el.querySelector(`[data-kapi="${g.sakin}"]`);
+        dogruKapi.classList.remove('ipucu'); void dogruKapi.offsetWidth; dogruKapi.classList.add('ipucu');
+      }
+    }
+  },
+
+  mesaj(html, iyi){
+    const alan = document.getElementById('a-alan');
+    alan.querySelector('.a-mesaj')?.remove();
+    clearTimeout(this.mesajZaman);
+    alan.insertAdjacentHTML('beforeend', `<div class="a-mesaj ${iyi?'iyi':''}" role="status">${html}</div>`);
+    const m = alan.querySelector('.a-mesaj');
+    if(Depo.v.sesliOkuma) Konus.oku(m.textContent.replace('+1 ⭐',''));
+    this.mesajZaman = setTimeout(() => m.remove(), iyi ? 1700 : 2200);
+  },
+
+  sonrakiSet(){
+    this.setNo++;
+    if(this.setNo < this.setler.length) this.setGoster();
+    else this.bitir();
+  },
+
+  bitir(){
+    Depo.v.enIyi.A = Math.max(Depo.v.enIyi.A||0, this.dogru); Depo.kaydet();
+    Ses.fanfar();
+    Sahne.git('ozet', {mod:'A', dogru:this.dogru, toplam:12, yanlislar:this.yanlislar});
+  },
+
+  durdur(){
+    clearTimeout(this.zaman); clearTimeout(this.mesajZaman);
+    document.querySelectorAll('.hayalet').forEach(h => h.remove());
+    this.surukle = null;
+  }
+};
+
+/* =========================================================
+   E4) MOD C — HERKESE SOR
+   Tur: 5 eşya × 4 kişi = 20 seçim; her doğru seçim +1 yıldız
+   Tur düzeni: 1 "herkes için ihtiyaç" + 3 "karışık" + 1 (herkes / herkes için istek)
+   ========================================================= */
+const ModC = {
+  el:null, sorular:[], sira:0, dogru:0, yanlislar:[], secimler:[], kontrolEdildi:false,
+
+  kur(el){
+    this.el = el;
+    el.innerHTML = `
+      <div class="ust-bar">
+        <button class="geri" data-git="apartman" aria-label="Apartmana dön">←</button>
+        <h2>Herkese Sor</h2>
+        <div class="yildiz-rozet">⭐ <span class="yildiz-sayi">0</span></div>
+      </div>
+      <div class="ilerleme" id="c-ilerleme"></div>
+      <div class="c-alan" id="c-alan"></div>`;
+  },
+
+  turOlustur(){
+    const son = new Set(Depo.v.sonC);
+    const sec = (havuz, n) => [...karistir(havuz.filter(x=>!son.has(x.id))), ...karistir(havuz.filter(x=>son.has(x.id)))].slice(0,n);
+    const herkes = C_SORULAR.filter(x=>x.tur==='herkes'), karisik = C_SORULAR.filter(x=>x.tur==='karisik');
+    const h = sec(herkes, 1), k = sec(karisik, 3);
+    const kalan = C_SORULAR.filter(x => (x.tur==='istek' || x.tur==='herkes') && !h.includes(x));
+    const son5 = sec(kalan, 1);
+    // karışık soruyla başla, sonra karıştır
+    this.sorular = [k[0], ...karistir([...h, k[1], k[2], ...son5])];
+    Depo.v.sonC = [...this.sorular.map(x=>x.id)]; Depo.kaydet();
+  },
+
+  yeniTur(){
+    this.turOlustur();
+    this.sira = 0; this.dogru = 0; this.yanlislar = [];
+    this.goster();
+  },
+
+  ilerlemeCiz(){
+    document.getElementById('c-ilerleme').innerHTML = this.sorular.map((_,i) =>
+      `<i class="${i<this.sira ? 'd' : i===this.sira ? 'simdi' : ''}"></i>`).join('');
+  },
+
+  goster(){
+    const q = this.sorular[this.sira], e = ESYALAR[q.esya];
+    this.kisiler = karistir(q.kisiler);
+    this.secimler = this.kisiler.map(() => null);
+    this.kontrolEdildi = false;
+    this.ilerlemeCiz();
+    const soru = `${e.ad}, bu komşular için ihtiyaç mı, istek mi?`;
+    document.getElementById('c-alan').innerHTML = `
+      <div class="c-ust">
+        <div class="esya-kart"><div class="emoji">${e.e}</div><div class="ad">${e.ad}</div></div>
+        <p class="b-soru">${soru} <button class="sesli" data-oku="${soru} Her komşu için seç." aria-label="Sesli oku">🔊</button></p>
+      </div>
+      <div class="c-sonuc" id="c-sonuc"></div>
+      <div class="c-kartlar">${this.kisiler.map((x,i) => { const k = sakinBul(x.sakin); return `
+        <div class="c-kart" data-i="${i}">
+          <button class="sesli" data-oku="${k.ad}. ${k.bilgi} ${x.durum}" aria-label="Sesli oku">🔊</button>
+          ${portreSVG(x.sakin)}<h3>${k.ad}</h3><div class="bilgi">${k.bilgi}</div><div class="durum">${x.durum}</div>
+          <div class="c-secim">
+            <button class="ihtiyac" data-sec="ihtiyac">✔ İhtiyaç</button>
+            <button class="istek" data-sec="istek">★ İstek</button>
+          </div>
+        </div>`; }).join('')}</div>
+      <button class="dugme mor c-dugme" id="c-dugme" disabled>Kontrol et</button>`;
+    Konus.dugmeleriGuncelle();
+    this.el.querySelectorAll('.c-kart').forEach(kart => {
+      const i = +kart.dataset.i;
+      kart.querySelectorAll('[data-sec]').forEach(b => b.onclick = () => {
+        if(this.kontrolEdildi) return;
+        Ses.tik();
+        this.secimler[i] = b.dataset.sec;
+        kart.querySelectorAll('[data-sec]').forEach(x => x.classList.toggle('sec', x===b));
+        document.getElementById('c-dugme').disabled = this.secimler.some(s => !s);
+      });
+    });
+    document.getElementById('c-dugme').onclick = () => this.kontrolEdildi ? this.sonraki() : this.kontrol();
+  },
+
+  kontrol(){
+    if(this.secimler.some(s => !s)) return;
+    this.kontrolEdildi = true;
+    let buSoruDogru = 0;
+    this.kisiler.forEach((x,i) => {
+      const kart = this.el.querySelector(`.c-kart[data-i="${i}"]`);
+      const ok = this.secimler[i] === x.cevap;
+      kart.querySelectorAll('[data-sec]').forEach(b => b.disabled = true);
+      kart.classList.add(ok ? 'dogru' : 'yanlis');
+      kart.insertAdjacentHTML('beforeend', `<div class="rozet">${ok ? '✔' : '✘'}</div>`);
+      if(ok){ buSoruDogru++; }
+      else {
+        const dogruAd = x.cevap === 'ihtiyac' ? '✔ İhtiyaç' : '★ İstek';
+        kart.insertAdjacentHTML('beforeend', `<div class="c-aciklama">Doğrusu: ${dogruAd}<br>${x.aciklama}</div>`);
+        this.yanlislar.push({metin:`${portreMini(x.sakin)} ${ESYALAR[this.sorular[this.sira].esya].e} ${x.aciklama}`});
+      }
+    });
+    this.dogru += buSoruDogru;
+    yildizEkle(buSoruDogru);
+    buSoruDogru === 4 ? Ses.dogru() : Ses.yanlis();
+    const sonuc = this.sorular[this.sira].sonuc;
+    document.getElementById('c-sonuc').textContent = (buSoruDogru ? `+${buSoruDogru} ⭐  ` : '') + sonuc;
+    Konus.oku(sonuc.replace(/[^\p{L}\p{N}\s,.!:]/gu,''));
+    const d = document.getElementById('c-dugme');
+    d.textContent = this.sira === this.sorular.length-1 ? 'Turu bitir ▶' : 'Sonraki ▶';
+  },
+
+  sonraki(){
+    Ses.tik();
+    this.sira++;
+    if(this.sira < this.sorular.length){ this.goster(); this.el.scrollTop = 0; }
+    else this.bitir();
+  },
+
+  bitir(){
+    Depo.v.enIyi.C = Math.max(Depo.v.enIyi.C||0, this.dogru); Depo.kaydet();
+    Ses.fanfar();
+    Sahne.git('ozet', {mod:'C', dogru:this.dogru, toplam:this.sorular.length*4, yanlislar:this.yanlislar});
+  }
+};
+
+/* =========================================================
+   E5) BENİM İHTİYACIM — puansız; çocuk kendisi için 3 ihtiyaç + 3 istek seçer
+   Karttaki "Düşünelim" bölümü yargılamaz, yalnızca soru sorar
+   ========================================================= */
+const AVATARLAR = [
+  {ten:'#F5C6A0', sac:'#5D3A1A', stil:'orgu',     renk:'#FF4D8D', arka:'#FFE0EC'},
+  {ten:'#E0AC7E', sac:'#212121', stil:'kisa',     renk:'#4D9FFF', arka:'#E3F2FF'},
+  {ten:'#8D5524', sac:'#212121', stil:'kivircik', renk:'#FFD600', arka:'#FFF6C9'},
+  {ten:'#FFD7B5', sac:'#E07B39', stil:'uzun',     renk:'#00C9A7', arka:'#DFF8F2'},
+  {ten:'#C68B59', sac:'#3B2416', stil:'kisa',     renk:'#A855F7', arka:'#F1E6FF'},
+  {ten:'#F5C6A0', sac:'#F2C14E', stil:'uzun',     renk:'#FF6B35', arka:'#FFE3D3'}
+];
+function avatarSVG(i){
+  const a = AVATARLAR[i]; let ic = P.arka(a.arka);
+  if(a.stil==='uzun') ic += `<path d="M28 40 Q24 66 30 78 H70 Q76 66 72 40 Z" fill="${a.sac}" ${CIZGI}/>`;
+  if(a.stil==='orgu') ic += `<circle cx="27" cy="46" r="8" fill="${a.sac}" ${CIZGI}/><circle cx="73" cy="46" r="8" fill="${a.sac}" ${CIZGI}/>`;
+  ic += P.govde(a.renk) + P.boyun(a.ten) + P.bas(a.ten);
+  if(a.stil==='kivircik') ic += [[34,30],[40,23],[49,20],[58,22],[65,28],[68,36],[32,37]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="7" fill="${a.sac}" ${CIZGI}/>`).join('') + `<path d="M33 34 Q50 22 67 34 L66 30 Q50 18 34 30 Z" fill="${a.sac}"/>`;
+  else ic += `<path d="M30 40 Q30 18 50 20 Q70 18 70 40 Q62 28 50 30 Q40 28 30 40 Z" fill="${a.sac}" ${CIZGI}/>`;
+  ic += P.yuz();
+  const id = 'av' + (avatarSVG.n = (avatarSVG.n||0) + 1);   // her çizime ayrı kırpma kimliği
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="${id}"><circle cx="50" cy="50" r="48"/></clipPath></defs><g clip-path="url(#${id})">${ic}</g></svg>`;
+}
+const BENIM_ESYALAR = ['su','ekmek','meyve','sut','ev','yatak','mont','canta','defter','kalem','discircasi','sabun',
+                       'gozluk','bisiklet','top','boya','keman','konsol','tablet','ayi','ucurtma','dondurma','cikolata','pasta'];
+const COGU_ISTEK  = ['konsol','tablet','ayi','ucurtma','dondurma','cikolata','pasta'];
+const HEP_IHTIYAC = ['su','ekmek','meyve','sut','ev','yatak','sabun','discircasi'];
+
+const Benim = {
+  el:null, avatar:null, ad:'', ihtiyac:[], istek:[], secilen:null,
+  kur(el){
+    this.el = el;
+    el.innerHTML = `
+      <div class="ust-bar">
+        <button class="geri" data-git="apartman" aria-label="Apartmana dön">←</button>
+        <h2>Benim İhtiyacım</h2>
+        <div class="yildiz-rozet">⭐ <span class="yildiz-sayi">0</span></div>
+      </div>
+      <div class="bn-alan" id="bn-alan"></div>`;
+    document.getElementById('bn-pop-ihtiyac').onclick = () => this.ekle('ihtiyac');
+    document.getElementById('bn-pop-istek').onclick = () => this.ekle('istek');
+    document.getElementById('bn-pop-vazgec').onclick = () => this.popKapat();
+  },
+  basla(){
+    const k = Depo.v.benim;
+    this.avatar = k ? k.avatar : null; this.ad = k ? k.ad : ''; this.ihtiyac = []; this.istek = [];
+    this.avatarAdimi();
+  },
+
+  /* 1. adım: karakter ve isim */
+  avatarAdimi(){
+    const yon = 'Kendine bir karakter seç.';
+    document.getElementById('bn-alan').innerHTML = `
+      <p class="yonerge">${yon} <button class="sesli" data-oku="${yon} İstersen adını da yaz." aria-label="Sesli oku">🔊</button></p>
+      <div class="av-izgara">${AVATARLAR.map((_,i) => `<button class="av-sec ${this.avatar===i?'sec':''}" data-av="${i}" aria-label="Karakter ${i+1}">${avatarSVG(i)}</button>`).join('')}</div>
+      <input class="ad-giris" id="bn-ad" maxlength="14" placeholder="Adın (isteğe bağlı)" value="${this.ad.replace(/"/g,'')}" autocomplete="off">
+      <button class="dugme" id="bn-devam" ${this.avatar===null?'disabled style="opacity:.4"':''}>Devam ▶</button>`;
+    Konus.dugmeleriGuncelle();
+    this.el.querySelectorAll('[data-av]').forEach(b => b.onclick = () => {
+      this.avatar = +b.dataset.av; Ses.tik();
+      this.el.querySelectorAll('[data-av]').forEach(x => x.classList.toggle('sec', x===b));
+      const d = document.getElementById('bn-devam'); d.disabled = false; d.style.opacity = '';
+    });
+    document.getElementById('bn-devam').onclick = () => {
+      if(this.avatar===null) return;
+      this.ad = document.getElementById('bn-ad').value.trim(); Ses.tik(); this.secimAdimi();
+    };
+  },
+
+  /* 2. adım: 3 ihtiyaç + 3 istek */
+  secimAdimi(){
+    const yon = 'Kendin için 3 ihtiyaç ve 3 istek seç. Bir eşyaya dokun.';
+    const yuvalar = tur => [0,1,2].map(i => { const id = this[tur][i];
+      return id ? `<div class="yuva dolu" data-cikar="${tur}:${i}" role="button" aria-label="${ESYALAR[id].ad} çıkar"><span class="emoji">${ESYALAR[id].e}</span>${ESYALAR[id].ad}</div>`
+                : `<div class="yuva">?</div>`; }).join('');
+    const bitti = this.ihtiyac.length===3 && this.istek.length===3;
+    document.getElementById('bn-alan').innerHTML = `
+      <p class="yonerge">${yon} <button class="sesli" data-oku="${yon}" aria-label="Sesli oku">🔊</button></p>
+      <div class="sepetler">
+        <div class="sepet ihtiyac"><h3>✔ İhtiyaçlarım (${this.ihtiyac.length}/3)</h3><div class="yuvalar">${yuvalar('ihtiyac')}</div></div>
+        <div class="sepet istek"><h3>★ İsteklerim (${this.istek.length}/3)</h3><div class="yuvalar">${yuvalar('istek')}</div></div>
+      </div>
+      <button class="dugme mor" id="bn-kart" ${bitti?'':'disabled style="opacity:.4"'}>Kartımı göster ▶</button>
+      <div class="esya-izgara">${BENIM_ESYALAR.map(id => `<button class="esya-sec" data-bn="${id}" ${this.ihtiyac.includes(id)||this.istek.includes(id)?'disabled':''}>
+        <span class="emoji">${ESYALAR[id].e}</span>${ESYALAR[id].ad}</button>`).join('')}</div>`;
+    Konus.dugmeleriGuncelle();
+    this.el.querySelectorAll('[data-bn]').forEach(b => b.onclick = () => this.popAc(b.dataset.bn));
+    this.el.querySelectorAll('[data-cikar]').forEach(y => y.onclick = () => {
+      const [tur,i] = y.dataset.cikar.split(':'); this[tur].splice(+i,1); Ses.tik(); this.secimAdimi();
+    });
+    document.getElementById('bn-kart').onclick = () => { if(this.ihtiyac.length===3 && this.istek.length===3) this.kartAdimi(); };
+  },
+  popAc(id){
+    this.secilen = id; Ses.tik();
+    document.getElementById('bn-pop-emoji').textContent = ESYALAR[id].e;
+    document.getElementById('bn-pop-ad').textContent = ESYALAR[id].ad;
+    document.getElementById('bn-pop-ihtiyac').disabled = this.ihtiyac.length>=3;
+    document.getElementById('bn-pop-istek').disabled = this.istek.length>=3;
+    document.getElementById('bn-pop').classList.add('goster');
+  },
+  popKapat(){ document.getElementById('bn-pop').classList.remove('goster'); this.secilen = null; },
+  ekle(tur){
+    if(!this.secilen || this[tur].length>=3) return;
+    this[tur].push(this.secilen); this.popKapat(); Ses.dogru(); this.secimAdimi();
+  },
+
+  /* 3. adım: kart + düşündüren sorular (puan yok) */
+  kartAdimi(){
+    Depo.v.benim = {avatar:this.avatar, ad:this.ad, ihtiyac:[...this.ihtiyac], istek:[...this.istek]}; Depo.kaydet();
+    const liste = tur => this[tur].map(id => `<div class="yuva dolu"><span class="emoji">${ESYALAR[id].e}</span>${ESYALAR[id].ad}</div>`).join('');
+    const sorular = [
+      ...this.ihtiyac.filter(id => COGU_ISTEK.includes(id)).map(id => `🤔 <b>${ESYALAR[id].ad}</b> olmadan da yaşayabilir miydin? Belki bu bir istektir.`),
+      ...this.istek.filter(id => HEP_IHTIYAC.includes(id)).map(id => `🤔 <b>${ESYALAR[id].ad}</b> olmadan sağlıklı yaşayabilir miydin? Belki bu bir ihtiyaçtır.`)
+    ];
+    document.getElementById('bn-alan').innerHTML = `
+      <div class="bn-kart">
+        <div class="kimlik">${avatarSVG(this.avatar)}<span>${this.ad ? this.ad + ' — ' : ''}Benim Kartım</span></div>
+        <div class="sepetler">
+          <div class="sepet ihtiyac"><h3>✔ İhtiyaçlarım</h3><div class="yuvalar">${liste('ihtiyac')}</div></div>
+          <div class="sepet istek"><h3>★ İsteklerim</h3><div class="yuvalar">${liste('istek')}</div></div>
+        </div>
+        <div class="dusun">${sorular.length ? '<b>Düşünelim:</b><br>' + sorular.join('<br>') : '👏 Güzel seçimler!'}
+          <br>💬 Herkesin istekleri ve ihtiyaçları farklıdır. Kartını bir arkadaşınınkiyle karşılaştır!</div>
+      </div>
+      <div class="ozet-dugmeler">
+        <button class="dugme ikincil" id="bn-yeniden">↻ Yeniden seç</button>
+        <button class="dugme" data-git="apartman">🏠 Apartmana Dön</button>
+      </div>`;
+    Ses.fanfar();
+    document.getElementById('bn-yeniden').onclick = () => { Ses.tik(); this.ihtiyac = []; this.istek = []; this.secimAdimi(); };
+  }
+};
+
+/* =========================================================
+   E6) 2 KİŞİLİK DÜELLO — akıllı tahtada iki takım aynı soruya yarışır
+   İlk doğru cevap 1 puan; yanlış cevap veren takım o soruda kilitlenir.
+   Bu modda yıldız verilmez (paylaşılan tahta).
+   ========================================================= */
+const Duello = {
+  el:null, sorular:[], sira:0, puan:[0,0], kilit:[false,false], cozuldu:false,
+  TAKIM:['Yeşil Takım','Pembe Takım'], SORU_SAYISI:10,
+  kur(el){
+    this.el = el;
+    el.innerHTML = `
+      <div class="ust-bar">
+        <button class="geri" data-git="apartman" aria-label="Apartmana dön">←</button>
+        <h2>2 Kişilik Yarış</h2>
+        <div class="yildiz-rozet" id="d-sayac">1 / 10</div>
+      </div>
+      <div class="d-izgara" id="d-alan"></div>`;
+  },
+  /* 10 soru: 6 tekli (3 ihtiyaç + 3 istek) + 2 karşıtlık çifti; çift yarıları arasında en az 2 soru */
+  soruOlustur(){
+    const iht = karistir(B_KADEME1.filter(x=>x.cevap==='ihtiyac')).slice(0,3);
+    const ist = karistir(B_KADEME1.filter(x=>x.cevap==='istek')).slice(0,3);
+    const k = karistir([...iht, ...ist]);
+    const adaylar = karistir(B_KARSITLIK);
+    const c1 = adaylar[0], c2 = adaylar.find(c => c.esya !== c1.esya);
+    const yari = c => { const g = ['ihtiyac','istek'].map(t => ({sakin:c[t].sakin, esya:c.esya, cevap:t, durum:c[t].durum, aciklama:c[t].aciklama}));
+                        return Math.random()<.5 ? g : g.reverse(); };
+    const [P1,P2] = yari(c1), [Q1,Q2] = yari(c2);
+    this.sorular = [k[0], k[1], P1, k[2], Q1, P2, k[3], k[4], Q2, k[5]];
+  },
+  basla(){
+    this.soruOlustur(); this.sira = 0; this.puan = [0,0];
+    this.goster();
+  },
+  takimHTML(t){
+    return `<div class="takim t${t}" id="takim${t}">
+      <h3>${this.TAKIM[t]}</h3><div class="puan" id="puan${t}">${this.puan[t]}</div>
+      <button class="cevap ihtiyac" data-t="${t}" data-c="ihtiyac">✔ İhtiyaç</button>
+      <button class="cevap istek" data-t="${t}" data-c="istek">★ İstek</button>
+      <div class="durum-t" id="durum${t}"></div></div>`;
+  },
+  goster(){
+    this.kilit = [false,false]; this.cozuldu = false;
+    const g = this.sorular[this.sira], k = sakinBul(g.sakin), e = ESYALAR[g.esya];
+    document.getElementById('d-sayac').textContent = `${this.sira+1} / ${this.sorular.length}`;
+    const okunacak = `${k.ad}. ${k.bilgi} ${g.durum} Eşya: ${e.ad}. İhtiyaç mı, istek mi?`;
+    document.getElementById('d-alan').innerHTML = this.takimHTML(0) + `
+      <div class="d-orta" id="d-orta">
+        <div class="sakin-kart">${portreSVG(g.sakin)}<div><h3>${k.ad}</h3><div class="bilgi">${k.bilgi}</div><div class="durum">${g.durum}</div></div></div>
+        <div class="esya-kart"><div class="emoji">${e.e}</div><div class="ad">${e.ad}</div></div>
+        <p class="b-soru">${k.kisa} için ihtiyaç mı, istek mi? <button class="sesli" data-oku="${okunacak}" aria-label="Sesli oku">🔊</button></p>
+      </div>` + this.takimHTML(1);
+    Konus.dugmeleriGuncelle();
+    // pointerdown: iki takım aynı anda dokunabilir (çoklu dokunma)
+    this.el.querySelectorAll('[data-t]').forEach(b => b.onpointerdown = ev => { ev.preventDefault(); this.cevap(+b.dataset.t, b.dataset.c); });
+  },
+  cevap(t, c){
+    if(this.cozuldu || this.kilit[t]) return;
+    const g = this.sorular[this.sira];
+    if(c === g.cevap){
+      this.cozuldu = true; this.puan[t]++; Ses.dogru();
+      document.getElementById('puan'+t).textContent = this.puan[t];
+      document.getElementById('takim'+t).classList.add('bildi');
+      document.getElementById('durum'+t).textContent = '✔ Bildi! +1';
+      this.sonucGoster(`<b>${this.TAKIM[t]}</b> bildi!<br>${g.aciklama}`);
+    } else {
+      this.kilit[t] = true; Ses.yanlis();
+      document.getElementById('takim'+t).classList.add('kilitli');
+      document.getElementById('durum'+t).textContent = '✘ Bu soruda bekle';
+      if(this.kilit[0] && this.kilit[1]){
+        this.cozuldu = true;
+        this.sonucGoster(`İki takım da bilemedi.<br>${g.aciklama}`);
+      }
+    }
+  },
+  sonucGoster(html){
+    const son = this.sira === this.sorular.length-1;
+    document.getElementById('d-orta').insertAdjacentHTML('beforeend',
+      `<div class="d-sonuc">${html}</div><button class="dugme mor" id="d-sonraki">${son ? 'Sonucu gör 🏆' : 'Sonraki ▶'}</button>`);
+    document.getElementById('d-sonraki').onclick = () => { Ses.tik(); this.sira++; this.sira < this.sorular.length ? this.goster() : this.bitir(); };
+  },
+  bitir(){
+    const [a,b] = this.puan;
+    const baslik = a===b ? 'Berabere! 🤝' : `${this.TAKIM[a>b?0:1]} kazandı!`;
+    Depo.v.enIyi.duello = (Depo.v.enIyi.duello||0) + 1; Depo.kaydet();   // oynanan düello sayısı
+    document.getElementById('d-sayac').textContent = '🏆';
+    document.getElementById('d-alan').outerHTML = `<div class="d-bitis" id="d-alan">
+        <div class="kupa">🏆</div><h3>${baslik}</h3>
+        <div class="skorlar"><span style="color:#00a88b">${this.TAKIM[0]}: ${a}</span> &nbsp;—&nbsp; <span style="color:var(--pembe)">${this.TAKIM[1]}: ${b}</span></div>
+        <p class="yonerge">Aynı eşya bazen bir kişi için ihtiyaç, başka biri için istektir!</p>
+        <div class="ozet-dugmeler"><button class="dugme" id="d-tekrar">↻ Yeni Yarış</button><button class="dugme ikincil" data-git="apartman">🏠 Apartmana Dön</button></div>
+      </div>`;
+    Ses.fanfar();
+    document.getElementById('d-tekrar').onclick = () => { Ses.tik(); this.kur(this.el); this.basla(); };
+  }
+};
+
+/* Özet listesinde kullanılan küçük portre */
+function portreMini(id){ return `<span style="display:inline-block;width:40px;height:40px;vertical-align:middle;margin-right:6px">${portreSVG(id).replace('class="portre"','width="40" height="40"')}</span>`; }
+
+/* =========================================================
+   F) SAHNE YÖNETİCİSİ
+   ========================================================= */
+const Sahne = {
+  kayit:{}, aktif:null, onceki:null,
+  tanimla(ad, kancalar){ this.kayit[ad] = kancalar||{}; },
+  git(ad, param){
+    if(ad==='geri') ad = this.onceki || 'giris';
+    const yeni = document.getElementById('s-'+ad);
+    if(!yeni) return;
+    if(this.aktif){
+      const eski = document.getElementById('s-'+this.aktif);
+      eski.classList.remove('aktif');
+      this.kayit[this.aktif]?.cik?.();
+      if(this.aktif!=='ayarlar') this.onceki = this.aktif;
+    }
+    if(Konus.destek) speechSynthesis.cancel();
+    yeni.classList.add('aktif'); yeni.scrollTop = 0;
+    this.aktif = ad;
+    this.kayit[ad]?.gir?.(param);
+    yildizGuncelle();
+  }
+};
+
+/* =========================================================
+   G) ORTAK YARDIMCILAR
+   ========================================================= */
+function yildizGuncelle(){ document.querySelectorAll('.yildiz-sayi').forEach(e => e.textContent = Depo.v.yildiz); }
+
+/* Yıldız ekle; eşiği geçen süsleri aç (tur sonu özetinde duyurulur) */
+let bekleyenSusler = [];
+function yildizEkle(n){
+  if(!n) return;
+  Depo.v.yildiz += n;
+  SUSLER.forEach(su => {
+    if(Depo.v.yildiz >= su.yildiz && !Depo.v.susler.includes(su.id)){ Depo.v.susler.push(su.id); bekleyenSusler.push(su); }
+  });
+  Depo.kaydet(); yildizGuncelle();
+}
+
+/* Apartman ekranı: binayı süsleriyle yeniden çiz, süs çubuğu ve en iyi skorlar */
+function apartmaniGuncelle(){
+  document.querySelectorAll('[data-bina]').forEach(el => el.innerHTML = binaSVG());
+  const acik = Depo.v.susler.length, sirada = SUSLER.find(su => !Depo.v.susler.includes(su.id));
+  const onceki = [...SUSLER].reverse().find(su => Depo.v.susler.includes(su.id));
+  document.getElementById('sus-yazi').textContent = sirada ? `🎀 Süsler ${acik}/${SUSLER.length} · Sıradaki: ${sirada.e} ${sirada.yildiz}⭐` : `🎀 Tüm süsler açıldı!`;
+  const alt = onceki ? onceki.yildiz : 0, ust = sirada ? sirada.yildiz : 1;
+  document.getElementById('sus-cubuk').style.width = sirada ? Math.min(100, (Depo.v.yildiz-alt)/(ust-alt)*100)+'%' : '100%';
+  const toplam = {A:12, B:8, C:20};
+  document.querySelectorAll('[data-eniyi]').forEach(e => { const v = Depo.v.enIyi[e.dataset.eniyi]||0; e.textContent = v ? `En iyi: ${v}/${toplam[e.dataset.eniyi]}` : ''; });
+}
+
+function susPaneliAc(){
+  document.getElementById('sus-liste').innerHTML = SUSLER.map(su => {
+    const acik = Depo.v.susler.includes(su.id);
+    return `<div class="sus-ogesi ${acik?'':'kilitli'}"><span class="em">${acik ? su.e : '🔒'}</span><span>${su.ad}<small>${acik ? 'Açıldı!' : su.yildiz+' ⭐ gerekli'}</small></span></div>`;
+  }).join('');
+  document.getElementById('sus-panel').classList.add('goster'); Ses.tik();
+}
+document.getElementById('sus-ac').onclick = susPaneliAc;
+document.getElementById('sus-kapat').onclick = () => { document.getElementById('sus-panel').classList.remove('goster'); Ses.tik(); };
+
+/* Tur sonu özeti */
+let sonMod = 'B';
+function ozetGoster({mod, dogru, toplam, yanlislar}){
+  sonMod = mod;
+  document.getElementById('ozet-skor').textContent = `⭐ ${dogru} / ${toplam}`;
+  const susKutu = document.getElementById('ozet-sus');
+  susKutu.innerHTML = bekleyenSusler.map(su => `<div class="yeni-sus">🎉 Yeni süs açıldı: ${su.e} ${su.ad}!</div>`).join('');
+  if(bekleyenSusler.length) setTimeout(() => Ses.sus(), 500);
+  bekleyenSusler = [];
+  const liste = document.getElementById('ozet-liste');
+  liste.innerHTML = yanlislar.length
+    ? '<p class="yonerge" style="justify-content:flex-start">Birlikte bakalım:</p>' +
+      yanlislar.map(y => `<div class="ozet-madde">${y.metin}</div>`).join('')
+    : '<p class="ozet-tamam">Hepsi doğru! Komşuların çok mutlu. 🎉</p>';
+}
+
+/* =========================================================
+   H) SAHNE TANIMLARI
+   ========================================================= */
+Sahne.tanimla('giris', { gir(){ apartmaniGuncelle(); } });
+Sahne.tanimla('apartman', { gir(){ apartmaniGuncelle(); } });
+Sahne.tanimla('benim', { gir(){ Benim.basla(); }, cik(){ Benim.popKapat(); } });
+Sahne.tanimla('duello', { gir(){ Duello.kur(Duello.el); Duello.basla(); } });
+Sahne.tanimla('modC', { gir(){ ModC.yeniTur(); } });
+Sahne.tanimla('modA', { gir(){ ModA.yeniTur(); }, cik(){ ModA.durdur(); } });
+Sahne.tanimla('modB', { gir(){ ModB.yeniTur(); }, cik(){ ModB.durdur(); } });
+Sahne.tanimla('ozet', { gir(p){ ozetGoster(p); } });
+Sahne.tanimla('ayarlar', { gir(){ ayarlariCiz(); } });
+
+/* =========================================================
+   I) AYARLAR
+   ========================================================= */
+function ayarlariCiz(){
+  const a = (el, acik) => { el.classList.toggle('acik', acik); el.textContent = acik ? 'Açık' : 'Kapalı'; };
+  a(document.getElementById('ayar-ses'), Depo.v.ses);
+  const sesli = document.getElementById('ayar-sesli');
+  if(!Konus.destek){ sesli.disabled = true; sesli.textContent = 'Yok'; document.getElementById('sesli-not').textContent = 'Bu cihaz sesli okumayı desteklemiyor'; }
+  else a(sesli, Depo.v.sesliOkuma);
+}
+document.getElementById('ayar-ses').onclick = () => { Depo.v.ses = !Depo.v.ses; Depo.kaydet(); ayarlariCiz(); Ses.tik(); };
+document.getElementById('ayar-sesli').onclick = () => {
+  Depo.v.sesliOkuma = !Depo.v.sesliOkuma; Depo.kaydet(); ayarlariCiz(); Konus.dugmeleriGuncelle();
+  if(Depo.v.sesliOkuma) Konus.oku('Sesli okuma açık.');
+};
+const onay = document.getElementById('onay');
+document.getElementById('ayar-sifirla').onclick = () => onay.classList.add('goster');
+document.getElementById('onay-hayir').onclick = () => onay.classList.remove('goster');
+document.getElementById('onay-evet').onclick = () => { Depo.sifirla(); bekleyenSusler = []; onay.classList.remove('goster'); yildizGuncelle(); apartmaniGuncelle(); Ses.yanlis(); };
+
+/* =========================================================
+   J) GENEL TIKLAMA YÖNETİMİ
+   ========================================================= */
+document.addEventListener('pointerdown', () => Ses.hazirla(), {passive:true});
+document.addEventListener('click', e => {
+  const git = e.target.closest('[data-git]');
+  if(git){ Ses.tik(); Sahne.git(git.dataset.git); return; }
+  const oku = e.target.closest('[data-oku]');
+  if(oku){ Konus.oku(oku.dataset.oku); return; }
+});
+document.getElementById('ozet-tekrar').onclick = () => { Ses.tik(); Sahne.git('mod'+sonMod in Sahne.kayit ? 'mod'+sonMod : sonMod); };
+
+/* =========================================================
+   K) BAŞLAT
+   ========================================================= */
+Depo.yukle();
+document.querySelectorAll('[data-bina]').forEach(el => el.innerHTML = binaSVG());
+ModB.kur(document.getElementById('s-modB'));
+ModA.kur(document.getElementById('s-modA'));
+ModC.kur(document.getElementById('s-modC'));
+Benim.kur(document.getElementById('s-benim'));
+Duello.kur(document.getElementById('s-duello'));
+if(Konus.destek) speechSynthesis.getVoices();   // bazı tarayıcılarda sesleri önceden yükler
+Konus.dugmeleriGuncelle();
+Sahne.git('giris');
+</script>
+</body>
+</html>
