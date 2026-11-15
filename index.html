@@ -1680,6 +1680,7 @@
 
 <footer>Tüm oyunlar <span>❤️</span> ile yapıldı · <a href="#" onclick="geriAc();return false" style="color:inherit">Oyun fikri gönder</a></footer>
 
+<script src="hesap.js"></script>
 <script>
 // ============================================================
 // OYUN VERİLERİ — Buraya kendi oyunlarını ekle!
@@ -4289,9 +4290,12 @@ let fbDbSoz = null;
 function fbDb() {
   if (fbDbSoz) return fbDbSoz;
   const yukle = src => new Promise((ok, hata) => { const e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = hata; document.head.appendChild(e); });
-  fbDbSoz = yukle('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js')
+  // Üyelik açıksa Firebase'i hesap.js yükler (aynı kopyayı paylaşırız)
+  fbDbSoz = (window.Hesap ? Hesap.firebase().then(() => firebase.firestore()) :
+    yukle('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js')
     .then(() => yukle('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'))
-    .then(() => { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); return firebase.firestore(); });
+    .then(() => { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); return firebase.firestore(); }));
+  fbDbSoz.catch(() => { fbDbSoz = null; });
   return fbDbSoz;
 }
 function oyunSay(file, name) {
@@ -4306,8 +4310,11 @@ function oyunSay(file, name) {
 
 function openGame(file, name) {
   oyunSay(file, name);
-  document.getElementById('game-frame').src = OYUN_KOK + file;
-  document.getElementById('modal-overlay').classList.add('active');
+  const fr = document.getElementById('game-frame'), ov = document.getElementById('modal-overlay');
+  fr.src = '';
+  ov.classList.add('active');
+  // Üye girişliyse önce buluttaki son ilerleme iner (en fazla ~1,5 sn), sonra oyun yüklenir
+  (window.Hesap ? Hesap.oyunOncesi() : Promise.resolve()).then(() => { if (ov.classList.contains('active')) fr.src = OYUN_KOK + file; });
   document.body.style.overflow = 'hidden';
   // Adres: sinanince.com/#ac_timsah → bu oyunu doğrudan açar
   const id = file.replace(/\.html$/, '');
@@ -4341,6 +4348,7 @@ function closeModal() {
   if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   document.getElementById('modal-overlay').classList.remove('active');
   document.getElementById('game-frame').src = '';
+  if (window.Hesap) setTimeout(() => Hesap.oyunKapandi(), 300); // üyenin ilerlemesini buluta gönder
   document.body.style.overflow = '';
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 }
