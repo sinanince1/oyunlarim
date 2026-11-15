@@ -23,7 +23,7 @@
   const FB_SURUM = '10.12.0';
   const FB_CONFIG = { apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" };
   const ALAN = 'uye.sinanince.com';            // kullanıcı adı → ad@uye.sinanince.com (gerçek e-posta değil)
-  const META = 'hs_meta', DURUM = 'hs_durum', MISAFIR = 'hs_misafir', OTURUM = 'hs_oturum';
+  const META = 'hs_meta', DURUM = 'hs_durum', MISAFIR = 'hs_misafir', OTURUM = 'hs_oturum', CEVAP = 'hs_cevap';
   // Senkronlanmayan anahtarlar: hesap.js'in kendi kayıtları, Firebase, site ayarları
   const HARIC = ['hs_', 'firebase', 'firestore', 'fikirGonderim', 'kutlama-', 'seciliSinif'];
   const AZAMI = 900000;                         // Firestore belge sınırının altında kal
@@ -276,7 +276,17 @@
       const misafir = oyunKayitlari();
       const varMi = Object.keys(misafir).length > 0;
       if (varMi && !lsAl(MISAFIR)) lsYaz(MISAFIR, JSON.stringify(misafir));
-      const ekle = yeniHesap ? varMi : (varMi ? await sor('Bu cihazda misafir olarak oynanmış ilerleme var.', 'Hesabına eklensin mi? Hesabında aynı oyunun kaydı varsa hesabındaki korunur.', '➕ Evet, ekle', 'Hayır') : false);
+      // Soru her hesap için bu cihazda yalnızca bir kez sorulur; sonraki girişlerde verilen cevap sessizce uygulanır
+      const cevaplar = jsonAl(CEVAP, {});
+      let ekle = false;
+      if (yeniHesap) ekle = varMi;
+      else if (varMi) {
+        if (typeof cevaplar[user.uid] === 'boolean') ekle = cevaplar[user.uid];
+        else {
+          ekle = await sor('Bu cihazda misafir olarak oynanmış ilerleme var.', 'Hesabına eklensin mi? Hesabında aynı oyunun kaydı varsa hesabındaki korunur.', '➕ Evet, ekle', 'Hayır');
+          cevaplar[user.uid] = ekle; lsYaz(CEVAP, JSON.stringify(cevaplar));
+        }
+      }
       const yeni = { uid: user.uid, kayit: {}, sonCekme: 0 };
       Object.keys(misafir).forEach(a => {
         if (ekle && misafir[a].length <= AZAMI) yeni.kayit[a] = { h: ozet(misafir[a]), t: 1, kirli: 1 }; // t=1: bulutta varsa bulut kazanır
@@ -428,6 +438,7 @@
     await b.commit();
     islemde = true;
     try { await u.delete(); } finally { islemde = false; }
+    const cv = jsonAl(CEVAP, {}); delete cv[u.uid]; lsYaz(CEVAP, JSON.stringify(cv));
     yerelTemizle();
     arayuzGuncelle();
   }
