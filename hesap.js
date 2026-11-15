@@ -101,6 +101,30 @@
     return new TextDecoder().decode(p);
   }
 
+  // Yönetici kasası: şifre, öğretmenin açık anahtarıyla (RSA-OAEP) şifrelenir.
+  // Yalnızca yönetici panelindeki gizli anahtar çözebilir. Anahtar yoksa sessizce atlanır.
+  let yoneticiAnahtariSoz = null;
+  function yoneticiAnahtari() {
+    if (!yoneticiAnahtariSoz) {
+      yoneticiAnahtariSoz = db().collection('ayarlar').doc('yonetici').get().then(d => {
+        if (!d.exists || !d.data().acik) return null;
+        return crypto.subtle.importKey('spki', b64Ac(d.data().acik), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+      }).catch(() => { yoneticiAnahtariSoz = null; return null; });
+    }
+    return yoneticiAnahtariSoz;
+  }
+  async function yoneticiKasasi(sifre) {
+    try {
+      const a = await yoneticiAnahtari(); if (!a) return null;
+      const veri = new TextEncoder().encode(sifre); if (veri.length > 190) return null;
+      return b64(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, a, veri));
+    } catch (e) { return null; }
+  }
+  async function yoneticiKasasiYaz(uid, sifre) {
+    const yk = await yoneticiKasasi(sifre); if (!yk) return;
+    try { await db().collection('uyeler').doc(uid).set({ yk }, { merge: true }); } catch (e) {}
+  }
+
   // --------------------------------------------------------------------------
   // D) FIREBASE YÜKLEYİCİ (index.html de bunu paylaşır)
   // --------------------------------------------------------------------------
@@ -320,8 +344,9 @@
       const c = await fb.auth().createUserWithEmailAndPassword(eposta(kullanici), sifre);
       const kod = kodUret();
       const kasa = await kasaKilitle(sifre, kod);
+      const yk = await yoneticiKasasi(sifre);
       const b = db().batch();
-      b.set(db().collection('uyeler').doc(c.user.uid), { ad, kullanici, olusturma: sunucuZamani(), son: sunucuZamani() });
+      b.set(db().collection('uyeler').doc(c.user.uid), Object.assign({ ad, kullanici, olusturma: sunucuZamani(), son: sunucuZamani() }, yk ? { yk } : {}));
       b.set(db().collection('kurtarma').doc(kullanici), Object.assign({ uid: c.user.uid, t: sunucuZamani() }, kasa));
       await b.commit();
       oturumKaydet(c.user.uid, ad, kullanici, ortak);
@@ -340,6 +365,7 @@
     islemde = true;
     try {
       const c = await fb.auth().signInWithEmailAndPassword(eposta(kullanici), sifre);
+      yoneticiKasasiYaz(c.user.uid, sifre); // eski hesaplar da girişte panele düşer
       oturumKaydet(c.user.uid, await profilAdi(c.user.uid, kullanici), kullanici, ortak);
       await girisSonrasi(c.user, false);
     } finally { islemde = false; }
@@ -356,6 +382,7 @@
       await c.user.updatePassword(yeniSifre);
       const kasa = await kasaKilitle(yeniSifre, kod); // aynı kod geçerli kalır
       await db().collection('kurtarma').doc(kullanici).set(Object.assign({ uid: c.user.uid, t: sunucuZamani() }, kasa));
+      await yoneticiKasasiYaz(c.user.uid, yeniSifre);
       oturumKaydet(c.user.uid, await profilAdi(c.user.uid, kullanici), kullanici, ortak);
       await girisSonrasi(c.user, false);
     } finally { islemde = false; }
@@ -374,6 +401,7 @@
     await u.updatePassword(yeni);
     const d = durumAl(); const kod = kodUret();
     await db().collection('kurtarma').doc(d.kullanici).set(Object.assign({ uid: u.uid, t: sunucuZamani() }, await kasaKilitle(yeni, kod)));
+    await yoneticiKasasiYaz(u.uid, yeni);
     return kod;
   }
 
@@ -437,6 +465,7 @@
   .hs-ikinci{display:block;width:100%;margin-top:10px;border:3px solid #E8E8F0;border-radius:999px;padding:10px;font:900 .98rem 'Nunito',sans-serif;color:#555;background:#fff;cursor:pointer}
   .hs-link{background:none;border:none;color:#4D9FFF;font:800 .9rem 'Nunito',sans-serif;cursor:pointer;padding:6px 0;margin-top:8px;text-decoration:underline}
   .hs-hata{color:#E0245E;font-weight:800;font-size:.9rem;min-height:1.2em;margin-top:10px}
+  .hs-ikili{display:flex;gap:8px}.hs-ikili .hs-ikinci{margin-top:10px;font-size:.9rem;padding:10px 6px}
   .hs-kod{font:900 2.1rem/1 'Courier New',monospace;letter-spacing:4px;text-align:center;background:#FFF8D6;border:3px dashed #FFD600;border-radius:18px;padding:18px 8px;margin:12px 0;color:#333;user-select:all}
   .hs-durum{background:#F0FBF8;border-radius:14px;padding:12px 14px;font-weight:800;font-size:.95rem;color:#078a73;margin:10px 0}
   .hs-durum.hata{background:#FFF0F4;color:#E0245E}.hs-durum.kaydediliyor{background:#FFF8E1;color:#B07800}
@@ -528,7 +557,7 @@
             'Veri sorumlusu: Sinan İnce (sinanince.com).<br>' +
             'Toplanan bilgiler: çocuğun adı, seçtiği kullanıcı adı ve oyunlardaki ilerleme kayıtları. E-posta, soyad, okul ya da telefon <b>istenmez</b>.<br>' +
             'Amaç: yalnızca oyun ilerlemesini saklamak ve başka cihazdan devam edebilmek. Reklam, satış ya da üçüncü kişilerle paylaşım yoktur.<br>' +
-            'Saklama: Google Firebase altyapısında (sunucular yurt dışında olabilir).<br>' +
+            'Saklama: Google Firebase altyapısında (sunucular yurt dışında olabilir). Şifre, unutulduğunda yardım edilebilmesi için yalnızca öğretmenin açabileceği şekilde şifrelenerek saklanır.<br>' +
             'Haklarınız: Hesap sayfasındaki “Hesabımı sil” düğmesiyle tüm bilgiler kalıcı olarak silinir. Sorularınız için “Hakkımda” sayfasındaki iletişim bilgilerini kullanabilirsiniz.' +
           '</div>' +
           '<div class="hs-hata" id="hs-hata" role="alert"></div>' +
@@ -602,23 +631,53 @@
     const d = durumAl() || {};
     kart.innerHTML =
       '<h2>' + esc(baslik) + '</h2>' +
-      '<p>Bu senin <b>kurtarma kodun</b>. Şifreni unutursan bu kodla yeni şifre alırsın. <b>Velinle birlikte bir yere yaz</b> ya da yazdır. Bu kodu bir daha gösteremeyiz.</p>' +
+      '<p>Bu senin <b>kurtarma kodun</b>. Şifreni unutursan bu kodla yeni şifre alırsın. <b>Velinle birlikte kaydet</b>: kopyala ya da resim olarak indir. Bu kodu bir daha gösteremeyiz.</p>' +
       '<div class="hs-kod" id="hs-kodyazi">' + esc(kod) + '</div>' +
       '<p style="text-align:center;margin:0">Kullanıcı adın: <b>' + esc(d.kullanici || '') + '</b></p>' +
-      '<button type="button" class="hs-ikinci" id="hs-yazdir">🖨️ Yazdır</button>' +
-      '<label class="hs-kutu"><input type="checkbox" id="hs-yazdim"> <span>Kodu bir yere yazdım.</span></label>' +
+      '<div class="hs-ikili"><button type="button" class="hs-ikinci" id="hs-kopyala">📋 Kodu kopyala</button><button type="button" class="hs-ikinci" id="hs-indir">⬇️ Kodu indirerek kaydet</button></div>' +
+      '<label class="hs-kutu"><input type="checkbox" id="hs-yazdim"> <span>Kodu kaydettim.</span></label>' +
       '<div class="hs-hata" id="hs-hata"></div>' +
       '<button type="button" class="hs-ana" id="hs-git" disabled>Oyunlara Dön 🎮</button>';
     $k('hs-yazdim').onchange = e => { $k('hs-git').disabled = !e.target.checked; };
     $k('hs-git').onclick = () => { kapat(); arayuzGuncelle(); };
-    $k('hs-yazdir').onclick = () => yazdir(d.ad, d.kullanici, kod);
+    const isaretle = () => { $k('hs-yazdim').checked = true; $k('hs-git').disabled = false; };
+    $k('hs-kopyala').onclick = function () {
+      const metin = 'Sinan Öğretmen Akademi (sinanince.com)\nKullanıcı adı: ' + (d.kullanici || '') + '\nKurtarma kodu: ' + kod;
+      panoya(metin).then(() => { this.textContent = '✅ Kopyalandı'; isaretle(); }, () => { $k('hs-hata').textContent = 'Kopyalanamadı. Kodu bir kâğıda yazar mısın?'; });
+    };
+    $k('hs-indir').onclick = function () {
+      try { kodResmiIndir(d.ad, d.kullanici, kod); this.textContent = '✅ İndirildi'; isaretle(); }
+      catch (e) { $k('hs-hata').textContent = 'İndirilemedi. Kodu bir kâğıda yazar mısın?'; }
+    };
   }
 
-  function yazdir(ad, kullanici, kod) {
-    const w = window.open('', '_blank', 'width=520,height=640');
-    if (!w) { $k('hs-hata').textContent = 'Yazdırma penceresi açılamadı. Kodu bir kâğıda yazar mısın?'; return; }
-    w.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>Kurtarma kodu</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#222}.k{border:3px dashed #999;border-radius:16px;padding:24px;max-width:380px}.kod{font:bold 34px "Courier New",monospace;letter-spacing:4px;margin:12px 0}</style></head><body><div class="k"><h2 style="margin-top:0">Sinan Öğretmen Akademi</h2><p>Öğrenci: <b>' + esc(ad) + '</b><br>Kullanıcı adı: <b>' + esc(kullanici) + '</b></p><p>Kurtarma kodu:</p><div class="kod">' + esc(kod) + '</div><p style="font-size:13px">Şifre unutulursa sinanince.com → Giriş Yap → “Şifremi unuttum” bölümünde bu kodla yeni şifre alınır. Kodu kimseyle paylaşmayın.</p></div><script>window.onload=function(){window.print()}<\/script></body></html>');
-    w.document.close();
+  function panoya(t) {
+    const yedek = () => { const a = document.createElement('textarea'); a.value = t; a.setAttribute('readonly', ''); a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} a.remove(); if (!ok) throw 0; };
+    return (navigator.clipboard && window.isSecureContext ? navigator.clipboard.writeText(t) : Promise.reject()).catch(yedek);
+  }
+
+  // Kurtarma kartını JPEG resim olarak indir (kütüphanesiz, canvas ile)
+  function kodResmiIndir(ad, kullanici, kod) {
+    const W = 900, H = 560, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d'), F = "'Nunito', Arial, sans-serif";
+    const yuvarlak = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+    g.fillStyle = '#FFF8F0'; g.fillRect(0, 0, W, H);
+    const gr = g.createLinearGradient(0, 0, W, 0); gr.addColorStop(0, '#FF6B35'); gr.addColorStop(1, '#FF4D8D');
+    g.fillStyle = gr; g.fillRect(0, 0, W, 110);
+    g.fillStyle = '#fff'; g.font = '900 40px ' + F; g.textBaseline = 'middle'; g.fillText('Sinan Öğretmen Akademi', 44, 56);
+    g.fillStyle = '#333'; g.font = '800 30px ' + F;
+    g.fillText('Öğrenci: ' + (ad || ''), 44, 170);
+    g.fillText('Kullanıcı adı: ' + (kullanici || ''), 44, 220);
+    g.fillStyle = '#777'; g.font = '800 26px ' + F; g.fillText('Kurtarma kodu', 44, 285);
+    yuvarlak(44, 310, W - 88, 120, 22); g.fillStyle = '#FFF8D6'; g.fill();
+    g.setLineDash([14, 10]); g.lineWidth = 5; g.strokeStyle = '#FFD600'; g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#222'; g.font = 'bold 78px "Courier New", monospace'; g.textAlign = 'center'; g.fillText(kod, W / 2, 372);
+    g.textAlign = 'left'; g.fillStyle = '#666'; g.font = '700 21px ' + F;
+    g.fillText('Şifre unutulursa: sinanince.com → Giriş Yap → “Şifremi unuttum”.', 44, 470);
+    g.fillText('Bu kodu kimseyle paylaşmayın.', 44, 505);
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/jpeg', 0.92); a.download = 'kurtarma-kodu-' + (kullanici || 'hesap') + '.jpg';
+    document.body.appendChild(a); a.click(); a.remove();
   }
 
   function ekranBilgi(baslik, metin) {
@@ -739,7 +798,7 @@
     },
     oyunKapandi() { if (aktifUid) { tara(); gonder(); } },
     // test için
-    _ic: { tara, gonder, cek, girisSonrasi, yerelTemizle, metaAl, oyunAnahtari, ozet, kodUret, kodDuzelt, kasaKilitle, kasaAc, kullaniciAdiDuzelt, kullaniciAdiGecerli, kayitOl, girisYap, sifreKurtar, cikisYap, hesapSil, sifreDegistir }
+    _ic: { yoneticiKasasi, tara, gonder, cek, girisSonrasi, yerelTemizle, metaAl, oyunAnahtari, ozet, kodUret, kodDuzelt, kasaKilitle, kasaAc, kullaniciAdiDuzelt, kullaniciAdiGecerli, kayitOl, girisYap, sifreKurtar, cikisYap, hesapSil, sifreDegistir }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', baslat); else baslat();

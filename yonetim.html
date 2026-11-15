@@ -65,9 +65,17 @@
     .m-eylem button.yildizli { background: #FFF5C2; border-color: #FFD600; }
     .m-eylem .sil { margin-left: auto; color: #FF4D8D; }
     .ince { font-family: inherit; font-weight: 900; font-size: .85rem; padding: 7px 13px; border-radius: 99px; border: 2px dashed #CFC2B3; background: transparent; cursor: pointer; color: #8A7F74; }
-    #g-giris { max-width: 400px; margin: 30px auto; text-align: center; }
-    #g-giris .gbtn { width: 100%; font-family: inherit; font-weight: 900; font-size: 1.05rem; padding: 13px; border-radius: 99px; border: 3px solid #EADFD3; cursor: pointer; background: #fff; color: #2D2D2D; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; }
-    #g-giris .gbtn:hover { border-color: #4D9FFF; }
+    #g-giris, #u-giris { max-width: 400px; margin: 30px auto; text-align: center; }
+    #u-giris .gbtn, #g-giris .gbtn { width: 100%; font-family: inherit; font-weight: 900; font-size: 1.05rem; padding: 13px; border-radius: 99px; border: 3px solid #EADFD3; cursor: pointer; background: #fff; color: #2D2D2D; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; }
+    #g-giris .gbtn:hover, #u-giris .gbtn:hover { border-color: #4D9FFF; }
+    #u-hata { color: #FF4D8D; font-weight: 800; font-size: .9rem; min-height: 1.3em; margin: 12px 0 0; line-height: 1.4; }
+    /* Kayıtlı kullanıcılar */
+    .k-adi { font-family: 'Courier New', monospace; font-weight: 900; }
+    .sifre-hucre { display: flex; align-items: center; gap: 6px; }
+    .sifre-yazi { font-family: 'Courier New', monospace; font-weight: 900; letter-spacing: 1px; min-width: 90px; }
+    .mini { font-family: inherit; font-weight: 900; font-size: .8rem; padding: 5px 10px; border-radius: 99px; border: 2px solid #EADFD3; background: #fff; cursor: pointer; color: #5A5047; white-space: nowrap; }
+    .mini:hover { border-color: #A855F7; }
+    .soluk { color: #B9AEA0; font-weight: 800; font-size: .82rem; }
     #g-hata { color: #FF4D8D; font-weight: 800; font-size: .9rem; min-height: 1.3em; margin: 12px 0 0; line-height: 1.4; }
 
     /* Şifre kilidi */
@@ -108,6 +116,7 @@
   <nav class="sekmeler" id="sekmeler-ana">
     <button data-b="istatistik" class="aktif">📊 İstatistik</button>
     <button data-b="fikirler">📬 Oyun Fikirleri <span class="rozet" id="rozet" hidden>0</span></button>
+    <button data-b="uyeler">👥 Kayıtlı Kullanıcılar</button>
   </nav>
 </header>
 
@@ -174,6 +183,34 @@
       <p class="not">“📋 Spec için kopyala” fikri sınıf, ders ve öneren öğrenciyle birlikte oyun spec'ine yapıştırmaya hazır biçimde panoya alır.</p>
     </div>
   </section>
+
+  <!-- ================= KAYITLI KULLANICILAR ================= -->
+  <section class="bolum" id="b-uyeler" hidden>
+    <div id="u-giris" class="kart" hidden>
+      <div style="font-size:2.6rem">👥</div>
+      <h3 style="margin:6px 0 2px;font-weight:900;font-size:1.25rem">Kayıtlı kullanıcılar</h3>
+      <p style="margin:0;color:#8A7F74;font-weight:800">Üyeleri görmek için Google hesabınla giriş yap.</p>
+      <button class="gbtn" onclick="googleGiris()">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+        Google ile giriş yap
+      </button>
+      <p id="u-hata"></p>
+    </div>
+    <div id="uye-alan" hidden>
+      <div class="ozet">
+        <div class="kart"><div class="n" id="u-o-toplam">–</div><div class="l">Toplam üye</div></div>
+        <div class="kart"><div class="n" id="u-o-yeni">–</div><div class="l">Son 7 günde katılan</div></div>
+        <div class="kart"><div class="n" id="u-o-aktif">–</div><div class="l">Son 7 günde oynayan</div></div>
+        <div class="kart"><div class="n" id="u-o-sifre">–</div><div class="l">Şifresi görülebilen</div></div>
+      </div>
+      <div class="arac">
+        <input type="search" id="u-ara" placeholder="Ad ya da kullanıcı adı ara…" autocomplete="off">
+        <button onclick="uyeYukle()">🔄 Yenile</button>
+      </div>
+      <div id="uye-liste"><div class="bos">Yükleniyor…</div></div>
+      <p class="not">Şifreler öğrencinin cihazında, yalnızca bu panelin açabileceği bir anahtarla şifrelenip saklanır. Panel açılmadan önce üye olan öğrencilerin şifresi, bir sonraki girişlerinde burada görünür.</p>
+    </div>
+  </section>
 </main>
 
 <div id="bildirim"></div>
@@ -210,10 +247,12 @@ if (FB_VAR) {
 // ============ Sekmeler ============
 let acildi = false;
 function bolumSec(b) {
-  if (b !== 'fikirler') b = 'istatistik';
+  if (b !== 'fikirler' && b !== 'uyeler') b = 'istatistik';
   document.querySelectorAll('#sekmeler-ana button').forEach(x => x.classList.toggle('aktif', x.dataset.b === b));
   $('b-istatistik').hidden = b !== 'istatistik';
   $('b-fikirler').hidden = b !== 'fikirler';
+  $('b-uyeler').hidden = b !== 'uyeler';
+  if (b === 'uyeler' && acildi && auth && auth.currentUser && !uyeYuklendi) uyeYukle();
   if (location.hash.slice(1) !== b) history.replaceState(null, '', '#' + b);
 }
 $('sekmeler-ana').addEventListener('click', e => { const b = e.target.closest('button'); if (b) bolumSec(b.dataset.b); });
@@ -226,8 +265,9 @@ function ac() {
   istYukle();
   if (auth) auth.onAuthStateChanged(k => {
     $('g-cikis').hidden = !k;
-    if (!k) { girisGoster(); return; }
+    if (!k) { girisGoster(); uyeGirisGoster(); return; }
     dinle();
+    uyeYuklendi = false; if (!$('b-uyeler').hidden) uyeYukle();
   });
 }
 if (acikMi()) ac(); else setTimeout(() => $('sifre').focus(), 50);
@@ -292,7 +332,7 @@ const AUTH_HATA = {
   'auth/operation-not-allowed': 'Firebase\'de Google ile giriş kapalı (Authentication → Sign-in method).',
   'auth/network-request-failed': 'İnternet bağlantısı yok gibi görünüyor.'
 };
-function girisHata(e) { $('g-hata').innerHTML = AUTH_HATA[e.code] || ('Giriş yapılamadı: ' + esc(e.message || e.code)); }
+function girisHata(e) { $('g-hata').innerHTML = $('u-hata').innerHTML = AUTH_HATA[e.code] || ('Giriş yapılamadı: ' + esc(e.message || e.code)); }
 function girisGoster(html) {
   if (dinleyici) { dinleyici(); dinleyici = null; }
   veri = []; rozetGuncelle();
@@ -433,6 +473,93 @@ $('sekmeler').addEventListener('click', e => {
 });
 ['f-sinif', 'f-ders', 'f-ara'].forEach(id => $(id).addEventListener('input', fikirCiz));
 setInterval(() => { if (veri.length) fikirCiz(); }, 60000);
+
+// ============ KAYITLI KULLANICILAR ============
+// Üyeler: uyeler/{uid} → ad, kullanici, olusturma, son, yk (şifrenin RSA ile şifrelenmiş hâli)
+// Gizli anahtar: yonetim/anahtar (yalnızca öğretmenin Google hesabı okuyabilir)
+// Açık anahtar: ayarlar/yonetici (herkes okur; hesap.js şifreyi bununla kilitler)
+var uyeVeri = [], uyeYuklendi = false, ozelAnahtar = null;
+const b64 = buf => { let s = ''; new Uint8Array(buf).forEach(x => { s += String.fromCharCode(x); }); return btoa(s); };
+const b64Ac = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const RSA = { name: 'RSA-OAEP', hash: 'SHA-256' };
+function uyeGirisGoster(html) {
+  uyeVeri = []; uyeYuklendi = false;
+  $('u-giris').hidden = false; $('uye-alan').hidden = true;
+  $('u-hata').innerHTML = html || '';
+}
+async function anahtarHazirla() {
+  if (ozelAnahtar) return ozelAnahtar;
+  const ref = db.collection('yonetim').doc('anahtar'), acikRef = db.collection('ayarlar').doc('yonetici');
+  let d = await ref.get();
+  if (!d.exists) {
+    // İlk açılış: anahtar çiftini bu tarayıcıda üret. Önce gizli anahtar kaydedilir, sonra açık anahtar yayınlanır.
+    const cift = await crypto.subtle.generateKey(Object.assign({ modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]) }, RSA), true, ['encrypt', 'decrypt']);
+    const ozel = b64(await crypto.subtle.exportKey('pkcs8', cift.privateKey)), acik = b64(await crypto.subtle.exportKey('spki', cift.publicKey));
+    await ref.set({ ozel, acik, olusturma: firebase.firestore.FieldValue.serverTimestamp() });
+    d = await ref.get();
+  }
+  const a = await acikRef.get();
+  if (!a.exists) await acikRef.set({ acik: d.data().acik });
+  ozelAnahtar = await crypto.subtle.importKey('pkcs8', b64Ac(d.data().ozel), RSA, false, ['decrypt']);
+  return ozelAnahtar;
+}
+async function sifreCoz(yk) {
+  if (!yk) return null;
+  try { return new TextDecoder().decode(await crypto.subtle.decrypt(RSA, ozelAnahtar, b64Ac(yk))); } catch (e) { return false; }
+}
+async function uyeYukle() {
+  if (!auth || !auth.currentUser) return uyeGirisGoster();
+  uyeYuklendi = true;
+  $('u-giris').hidden = true; $('uye-alan').hidden = false;
+  $('uye-liste').innerHTML = '<div class="bos">Yükleniyor…</div>';
+  try {
+    await anahtarHazirla();
+    const snap = await db.collection('uyeler').get();
+    uyeVeri = await Promise.all(snap.docs.map(async d => {
+      const x = d.data();
+      return { id: d.id, ad: x.ad || '', kullanici: x.kullanici || '', olusturma: x.olusturma, son: x.son, sifre: await sifreCoz(x.yk) };
+    }));
+    uyeVeri.sort((a, b) => ((b.olusturma && b.olusturma.toMillis()) || 0) - ((a.olusturma && a.olusturma.toMillis()) || 0));
+    uyeCiz();
+  } catch (e) {
+    uyeYuklendi = false;
+    if (e.code === 'permission-denied') uyeGirisGoster('<b>' + esc(auth.currentUser ? auth.currentUser.email : '') + '</b> hesabının üyeleri görme yetkisi yok.<br><a href="#" onclick="googleCikis();return false" style="color:#4D9FFF">Başka hesapla dene</a>');
+    else $('uye-liste').innerHTML = '<div class="bos">Veri okunamadı: ' + esc(e.message || e.code) + '</div>';
+  }
+}
+function uyeCiz() {
+  const hafta = Date.now() - 7 * 864e5, ms = t => (t && t.toMillis ? t.toMillis() : 0);
+  $('u-o-toplam').textContent = uyeVeri.length;
+  $('u-o-yeni').textContent = uyeVeri.filter(u => ms(u.olusturma) > hafta).length;
+  $('u-o-aktif').textContent = uyeVeri.filter(u => ms(u.son) > hafta).length;
+  $('u-o-sifre').textContent = uyeVeri.filter(u => u.sifre).length;
+  const q = trKucuk($('u-ara').value.trim());
+  const l = uyeVeri.filter(u => !q || trKucuk(u.ad).includes(q) || trKucuk(u.kullanici).includes(q));
+  if (!uyeVeri.length) { $('uye-liste').innerHTML = '<div class="bos">Henüz kayıtlı kullanıcı yok.</div>'; return; }
+  if (!l.length) { $('uye-liste').innerHTML = '<div class="bos">Aramayla eşleşen kullanıcı yok.</div>'; return; }
+  $('uye-liste').innerHTML = `<table><thead><tr><th>Ad</th><th>Kullanıcı adı</th><th>Şifre</th><th class="gizle-mobil">Katıldı</th><th class="gizle-mobil">Son oynama</th><th></th></tr></thead><tbody>
+    ${l.map(u => `<tr data-id="${esc(u.id)}">
+      <td style="font-weight:900">${esc(u.ad)}</td>
+      <td class="k-adi">${esc(u.kullanici)}</td>
+      <td>${u.sifre ? `<div class="sifre-hucre"><span class="sifre-yazi">••••••</span><button class="mini" data-u="goster">👁️ Göster</button></div>`
+        : `<span class="soluk">${u.sifre === false ? 'Çözülemedi' : 'Bir sonraki girişinde görünecek'}</span>`}</td>
+      <td class="gizle-mobil soluk">${u.olusturma ? esc(tarihYaz(u.olusturma)) : '–'}</td>
+      <td class="gizle-mobil soluk">${u.son ? esc(tarihYaz(u.son)) : '–'}</td>
+      <td><button class="mini" data-u="kopyala">📋 Kopyala</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+$('u-ara').addEventListener('input', () => { if (uyeVeri.length) uyeCiz(); });
+$('uye-liste').addEventListener('click', e => {
+  const b = e.target.closest('button[data-u]'); if (!b) return;
+  const u = uyeVeri.find(x => x.id === b.closest('tr').dataset.id); if (!u) return;
+  if (b.dataset.u === 'goster') {
+    const y = b.parentNode.querySelector('.sifre-yazi'), acik = y.textContent !== '••••••';
+    y.textContent = acik ? '••••••' : u.sifre; b.textContent = acik ? '👁️ Göster' : '🙈 Gizle';
+  } else {
+    const t = 'Ad: ' + u.ad + '\nKullanıcı adı: ' + u.kullanici + (u.sifre ? '\nŞifre: ' + u.sifre : '');
+    panoya(t).then(() => bildir('📋 Kopyalandı'), () => prompt('Kopyalayın:', t));
+  }
+});
 </script>
 </body>
 </html>
