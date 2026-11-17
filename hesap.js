@@ -784,6 +784,75 @@
   window.addEventListener('pagehide', () => { if (aktifUid) gonder(); });
   setInterval(() => { if (aktifUid && tara()) zamanla(); }, 60000); // güvenlik ağı
 
+  // --------------------------------------------------------------------------
+  // H2) ÜYELİK DUYURUSU — 1 Aralık 2026'ya kadar, girişsiz ziyaretçiye bir kez
+  // --------------------------------------------------------------------------
+  const DUYURU_ANAHTAR = 'hs_duyuru_uyelik', DUYURU_BITIS = Date.parse('2026-12-01T00:00:00+03:00');
+  const DUYURU_CSS = `
+  .hs-dy-ov{position:fixed;inset:0;z-index:10040;background:rgba(20,20,40,.5);display:flex;align-items:center;justify-content:center;padding:16px;font-family:'Nunito',sans-serif;animation:hsDyFade .3s ease}
+  .hs-dy{background:#fff;border-radius:26px;box-shadow:0 12px 0 rgba(0,0,0,.12);width:100%;max-width:420px;max-height:92vh;overflow:auto;position:relative;animation:hsDyPop .45s cubic-bezier(.2,1.4,.4,1)}
+  .hs-dy-ust{background:linear-gradient(135deg,#4D9FFF,#A855F7);border-radius:26px 26px 0 0;padding:18px 18px 8px;text-align:center}
+  .hs-dy-ust svg{width:100%;max-width:300px;height:auto;display:block;margin:0 auto}
+  .hs-dy-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:1.1rem;font-weight:900;cursor:pointer;z-index:2}
+  .hs-dy-x:hover{background:rgba(255,255,255,.4)}
+  .hs-dy-ic{padding:18px 22px 20px}
+  .hs-dy-etiket{display:inline-block;background:#FFD600;color:#5A4500;font-weight:900;font-size:.78rem;padding:4px 12px;border-radius:99px;letter-spacing:.5px}
+  .hs-dy h2{margin:8px 0 12px;font-size:1.45rem;font-weight:900;color:#2D2D2D;line-height:1.2}
+  .hs-dy-m{display:flex;gap:12px;align-items:flex-start;margin:0 0 11px}
+  .hs-dy-m .i{flex:none;width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem}
+  .hs-dy-m b{display:block;font-weight:900;color:#2D2D2D;font-size:1rem}
+  .hs-dy-m span{display:block;color:#666;font-size:.88rem;line-height:1.35}
+  .hs-dy-not{font-size:.82rem;color:#999;text-align:center;margin:6px 0 0}
+  .hs-dy-ana{display:block;width:100%;margin-top:14px;border:none;border-radius:999px;padding:14px;font:900 1.1rem 'Nunito',sans-serif;color:#fff;background:linear-gradient(135deg,#FF6B35,#FF4D8D);box-shadow:0 5px 0 rgba(0,0,0,.15);cursor:pointer}
+  .hs-dy-ana:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.15)}
+  .hs-dy-sonra{display:block;width:100%;margin-top:8px;border:none;background:none;font:800 .95rem 'Nunito',sans-serif;color:#999;cursor:pointer;padding:8px}
+  .hs-dy-bulut{animation:hsDyYuz 3s ease-in-out infinite}
+  @keyframes hsDyFade{from{opacity:0}} @keyframes hsDyPop{from{transform:scale(.85) translateY(20px);opacity:0}}
+  @keyframes hsDyYuz{50%{transform:translateY(-5px)}}
+  @media (prefers-reduced-motion:reduce){.hs-dy-ov,.hs-dy,.hs-dy-bulut{animation:none}}
+  `;
+  // Bulut + üç cihaz (telefon, tablet, bilgisayar) çizimi
+  const DUYURU_SVG = '<svg viewBox="0 0 300 130" aria-hidden="true">' +
+    '<g stroke="rgba(255,255,255,.7)" stroke-width="3" stroke-dasharray="5 6" fill="none" stroke-linecap="round"><path d="M150 62 L52 96"/><path d="M150 62 L150 92"/><path d="M150 62 L248 96"/></g>' +
+    '<g class="hs-dy-bulut"><path d="M108 58c-13 0-22-9-22-20s9-20 21-20c4-11 15-18 27-18 14 0 25 9 28 21 2-1 5-1 7-1 12 0 22 9 22 20s-10 18-22 18z" fill="#fff"/>' +
+    '<circle cx="150" cy="38" r="15" fill="#00C9A7"/><path d="M143 38l5 5 9-10" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>' +
+    '<rect x="36" y="88" width="30" height="40" rx="6" fill="#fff"/><rect x="40" y="93" width="22" height="27" rx="2" fill="#FFD600"/><circle cx="51" cy="124" r="1.8" fill="#bbb"/>' +
+    '<rect x="128" y="86" width="44" height="40" rx="6" fill="#fff"/><rect x="133" y="91" width="34" height="30" rx="2" fill="#FF6B35"/>' +
+    '<rect x="222" y="90" width="52" height="32" rx="4" fill="#fff"/><rect x="226" y="94" width="44" height="24" rx="2" fill="#FF4D8D"/><rect x="214" y="122" width="68" height="6" rx="3" fill="#fff"/>' +
+    '<g fill="#fff" opacity=".9"><circle cx="30" cy="22" r="2.5"/><circle cx="270" cy="30" r="3"/><circle cx="250" cy="10" r="2"/><circle cx="60" cy="50" r="2"/></g></svg>';
+
+  function duyuruGoster() {
+    const zorla = /[?&]duyuru=1\b/.test(location.search); // önizleme: sinanince.com/?duyuru=1
+    if (!zorla && (Date.now() > DUYURU_BITIS || lsAl(DUYURU_ANAHTAR) || girisli())) return;
+    const oyunAcik = document.querySelector('#modal-overlay.active');
+    if (oyunAcik || (ov && ov.classList.contains('acik')) || document.querySelector('.kt-ov')) return; // oyun ya da başka pencere açıksa rahatsız etme
+    const st = document.createElement('style'); st.textContent = DUYURU_CSS; document.head.appendChild(st);
+    const d = document.createElement('div'); d.className = 'hs-dy-ov';
+    d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Yeni: üyelik');
+    d.innerHTML = '<div class="hs-dy">' +
+      '<button type="button" class="hs-dy-x" aria-label="Kapat">✕</button>' +
+      '<div class="hs-dy-ust">' + DUYURU_SVG + '</div>' +
+      '<div class="hs-dy-ic">' +
+        '<span class="hs-dy-etiket">✨ YENİ</span>' +
+        '<h2>Artık üye olabilirsin!</h2>' +
+        '<div class="hs-dy-m"><div class="i" style="background:#E6F1FF">📱</div><div><b>İlerlemen her cihazda aynı</b><span>Okulda, evde, tablette… Nerede girersen kaldığın yerden devam et.</span></div></div>' +
+        '<div class="hs-dy-m"><div class="i" style="background:#E3FAF5">🛡️</div><div><b>Hiç kaybolmaz</b><span>Tarayıcı temizlense ya da cihaz değişse bile ilerlemen hesabında güvende.</span></div></div>' +
+        '<div class="hs-dy-m"><div class="i" style="background:#FFF6CC">⚡</div><div><b>Üye olmak çok hızlı</b><span>Adın, bir kullanıcı adı ve şifre yeter. E-posta gerekmez.</span></div></div>' +
+        '<button type="button" class="hs-dy-ana">☁️ Hemen Üye Ol</button>' +
+        '<button type="button" class="hs-dy-sonra">Daha sonra</button>' +
+        '<p class="hs-dy-not">Oyunlar yine ücretsiz. Üye olmak zorunlu değil.</p>' +
+      '</div></div>';
+    document.body.appendChild(d);
+    const kapat = () => { lsYaz(DUYURU_ANAHTAR, '1'); document.removeEventListener('keydown', esc); d.remove(); st.remove(); };
+    const esc = e => { if (e.key === 'Escape') kapat(); };
+    document.addEventListener('keydown', esc);
+    d.querySelector('.hs-dy-x').onclick = kapat;
+    d.querySelector('.hs-dy-sonra').onclick = kapat;
+    d.addEventListener('click', e => { if (e.target === d) kapat(); });
+    d.querySelector('.hs-dy-ana').onclick = () => { kapat(); ekranGiris('uye'); ov.classList.add('acik'); };
+    setTimeout(() => d.querySelector('.hs-dy-ana').focus(), 50);
+  }
+
   function baslat() {
     let d = durumAl();
     // Ortak cihazda sekme kapanmışsa: önceki öğrencinin verisini hemen temizle
@@ -792,6 +861,7 @@
     if (!d && lsAl(META)) yerelTemizle();
     arayuzKur();
     if (d) { senkGoster(Object.values(metaAl().kayit).some(e => e.kirli) ? 'kaydediliyor' : 'kayitli'); oturumuIzle(); }
+    else if (!location.hash) setTimeout(duyuruGoster, 1200); // doğrudan oyun linkiyle gelene gösterme
   }
 
   window.Hesap = {
