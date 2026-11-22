@@ -239,8 +239,9 @@ const FB_VAR = typeof firebase !== 'undefined';
 let db = null, auth = null;
 if (FB_VAR) {
   // Google girişi sinanince.com üzerinden (yardımcı dosyalar __/auth/ klasöründe): farklı alan adına çerez engeli girişi bozuyordu
-  firebase.initializeApp({ apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: location.hostname === "sinanince.com" ? "sinanince.com" : "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" });
-  db = firebase.firestore(); auth = firebase.auth();
+  // Ayrı uygulama adı: panelin Google oturumu, sitedeki öğrenci üyelik oturumuyla karışmaz
+  const yApp = firebase.initializeApp({ apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: location.hostname === "sinanince.com" ? "sinanince.com" : "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" }, "yonetim");
+  db = yApp.firestore(); auth = yApp.auth();
 } else {
   $('tablo-alan').innerHTML = "<div class='bos'>Firebase yüklenemedi (internet / reklam engelleyici?). Sayfayı yenileyin.</div>";
 }
@@ -516,7 +517,8 @@ async function uyeYukle() {
   try {
     await anahtarHazirla();
     const snap = await db.collection('uyeler').get();
-    uyeVeri = await Promise.all(snap.docs.map(async d => {
+    // Kullanıcı adı olmayan belgeler öğrenci üyeliği değildir (ör. öğretmenin Google hesabı); listede gösterilmez
+    uyeVeri = await Promise.all(snap.docs.filter(d => d.data().kullanici).map(async d => {
       const x = d.data();
       return { id: d.id, ad: x.ad || '', kullanici: x.kullanici || '', olusturma: x.olusturma, son: x.son, sifre: await sifreCoz(x.yk) };
     }));

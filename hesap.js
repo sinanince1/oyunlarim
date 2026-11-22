@@ -68,6 +68,8 @@
   }
   const kullaniciAdiGecerli = k => /^[a-z0-9](?:[a-z0-9._]{1,18})[a-z0-9]$/.test(k) && !/\.\./.test(k);
   const eposta = k => k + '@' + ALAN;
+  // Yalnızca öğrenci hesapları (ad@uye.sinanince.com) senkronlanır; öğretmenin Google oturumu yok sayılır
+  const uyeMi = u => !!(u && u.email && u.email.endsWith('@' + ALAN));
 
   // --------------------------------------------------------------------------
   // C) KURTARMA KODU KASASI (WebCrypto)
@@ -197,7 +199,7 @@
 
   async function gonder() {
     clearTimeout(zamanlayici);
-    if (!aktifUid || !window.firebase || !firebase.auth || !firebase.auth().currentUser) return false;
+    if (!aktifUid || !window.firebase || !firebase.auth || !firebase.auth().currentUser || firebase.auth().currentUser.uid !== aktifUid) return false;
     tara();
     const m = metaAl(); if (m.uid !== aktifUid) return false;
     const kirli = Object.keys(m.kayit).filter(a => m.kayit[a].kirli).map(a => [a, m.kayit[a]]);
@@ -310,6 +312,7 @@
     fbYukle().then(fb => {
       fb.auth().onAuthStateChanged(u => {
         if (islemde) return;
+        if (u && !uyeMi(u)) { coz(); return; }
         if (u) { if (aktifUid !== u.uid && girisli()) girisSonrasi(u, false).catch(() => {}).finally(coz); else coz(); }
         else { if (girisli()) { yerelTemizle(); arayuzGuncelle(); } coz(); }
       });
