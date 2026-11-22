@@ -934,6 +934,26 @@
     @keyframes cfaParla { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .cfa-bayrak, .cfa-alay, .cfa-zipla, .cfa-isik, .cfa-fisek, .cfa-yildiz { animation: none; } .cfa-alay { transform: translateX(110px); } .cfa-fisek { opacity: 1; } }
     /* ---- Okuma Rallisi kart animasyonu ---- */
+    /* Okyanus Kâşifi kapağı */
+    .okk-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .okk-thumb svg { width: 100%; height: 100%; }
+    .okk-isin { animation: okkIsin 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top center; }
+    @keyframes okkIsin { 0%,100% { opacity: .18; transform: skewX(-4deg); } 50% { opacity: .38; transform: skewX(4deg); } }
+    .okk-denizalti { animation: okkSuz 3.2s ease-in-out infinite; }
+    @keyframes okkSuz { 0%,100% { transform: translate(0,0) rotate(-2deg); } 50% { transform: translate(6px,-5px) rotate(2deg); } }
+    .okk-pervane { transform-box: fill-box; transform-origin: center; animation: okkPervane .3s linear infinite; }
+    @keyframes okkPervane { 0% { transform: scaleY(1); } 50% { transform: scaleY(.25); } 100% { transform: scaleY(1); } }
+    .okk-kabarcik { animation: okkKabarcik 3.4s ease-in infinite; opacity: 0; }
+    @keyframes okkKabarcik { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate(-6px,-62px); opacity: 0; } }
+    .okk-parla { transform-box: fill-box; transform-origin: center; animation: okkParla 1.8s ease-in-out infinite; }
+    @keyframes okkParla { 0%,100% { transform: scale(.75); opacity: .45; } 50% { transform: scale(1.15); opacity: 1; } }
+    .okk-balik { animation: okkBalik 7s linear infinite; }
+    @keyframes okkBalik { 0% { transform: translateX(270px); } 100% { transform: translateX(-60px); } }
+    .okk-yosun { transform-box: fill-box; transform-origin: bottom center; animation: okkYosun 3s ease-in-out infinite alternate; }
+    @keyframes okkYosun { 0% { transform: rotate(-7deg); } 100% { transform: rotate(7deg); } }
+    .okk-harf { animation: okkHarf 3.6s ease-out infinite; opacity: 0; }
+    @keyframes okkHarf { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(4px,-46px); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .okk-thumb * { animation: none !important; } .okk-kabarcik, .okk-harf { opacity: 0; } }
     .orl-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .orl-thumb svg { width: 100%; height: 100%; }
     .orl-sehir { animation: orlKay 9s linear infinite; }
@@ -1710,6 +1730,72 @@ const categories = [
     iconBg: "linear-gradient(135deg, #00C9A7, #4D9FFF)",
     lineColor: "linear-gradient(90deg, #00C9A7, #4D9FFF)",
     games: [
+      {
+        name: "Okyanus Kâşifi",
+        file: "okyanus_kasifi.html",
+        desc: "Metinleri oku, kabuk, inci ve kristal topla! Denizaltını güçlendir, derin okyanusa dal, 100 deniz canlısını keşfet. 🌊",
+        sinif: "2-3. Sınıf — Okuduğunu anlama",
+        beceri: "Okuduğunu anlama",
+        grades: [2, 3],
+        eklenme: "2026-11-22",
+        isSpecial: true,
+        ozelEtiket: "⭐ ÖZEL OYUN",
+        thumbBg: "linear-gradient(180deg,#7EE8F2 0%,#1FA6C9 45%,#103E78 100%)",
+        customThumb: `
+<div class="okk-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="okkSu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7EE8F2"/><stop offset=".45" stop-color="#1FA6C9"/><stop offset="1" stop-color="#103E78"/></linearGradient>
+    <linearGradient id="okkIsik" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#FFF6B8" stop-opacity=".85"/><stop offset="1" stop-color="#FFF6B8" stop-opacity="0"/></linearGradient>
+    <radialGradient id="okkCam" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#E9FBFF"/><stop offset="1" stop-color="#5FC6DD"/></radialGradient>
+    <radialGradient id="okkHale" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".35" stop-color="currentColor" stop-opacity=".8"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="240" height="150" fill="url(#okkSu)"/>
+  <!-- güneş ışınları -->
+  <g fill="#fff"><path class="okk-isin" d="M30 0 L52 0 L84 150 L44 150 Z"/><path class="okk-isin" d="M110 0 L126 0 L150 150 L118 150 Z" style="animation-delay:1.3s"/><path class="okk-isin" d="M178 0 L198 0 L232 150 L196 150 Z" style="animation-delay:2.4s"/></g>
+  <!-- uzak kayalık -->
+  <path d="M0 128 Q30 108 62 120 Q92 100 128 118 Q160 104 196 120 Q220 110 240 118 V150 H0 Z" fill="#0E3566" opacity=".55"/>
+  <!-- yosunlar -->
+  <g fill="#2BAA7C"><path class="okk-yosun" d="M14 150 Q8 128 16 112 Q22 128 18 150 Z"/><path class="okk-yosun" d="M22 150 Q22 124 30 106 Q34 128 26 150 Z" style="animation-delay:.8s"/><path class="okk-yosun" d="M214 150 Q208 126 218 110 Q224 128 220 150 Z" style="animation-delay:.4s"/><path class="okk-yosun" d="M226 150 Q226 130 234 116 Q238 132 230 150 Z" style="animation-delay:1.2s"/></g>
+  <!-- deniz tabanı + mercan -->
+  <path d="M0 140 Q60 130 120 138 Q180 146 240 136 V150 H0 Z" fill="#F2D59B"/>
+  <g fill="#FF7B6B"><path d="M190 140 V126 M190 132 L184 124 M190 130 L197 122" stroke="#FF7B6B" stroke-width="3.4" stroke-linecap="round"/></g>
+  <!-- açık kitap ve kabarcık harfler -->
+  <g transform="translate(36 124)">
+    <path d="M0 6 Q12 1 24 6 V18 Q12 13 0 18 Z" fill="#FFF8F0" stroke="#24508C" stroke-width="1.4"/>
+    <path d="M24 6 Q36 1 48 6 V18 Q36 13 24 18 Z" fill="#FFF8F0" stroke="#24508C" stroke-width="1.4"/>
+    <path d="M5 9 H19 M5 13 H17 M29 9 H43 M29 13 H41" stroke="#9CC7E6" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+  <g font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="11" text-anchor="middle"><text class="okk-harf" x="54" y="124" fill="#FFE066">A</text><text class="okk-harf" x="62" y="122" fill="#fff" style="animation-delay:1.2s">K</text><text class="okk-harf" x="50" y="120" fill="#B6F0FF" style="animation-delay:2.4s">Ş</text></g>
+  <!-- parlayan, henüz keşfedilmemiş canlılar -->
+  <g class="okk-parla" style="color:#FFD54A;animation-delay:.2s"><circle cx="206" cy="98" r="15" fill="url(#okkHale)"/><path d="M200 98 Q206 92 213 98 Q206 104 200 98 Z M212 98 L217 94 V102 Z" fill="#FFD54A"/></g>
+  <g class="okk-parla" style="color:#C77DFF;animation-delay:.9s"><circle cx="160" cy="122" r="12" fill="url(#okkHale)"/><circle cx="160" cy="122" r="4" fill="#E2C2FF"/></g>
+  <g class="okk-parla" style="color:#7CFFB2;animation-delay:1.5s"><circle cx="104" cy="112" r="11" fill="url(#okkHale)"/><path d="M99 112 Q104 107 110 112 Q104 117 99 112 Z" fill="#7CFFB2"/></g>
+  <!-- geçen balık sürüsü -->
+  <g class="okk-balik" fill="#FFB45C"><path d="M0 34 Q6 29 12 34 Q6 39 0 34 Z M11 34 L16 30 V38 Z"/><path d="M18 42 Q24 37 30 42 Q24 47 18 42 Z M29 42 L34 38 V46 Z"/><path d="M8 50 Q14 45 20 50 Q14 55 8 50 Z M19 50 L24 46 V54 Z"/></g>
+  <!-- denizaltı -->
+  <g class="okk-denizalti">
+    <path d="M76 99 L2 70 L2 130 Z" fill="url(#okkIsik)" opacity=".75"/>
+    <g transform="translate(62 54) scale(.3)">
+      <rect x="250" y="14" width="52" height="18" rx="9" fill="#E6A817" stroke="#5A3A12" stroke-opacity=".5" stroke-width="4"/>
+      <g stroke="#5A3A12" stroke-opacity=".5" stroke-width="4" stroke-linejoin="round"><rect x="250" y="20" width="14" height="70" rx="7" fill="#E6A817"/><path d="M168 92 Q176 54 214 52 L276 52 Q300 52 304 92 Z" fill="#E6A817"/></g>
+      <g transform="translate(374 150)"><rect x="-8" y="-9" width="22" height="18" rx="5" fill="#E6A817"/><g class="okk-pervane"><ellipse cx="22" cy="-19" rx="8" ry="19" fill="#E6A817"/><ellipse cx="22" cy="19" rx="8" ry="19" fill="#E6A817"/></g></g>
+      <path d="M40 150 A170 78 0 1 0 380 150 A170 78 0 1 0 40 150Z" fill="#FFC93C" stroke="#5A3A12" stroke-opacity=".5" stroke-width="4"/>
+      <ellipse cx="170" cy="108" rx="110" ry="18" fill="#fff" opacity=".3"/>
+      <g stroke="#5A3A12" stroke-opacity=".5" stroke-width="3"><circle cx="178" cy="146" r="25" fill="#E6A817"/><circle cx="238" cy="146" r="25" fill="#E6A817"/><circle cx="298" cy="146" r="25" fill="#E6A817"/></g>
+      <g fill="url(#okkCam)"><circle cx="178" cy="146" r="18"/><circle cx="238" cy="146" r="18"/><circle cx="298" cy="146" r="18"/></g>
+      <circle cx="86" cy="140" r="9" fill="#2B2B2B"/><circle cx="89" cy="137" r="3" fill="#fff"/>
+      <circle cx="74" cy="168" r="11" fill="#FF8FA3" opacity=".55"/>
+      <path d="M70 182 Q86 196 104 184" fill="none" stroke="#2B2B2B" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="48" cy="200" r="11" fill="#E6A817"/><circle cx="46" cy="200" r="7" fill="#FFE066"/>
+    </g>
+  </g>
+  <!-- kabarcıklar -->
+  <g fill="none" stroke="#fff" stroke-width="1.3"><circle class="okk-kabarcik" cx="178" cy="100" r="3"/><circle class="okk-kabarcik" cx="184" cy="96" r="2" style="animation-delay:.9s"/><circle class="okk-kabarcik" cx="174" cy="94" r="2.5" style="animation-delay:1.8s"/><circle class="okk-kabarcik" cx="182" cy="104" r="1.8" style="animation-delay:2.6s"/></g>
+</svg>
+</div>
+`
+      },
       {
         name: "Okuma Rallisi",
         file: "okuma_rallisi.html",
