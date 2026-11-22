@@ -238,7 +238,8 @@ $('sifre').addEventListener('keydown', e => { if (e.key === 'Enter') kontrol(); 
 const FB_VAR = typeof firebase !== 'undefined';
 let db = null, auth = null;
 if (FB_VAR) {
-  firebase.initializeApp({ apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" });
+  // Google girişi sinanince.com üzerinden (yardımcı dosyalar __/auth/ klasöründe): farklı alan adına çerez engeli girişi bozuyordu
+  firebase.initializeApp({ apiKey: "AIzaSyCfG9-e_6DjyDnKhptvwgR0SIIjIl8NNsw", authDomain: location.hostname === "sinanince.com" ? "sinanince.com" : "hikayesehri-3162b.firebaseapp.com", projectId: "hikayesehri-3162b" });
   db = firebase.firestore(); auth = firebase.auth();
 } else {
   $('tablo-alan').innerHTML = "<div class='bos'>Firebase yüklenemedi (internet / reklam engelleyici?). Sayfayı yenileyin.</div>";
