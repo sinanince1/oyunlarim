@@ -248,6 +248,12 @@ svg{display:block}
   border:calc(var(--u)*.3) solid transparent;transition:border-color .15s;
 }
 .m-kart.sepette{border-color:var(--m)}
+.m-kart{cursor:pointer}
+.m-kart.secildi{border-color:var(--pembe);border-style:dashed;animation:secNabiz 1.2s ease-in-out infinite}
+@keyframes secNabiz{0%,100%{box-shadow:0 calc(var(--u)*.4) 0 rgba(0,0,0,.07)}50%{box-shadow:0 0 0 calc(var(--u)*.6) rgba(255,77,141,.25)}}
+.m-kart.secildi .ekle{animation:zipla .8s ease-in-out infinite alternate}
+#modal-metin{white-space:pre-line}
+.btn.yesilm{background:var(--yesil);color:#fff;box-shadow:0 calc(var(--u)*.5) 0 #13804D}
 .m-kart .e{font-size:calc(var(--u)*5.4);line-height:1;margin-top:calc(var(--u)*2.2)}
 .m-kart .ad{font-weight:800;font-size:calc(var(--u)*1.9);text-align:center;line-height:1.1;min-height:2.2em;display:flex;align-items:center}
 .m-kart .fiyat{font-weight:900;font-size:calc(var(--u)*3.2);color:var(--ink);line-height:1;letter-spacing:-.01em}
@@ -1063,18 +1069,19 @@ function listeDolu(liste){
 
 /* --- Kısa bilgi balonu --- */
 let balonZaman = null;
-function balon(metin){
+function balon(metin, sure = 2200){
   const b = $('balon');
   b.textContent = metin;
   b.classList.add('gorunur');
   clearTimeout(balonZaman);
-  balonZaman = setTimeout(() => b.classList.remove('gorunur'), 2200);
+  balonZaman = setTimeout(() => b.classList.remove('gorunur'), sure);
 }
 
 /* --- Listem hazır --- */
 $('btn-liste-hazir').onclick = () => {
   if(doluSayisi() < 6) return;
   Ses.vuus();
+  secilen.turuncu.clear(); secilen.yesil.clear();
   kayit.oturum = {
     asama:'tablet',
     liste:{ istek:[...taslak.istek], ihtiyac:[...taslak.ihtiyac] },
@@ -1188,7 +1195,45 @@ document.querySelectorAll('[data-uyg]').forEach(b => b.addEventListener('click',
   const u = b.dataset.uyg;
   if(u === 'listem') Tablet.ac('listem'); else Tablet.ac('market', u);
 }));
-const anaEkranaDon = () => { Ses.geri(); Tablet.ac('ana'); };
+/* ---------- Hatırlatmalar ----------
+   1) Ürün kartına dokunulup (seçilip) sepete eklenmeden marketten çıkılırsa → uyarı penceresi
+   2) Sepette ödenmemiş ürünle marketten çıkılırsa → ana ekranda hatırlatma balonu
+   3) Alışverişi Bitir'de ödenmemiş sepet ya da listeden alınmamış ürün varsa → uyarı penceresi */
+const secilen = { turuncu:new Set(), yesil:new Set() };   // dokunulan ama sepete eklenmeyen ürünler
+const adListesi = ids => ids.map(id => URUN[id].ad).join(', ');
+
+function marketeGitSepetAc(m){ Tablet.ac('market', m); setTimeout(sepetAc, 250); }
+
+function markettenCik(){
+  const m = Tablet.market;
+  Ses.geri();
+  Tablet.ac('ana');
+  const n = m && O() && O().sepet ? O().sepet[m].length : 0;
+  if(n > 0) setTimeout(() => balon(`Unutma! ${MARKET_ADI[m]} sepetinde ${n} ürün var. Ödeme yapmadın.`, 4000), 350);
+}
+
+const anaEkranaDon = () => {
+  const m = Tablet.market, o = O();
+  if(m && o && o.sepet){
+    const bekleyen = [...secilen[m]].filter(id => !o.sepet[m].includes(id));
+    if(bekleyen.length){
+      Ses.uyari();
+      modal('Sepete eklemeyi unuttun mu?',
+        `Bu ürünleri seçtin ama sepete eklemedin:\n${adListesi(bekleyen)}`, [
+        { yazi:'Eklemeden çık', fn: () => { secilen[m].clear(); markettenCik(); } },
+        { yazi:'Sepete ekle', tur:'ana', fn: () => {
+            bekleyen.forEach(id => { if(!o.sepet[m].includes(id)) o.sepet[m].push(id); });
+            secilen[m].clear(); kaydet();
+            urunleriCiz(); rozetGuncelle(); sepetDugmesiSars(); Ses.pop();
+            balon('Sepete eklendi! Ödeme yapmayı unutma.', 3000);
+          } }
+      ]);
+      return;
+    }
+  }
+  if(m) secilen[m].clear();
+  if(m) markettenCik(); else { Ses.geri(); Tablet.ac('ana'); }
+};
 document.querySelectorAll('[data-ana]').forEach(b => b.addEventListener('click', anaEkranaDon));
 $('fiz-ana').onclick = anaEkranaDon;
 
@@ -1226,8 +1271,17 @@ function urunleriCiz(){
     const sepette = o.sepet[m].includes(u.id);
     const alindi = o.alinan.some(a => a.id === u.id && a.market === m);
     const k = document.createElement('div');
-    k.className = 'm-kart' + (sepette ? ' sepette' : '');
+    k.className = 'm-kart' + (sepette ? ' sepette' : '') + (!sepette && secilen[m].has(u.id) ? ' secildi' : '');
     k.dataset.id = u.id;
+    // Kartın kendisine dokunmak ürünü "seçer" ama sepete eklemez → hatırlat
+    k.onclick = e => {
+      if(e.target.closest('.ekle')) return;
+      if(O().sepet[m].includes(u.id)){ Ses.tik(); balon('Bu ürün zaten sepetinde ✓'); return; }
+      secilen[m].add(u.id);
+      k.classList.add('secildi');
+      Ses.tik();
+      balon('Almak için “Sepete ekle” düğmesine dokun!', 2600);
+    };
     k.innerHTML = `
       ${alindi ? `<span class="alindi">Satın alındı ✓</span>` : ''}
       <span class="e">${u.e}</span>
@@ -1243,7 +1297,7 @@ function sepeteEkleCikar(id, kart){
   const m = Tablet.market, s = O().sepet[m];
   const i = s.indexOf(id);
   if(i >= 0){ s.splice(i, 1); Ses.geri(); }
-  else { s.push(id); Ses.pop(); sepeteUc(kart); }
+  else { s.push(id); secilen[m].delete(id); kart.classList.remove('secildi'); Ses.pop(); sepeteUc(kart); }
   kaydet();
   // Kartı yerinde güncelle (kaydırma konumu korunur)
   const sepette = i < 0;
@@ -1356,14 +1410,29 @@ $('btn-ode').onclick = () => {
 $('btn-bitir').onclick = () => {
   Ses.tik();
   const o = O();
-  const odenmemis = o && o.sepet ? o.sepet.turuncu.length + o.sepet.yesil.length : 0;
-  const ek = odenmemis > 0 ? ` Sepetinde ödenmemiş ${odenmemis} ürün var, onlar alınmamış sayılır.` : '';
-  modal('Alışverişi bitirmek istiyor musun?', 'Bitirince kargon gelir ve alışverişine birlikte bakarız. Sonra bir daha alışveriş yapamazsın.' + ek, [
+  const bitir = () => { kayit.oturum.asama = 'degerlendirme'; kaydet(); Sahne.git('degerlendirme'); };
+  if(!o || !o.sepet){ bitir(); return; }
+
+  // Ödenmemiş sepetler ve listeden hiç alınmamış (sepete de eklenmemiş) ürünler
+  const odenmemis = ['turuncu','yesil'].filter(m => o.sepet[m].length > 0);
+  const listeIds = [...o.liste.istek, ...o.liste.ihtiyac];
+  const eksik = listeIds.filter(id => !o.alinan.some(a => a.id === id) && !o.sepet.turuncu.includes(id) && !o.sepet.yesil.includes(id));
+
+  if(odenmemis.length || eksik.length){
+    Ses.uyari();
+    const satirlar = [];
+    odenmemis.forEach(m => satirlar.push(`🛒 ${MARKET_ADI[m]} sepetinde ${o.sepet[m].length} ürün var ama ödeme yapmadın.`));
+    if(eksik.length) satirlar.push(`📋 Listendeki şu ürünleri henüz sepete eklemedin: ${adListesi(eksik)}`);
+    const dugmeler = [{ yazi:'Yine de bitir', fn: bitir }];
+    if(odenmemis.length) odenmemis.forEach(m => dugmeler.push({ yazi:`${MARKET_ADI[m]}'e git`, tur: m === 'yesil' ? 'yesilm' : 'ana', fn: () => marketeGitSepetAc(m) }));
+    else dugmeler.push({ yazi:'Alışverişe dön', tur:'ana' });
+    modal(odenmemis.length ? 'Ödeme yapmayı unuttun!' : 'Listende eksik var!', satirlar.join('\n'), dugmeler);
+    return;
+  }
+
+  modal('Alışverişi bitirmek istiyor musun?', 'Bitirince kargon gelir ve alışverişine birlikte bakarız. Sonra bir daha alışveriş yapamazsın.', [
     { yazi:'Vazgeç' },
-    { yazi:'Evet, bitir', tur:'pembe', fn: () => {
-        kayit.oturum.asama = 'degerlendirme'; kaydet();
-        Sahne.git('degerlendirme');
-      } }
+    { yazi:'Evet, bitir', tur:'pembe', fn: bitir }
   ]);
 };
 
