@@ -511,7 +511,7 @@
     const btn = document.getElementById('hs-btn'); if (!btn) return;
     const d = durumAl();
     if (d) btn.innerHTML = '<span class="hs-nokta ' + senkDurum + '"></span><span class="hs-ad">' + esc(d.ad) + '</span>';
-    else btn.innerHTML = '☁️ <span class="hs-ad">Giriş Yap</span>';
+    else btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18.5h10.5a4 4 0 0 0 .6-8A6 6 0 0 0 6.6 9.3 4.6 4.6 0 0 0 7 18.5z"/></svg><span class="hs-ad">Giriş Yap</span>';
     btn.title = d ? 'Hesabım' : 'Giriş yap / Üye ol — ilerlemeni kaydet';
     if (ov && ov.classList.contains('acik') && kart.dataset.ekran === 'profil') ekranProfil();
   }

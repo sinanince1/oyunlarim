@@ -1,0 +1,944 @@
+/* ============================================================
+   sinanince.com — OYUN KARTI RESİMLERİ (customThumb SVG animasyonları)
+   Her oyunun kart resmine ait stiller burada; oyun verisi oyunlar.js'te.
+   Yeni oyun eklerken kart resmi stilini bu dosyanın sonuna ekle.
+   Sinan İnce 2026
+   ============================================================ */
+/* --- Yapı Ustaları thumbnail (3B cisimlerle kurulan yapı) --- */
+.yapi-ustalari-thumb {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.yut-sahne { width: 100%; height: 100%; }
+.yut-zemin { opacity: .95; }
+/* Parçalar sırayla yukarıdan düşüp yerine oturur, sonra yapı yeniden kurulur */
+.yut-p { opacity: 0; animation: yutKur 5s ease-in-out infinite; }
+.yut-p1 { animation-delay: 0s; }
+.yut-p2 { animation-delay: .32s; }
+.yut-p3 { animation-delay: .64s; }
+.yut-p4 { animation-delay: .96s; }
+@keyframes yutKur {
+  0%        { opacity: 0; transform: translateY(-56px); }
+  6%        { opacity: 1; }
+  13%       { transform: translateY(0); }
+  16%       { transform: translateY(-5px); }
+  19%, 84%  { opacity: 1; transform: translateY(0); }
+  93%, 100% { opacity: 0; transform: translateY(-16px); }
+}
+/* Arka planda süzülen cisimler */
+.yut-f { opacity: .28; animation: yutSuzul 6.5s ease-in-out infinite; }
+.yut-f2 { animation-delay: -1.5s; }
+.yut-f3 { animation-delay: -3.0s; }
+.yut-f4 { animation-delay: -4.4s; }
+@keyframes yutSuzul {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .yut-p { opacity: 1; animation: none; }
+  .yut-f { animation: none; }
+}
+
+/* --- Şekil Robotu thumbnail (dans eden robot) --- */
+.sekil-robot-thumb {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.sekil-robot-thumb .srt-s {          /* arka planda süzülen geometrik şekiller */
+  position: absolute;
+  opacity: .5;
+  animation: srtSuzul 4.5s ease-in-out infinite;
+}
+.srt-kare {
+  width: 22px; height: 22px; border-radius: 4px;
+  background: #f5b942; left: 14%; top: 22%;
+  animation-delay: -.4s;
+}
+.srt-daire {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #e0559a; right: 13%; top: 18%;
+  animation-delay: -2.2s;
+}
+.srt-dikdortgen {
+  width: 30px; height: 15px; border-radius: 4px;
+  background: #4aab6b; right: 10%; bottom: 20%;
+  animation-delay: -1.3s;
+}
+.srt-ucgen {
+  width: 0; height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 21px solid #4f8ce8;
+  left: 10%; bottom: 18%;
+  animation-delay: -3.1s;
+}
+@keyframes srtSuzul {
+  0%, 100% { transform: translateY(0)    rotate(0deg); }
+  50%      { transform: translateY(-9px) rotate(12deg); }
+}
+.srt-robot {
+  position: relative; z-index: 1;
+  height: 128px; width: auto;
+  filter: drop-shadow(0 4px 8px rgba(22,35,58,.28));
+  animation: srtDans 0.9s ease-in-out infinite;
+  transform-origin: 50% 92%;
+}
+@keyframes srtDans {                 /* gövde zıplar ve hafifçe yalpalar */
+  0%, 100% { transform: translateY(0)    rotate(-3deg); }
+  25%      { transform: translateY(-6px) rotate(0deg); }
+  50%      { transform: translateY(0)    rotate(3deg); }
+  75%      { transform: translateY(-6px) rotate(0deg); }
+}
+/* Uzuvlar kendi ekleminden döner */
+.srt-kol-sag { transform-origin: 216px 206px; animation: srtKol 0.9s ease-in-out infinite; }
+.srt-kol-sol { transform-origin:  84px 206px; animation: srtKol 0.9s ease-in-out infinite; animation-delay: -.45s; }
+.srt-bacak-sag { transform-origin: 180px 286px; animation: srtBacak 0.9s ease-in-out infinite; animation-delay: -.45s; }
+.srt-bacak-sol { transform-origin: 120px 286px; animation: srtBacak 0.9s ease-in-out infinite; }
+.srt-kafa { transform-origin: 150px 152px; animation: srtKafa 1.8s ease-in-out infinite; }
+@keyframes srtKol   { 0%,100% { transform: rotate(-30deg); } 50% { transform: rotate(30deg); } }
+@keyframes srtBacak { 0%,100% { transform: rotate(-13deg); } 50% { transform: rotate(13deg); } }
+@keyframes srtKafa  { 0%,100% { transform: rotate(-6deg);  } 50% { transform: rotate(6deg);  } }
+@media (prefers-reduced-motion: reduce) {
+  .sekil-robot-thumb .srt-s, .srt-robot,
+  .srt-kol-sag, .srt-kol-sol, .srt-bacak-sag, .srt-bacak-sol, .srt-kafa { animation: none; }
+}
+
+/* --- Dino'nun Roketi thumbnail --- */
+.dino-roket-thumb {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 2px; padding-bottom: 8px;
+  overflow: hidden;
+}
+.drt-yildizlar {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 28% 42%, #fff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 45% 12%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 62% 35%, #fff 50%, transparent 50%),
+    radial-gradient(2px 2px at 78% 15%, #FFD84D 50%, transparent 50%),
+    radial-gradient(1px 1px at 88% 48%, #fff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 35% 65%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 72% 58%, #fff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 92% 72%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 18% 75%, #fff 50%, transparent 50%),
+    radial-gradient(2px 2px at 55% 78%, #FFD84D 50%, transparent 50%),
+    radial-gradient(1px 1px at 8% 55%, #fff 50%, transparent 50%);
+  animation: drtTwinkle 3s ease-in-out infinite alternate;
+}
+@keyframes drtTwinkle {
+  0%   { opacity: .6; }
+  100% { opacity: 1; }
+}
+.drt-dino {
+  position: relative; z-index: 1;
+  width: 82px; height: auto;
+  animation: drtBounce 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.4));
+}
+@keyframes drtBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30%      { transform: translateY(-6px) rotate(-3deg); }
+  60%      { transform: translateY(-2px) rotate(2deg); }
+}
+.drt-dino .drt-kol-sol { animation: drtArmL 2.2s ease-in-out infinite; }
+.drt-dino .drt-kol-sag { animation: drtArmR 2.2s ease-in-out infinite; }
+@keyframes drtArmL { 0%,100%{ transform:rotate(0) } 50%{ transform:rotate(-18deg) } }
+@keyframes drtArmR { 0%,100%{ transform:rotate(0) } 50%{ transform:rotate(18deg) } }
+.drt-roket {
+  position: relative; z-index: 1;
+  width: 54px; height: auto;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,.5));
+  animation: drtRocketGlow 2s ease-in-out infinite alternate;
+}
+@keyframes drtRocketGlow {
+  0%   { filter: drop-shadow(0 3px 8px rgba(0,0,0,.5)); }
+  100% { filter: drop-shadow(0 3px 12px rgba(255,216,77,.5)); }
+}
+
+/* ---- Kasa Ustası kart animasyonu: rakamlar çözümlenir, çark döner, kasa açılır ---- */
+.kasa-ustasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ku-sahne { width: 100%; height: 100%; }
+.ku-teker { transform-box: fill-box; transform-origin: center; animation: kuTeker 6s ease-in-out infinite; }
+@keyframes kuTeker { 0%, 30% { transform: rotate(0deg); } 42%, 100% { transform: rotate(270deg); } }
+.ku-kapi { transform-box: view-box; transform-origin: 24px 75px; animation: kuKapi 6s ease-in-out infinite; }
+@keyframes kuKapi { 0%, 44% { transform: scaleX(1); } 54%, 76% { transform: scaleX(.12); } 86%, 100% { transform: scaleX(1); } }
+.ku-p1 { opacity: 0; animation: kuP1 6s linear infinite; }
+.ku-p2 { opacity: 0; animation: kuP2 6s linear infinite; }
+@keyframes kuP1 { 0%, 8% { opacity: 0; } 12%, 88% { opacity: 1; } 94%, 100% { opacity: 0; } }
+@keyframes kuP2 { 0%, 20% { opacity: 0; } 24%, 88% { opacity: 1; } 94%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ku-teker, .ku-kapi, .ku-p1, .ku-p2 { animation: none; }
+  .ku-p1, .ku-p2 { opacity: 1; }
+}
+/* ---- Sözcük Müzesi kart animasyonu: kart vitrinden çıkar, mecaz anlam salonuna girer, kapı ışır ---- */
+.sozcuk-muzesi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sozcuk-muzesi-thumb svg { width: 100%; height: 100%; }
+.sm-kart { animation: smKart 5s ease-in-out infinite; }
+@keyframes smKart {
+  0%        { transform: translate(120px, 16px) scale(1); opacity: 0; }
+  8%, 28%   { transform: translate(120px, 30px) scale(1); opacity: 1; }
+  36%       { transform: translate(120px, 46px) scale(1.06); opacity: 1; }
+  58%, 100% { transform: translate(120px, 100px) scale(.25); opacity: 0; }
+}
+.sm-isik { opacity: 0; animation: smIsik 5s ease-in-out infinite; }
+@keyframes smIsik { 0%, 54% { opacity: 0; } 62%, 82% { opacity: 1; } 92%, 100% { opacity: 0; } }
+.sm-kapak { transform-box: fill-box; transform-origin: center top; transform: scaleY(0); animation: smKirp 4s infinite; }
+@keyframes smKirp { 0%, 90%, 100% { transform: scaleY(0); } 94% { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .sm-kart { animation: none; transform: translate(120px, 30px); opacity: 1; }
+  .sm-isik, .sm-kapak { animation: none; }
+}
+/* ---- Kızak Pisti kart animasyonu: penguen tepeden 4.400 istasyonuna kayar ---- */
+.kizak-pisti-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.kizak-pisti-thumb svg { width: 100%; height: 100%; }
+.kp-kizak { animation: kpKay 5s ease-in-out infinite; }
+@keyframes kpKay {
+  0%, 18%  { transform: translate(128px, 52px) rotate(0deg); }
+  40%      { transform: translate(160px, 82px) rotate(28deg); }
+  55%, 100% { transform: translate(188px, 108px) rotate(0deg); }
+}
+.kp-bayrak { animation: kpBayrak 5s linear infinite; }
+@keyframes kpBayrak { 0%, 52% { fill: #9DB3CF; } 58%, 100% { fill: #00C9A7; } }
+@media (prefers-reduced-motion: reduce) {
+  .kp-kizak { animation: none; transform: translate(188px, 108px); }
+  .kp-bayrak { animation: none; fill: #00C9A7; }
+}
+/* ---- Elde Ekspresi kart animasyonu: sonuç sağdan sola yazılır, elde sandığı onlar vagonuna taşınır ---- */
+.elde-ekspresi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.elde-ekspresi-thumb svg { width: 100%; height: 100%; }
+.ee-sandik { animation: eeSandik 6s ease-in-out infinite; }
+@keyframes eeSandik {
+  0%, 14%   { transform: translate(196px, 100px); opacity: 0; }
+  18%       { transform: translate(196px, 100px); opacity: 1; }
+  38%, 92%  { transform: translate(180px, 40px); opacity: 1; }
+  100%      { transform: translate(180px, 40px); opacity: 0; }
+}
+.ee-r1 { opacity: 0; animation: eeR1 6s linear infinite; }
+.ee-r2 { opacity: 0; animation: eeR2 6s linear infinite; }
+.ee-r3 { opacity: 0; animation: eeR3 6s linear infinite; }
+.ee-r4 { opacity: 0; animation: eeR4 6s linear infinite; }
+@keyframes eeR1 { 0%, 8% { opacity: 0; } 12%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+@keyframes eeR2 { 0%, 44% { opacity: 0; } 48%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+@keyframes eeR3 { 0%, 60% { opacity: 0; } 64%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+@keyframes eeR4 { 0%, 74% { opacity: 0; } 78%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+.ee-duman circle { fill: #EDEDED; transform-box: fill-box; transform-origin: center; animation: eeDuman 1.6s ease-out infinite; }
+.ee-duman circle:nth-child(2) { animation-delay: .8s; }
+@keyframes eeDuman { 0% { transform: translate(0, 0) scale(.6); opacity: .9; } 100% { transform: translate(-6px, -14px) scale(1.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ee-sandik { animation: none; transform: translate(180px, 40px); }
+  .ee-r1, .ee-r2, .ee-r3, .ee-r4 { animation: none; opacity: 1; }
+  .ee-duman circle { animation: none; }
+}
+/* ---- Kesir Pidecisi kart animasyonu: bıçak pideyi ortadan keser, yarımlar ayrılır, 1/2 bayrakları dikilir ---- */
+.kesir-pidecisi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.kesir-pidecisi-thumb svg { width: 100%; height: 100%; }
+.kp-bicak { opacity: 0; animation: kpBicak 6s ease-in-out infinite; }
+@keyframes kpBicak {
+  0%, 12%  { transform: translate(130px, 44px); opacity: 0; }
+  16%      { transform: translate(130px, 54px); opacity: 1; }
+  34%      { transform: translate(130px, 134px); opacity: 1; }
+  40%      { transform: translate(152px, 60px); opacity: 0; }
+  100%     { transform: translate(130px, 44px); opacity: 0; }
+}
+.kp-iz { opacity: 0; animation: kpIz 6s linear infinite; }
+@keyframes kpIz { 0%, 6% { opacity: 0; } 10%, 33% { opacity: 1; } 36%, 100% { opacity: 0; } }
+.kp-sol { animation: kpSol 6s ease-in-out infinite; }
+.kp-sag { animation: kpSag 6s ease-in-out infinite; }
+@keyframes kpSol { 0%, 35% { transform: translateX(0); } 43%, 90% { transform: translateX(-7px); } 97%, 100% { transform: translateX(0); } }
+@keyframes kpSag { 0%, 35% { transform: translateX(0); } 43%, 90% { transform: translateX(7px); } 97%, 100% { transform: translateX(0); } }
+.kp-b1, .kp-b2 { transform-box: fill-box; transform-origin: 50% 100%; opacity: 0; }
+.kp-b1 { animation: kpB1 6s ease-out infinite; }
+.kp-b2 { animation: kpB2 6s ease-out infinite; }
+@keyframes kpB1 { 0%, 47% { opacity: 0; transform: scale(.2); } 53% { opacity: 1; transform: scale(1.15); } 57%, 90% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(1); } }
+@keyframes kpB2 { 0%, 59% { opacity: 0; transform: scale(.2); } 65% { opacity: 1; transform: scale(1.15); } 69%, 90% { opacity: 1; transform: scale(1); } 95%, 100% { opacity: 0; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .kp-bicak, .kp-iz { animation: none; opacity: 0; }
+  .kp-sol { animation: none; transform: translateX(-7px); }
+  .kp-sag { animation: none; transform: translateX(7px); }
+  .kp-b1, .kp-b2 { animation: none; opacity: 1; }
+}
+/* ---- Örüntü Köprüsü kart animasyonu: kurbağa taş taş zıplar, oklarda +5 ✓ belirir, son taşa 20 yazılır ---- */
+.oruntu-koprusu-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.oruntu-koprusu-thumb svg { width: 100%; height: 100%; }
+.ork-kurbaga { animation: orkZipla 6s ease-in-out infinite; }
+@keyframes orkZipla {
+  0%, 10%   { transform: translate(34px, 92px); opacity: 1; }
+  14%       { transform: translate(63px, 64px); }
+  18%, 30%  { transform: translate(92px, 92px); }
+  34%       { transform: translate(121px, 64px); }
+  38%, 50%  { transform: translate(150px, 92px); }
+  58%       { transform: translate(179px, 64px); }
+  62%, 90%  { transform: translate(208px, 92px); opacity: 1; }
+  95%       { transform: translate(208px, 92px); opacity: 0; }
+  96%       { transform: translate(34px, 92px); opacity: 0; }
+  100%      { transform: translate(34px, 92px); opacity: 1; }
+}
+.ork-e1 { opacity: 0; animation: orkE1 6s linear infinite; }
+.ork-e2 { opacity: 0; animation: orkE2 6s linear infinite; }
+.ork-e3 { opacity: 0; animation: orkE3 6s linear infinite; }
+.ork-soru { animation: orkSoru 6s linear infinite; }
+@keyframes orkE1 { 0%, 17% { opacity: 0; } 20%, 90% { opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes orkE2 { 0%, 37% { opacity: 0; } 40%, 90% { opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes orkE3 { 0%, 51% { opacity: 0; } 54%, 90% { opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes orkSoru { 0%, 51% { opacity: 1; } 54%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ork-kurbaga { animation: none; transform: translate(208px, 92px); }
+  .ork-e1, .ork-e2, .ork-e3 { animation: none; opacity: 1; }
+  .ork-soru { animation: none; opacity: 0; }
+}
+/* ---- Maden Kâşifi kart animasyonu: kazma vurur, kaya çatlar, altın parlar ---- */
+.maden-kasifi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.maden-kasifi-thumb svg { width: 100%; height: 100%; }
+.mk-kazma { transform-box: view-box; transform-origin: 196px 112px; animation: mkKazma 4s ease-in-out infinite; }
+@keyframes mkKazma { 0%, 100% { transform: rotate(0deg); } 8%, 28%, 48% { transform: rotate(-38deg); } 14%, 34%, 54% { transform: rotate(6deg); } 62% { transform: rotate(0deg); } }
+.mk-catlak { opacity: 0; animation: mkCatlak 4s linear infinite; }
+@keyframes mkCatlak { 0%, 14% { opacity: 0; } 16%, 58% { opacity: 1; } 62%, 100% { opacity: 0; } }
+.mk-kaya { animation: mkKaya 4s linear infinite; }
+@keyframes mkKaya { 0%, 56% { opacity: 1; } 62%, 92% { opacity: 0; } 100% { opacity: 1; } }
+.mk-altin { transform-box: fill-box; transform-origin: center; opacity: 0; animation: mkAltin 4s ease-out infinite; }
+@keyframes mkAltin { 0%, 58% { opacity: 0; transform: translateY(14px) scale(.4); } 68%, 88% { opacity: 1; transform: translateY(-6px) scale(1.15); } 96%, 100% { opacity: 0; transform: translateY(-6px) scale(1); } }
+.mk-isik { transform-box: fill-box; transform-origin: center; opacity: 0; animation: mkIsik 4s linear infinite; }
+@keyframes mkIsik { 0%, 62% { opacity: 0; transform: rotate(0deg); } 70%, 88% { opacity: .9; } 96%, 100% { opacity: 0; transform: rotate(60deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .mk-kazma, .mk-catlak, .mk-kaya, .mk-altin, .mk-isik { animation: none; }
+  .mk-kaya { opacity: 0; } .mk-altin, .mk-isik { opacity: 1; }
+}
+/* ---- Hece Smaçı kart animasyonu ---- */
+.hece-smaci-thumb {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hs-sahne { width: 100%; height: 100%; }
+.hs-file  { animation: hsFileTitre 3.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes hsFileTitre {
+  0%, 68%, 100% { transform: none; }
+  72% { transform: translateY(1.5px) scaleY(.985); }
+  78% { transform: translateY(-1px) scaleY(1.01); }
+  84% { transform: none; }
+}
+.hs-top { animation: hsUcus 3.4s cubic-bezier(.38,0,.5,1) infinite; }
+@keyframes hsUcus {
+  0%   { transform: translate(42px,124px); opacity: 0; }
+  7%   { opacity: 1; }
+  22%  { transform: translate(76px,76px); }
+  42%  { transform: translate(116px,52px); }
+  62%  { transform: translate(158px,82px); }
+  73%  { transform: translate(186px,114px); opacity: 1; }
+  80%  { transform: translate(196px,130px); opacity: 0; }
+  100% { transform: translate(42px,124px); opacity: 0; }
+}
+.hs-top-don { transform-box: fill-box; transform-origin: center; animation: hsDonme 1.5s linear infinite; }
+@keyframes hsDonme { to { transform: rotate(360deg); } }
+.hs-golge { animation: hsGolge 3.4s cubic-bezier(.38,0,.5,1) infinite; }
+@keyframes hsGolge {
+  0%   { transform: translate(42px,138px) scale(.9); opacity: 0; }
+  7%   { opacity: .45; }
+  22%  { transform: translate(76px,136px) scale(.62); opacity: .26; }
+  42%  { transform: translate(116px,134px) scale(.5); opacity: .2; }
+  62%  { transform: translate(158px,136px) scale(.7); opacity: .3; }
+  73%  { transform: translate(186px,140px) scale(1); opacity: .45; }
+  80%, 100% { transform: translate(196px,142px) scale(1); opacity: 0; }
+}
+.hs-patlama { transform-box: fill-box; transform-origin: center; opacity: 0;
+              animation: hsPatla 3.4s ease-out infinite; }
+@keyframes hsPatla {
+  0%, 70%  { transform: translate(186px,114px) scale(.2); opacity: 0; }
+  75%      { transform: translate(186px,114px) scale(1.2); opacity: 1; }
+  86%      { transform: translate(186px,114px) scale(1.55); opacity: 0; }
+  100%     { transform: translate(186px,114px) scale(.2); opacity: 0; }
+}
+.hs-hece { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.hs-hece1 { animation: hsHece1 3.4s ease-in-out infinite; }
+.hs-hece2 { animation: hsHece2 3.4s ease-in-out infinite; }
+@keyframes hsHece1 {
+  0%   { transform: translate(30px,66px) scale(.4); opacity: 0; }
+  12%  { transform: translate(30px,52px) scale(1.12); opacity: 1; }
+  20%  { transform: translate(30px,54px) scale(1); opacity: 1; }
+  52%  { transform: translate(30px,50px) scale(1); opacity: 1; }
+  60%  { transform: translate(30px,44px) scale(.75); opacity: 0; }
+  100% { transform: translate(30px,66px) scale(.4); opacity: 0; }
+}
+@keyframes hsHece2 {
+  0%, 26% { transform: translate(30px,110px) scale(.4); opacity: 0; }
+  38%     { transform: translate(30px,96px) scale(1.12); opacity: 1; }
+  46%     { transform: translate(30px,98px) scale(1); opacity: 1; }
+  78%     { transform: translate(30px,94px) scale(1); opacity: 1; }
+  88%     { transform: translate(30px,88px) scale(.75); opacity: 0; }
+  100%    { transform: translate(30px,110px) scale(.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hs-top, .hs-golge, .hs-patlama, .hs-hece, .hs-top-don, .hs-file { animation: none; }
+  .hs-top   { transform: translate(116px,52px); opacity: 1; }
+  .hs-golge { transform: translate(116px,134px) scale(.6); opacity: .22; }
+  .hs-hece1 { transform: translate(30px,52px); opacity: 1; }
+  .hs-hece2 { transform: translate(30px,96px); opacity: 1; }
+}
+
+/* ---- Sağlıklı Can kart animasyonu ---- */
+.saglikli-can-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.saglikli-can-thumb svg { width: 100%; height: 100%; }
+.sc-can { animation: scZipla 1.8s ease-in-out infinite; }
+@keyframes scZipla { 0%,60%,100% { transform: translateY(0); } 75% { transform: translateY(-9px); } }
+.sc-dolgu { transform-box: fill-box; transform-origin: left center; animation: scDol 3.6s ease-in-out infinite; }
+.sc-dolgu:nth-of-type(2) { animation-delay: .9s; } .sc-dolgu:nth-of-type(3) { animation-delay: 1.8s; } .sc-dolgu:nth-of-type(4) { animation-delay: 2.7s; }
+@keyframes scDol { 0%,100% { transform: scaleX(.45); } 40%,70% { transform: scaleX(1); } }
+.sc-elma { animation: scElma 3.6s ease-in-out infinite; }
+@keyframes scElma { 0% { transform: translate(0,0) scale(1); opacity: 0; } 12% { opacity: 1; } 45% { transform: translate(78px,-38px) scale(.7); opacity: 1; } 55%,100% { transform: translate(84px,-40px) scale(.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sc-can, .sc-dolgu, .sc-elma { animation: none; } .sc-elma { opacity: 0; } }
+/* ---- Güvenli Adımlar kart animasyonu ---- */
+.guvenli-adimlar-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.guvenli-adimlar-thumb svg { width: 100%; height: 100%; }
+.ga-kirmizi { animation: gaKirmizi 6s steps(1) infinite; }
+.ga-yesil { animation: gaYesil 6s steps(1) infinite; }
+@keyframes gaKirmizi { 0% { opacity: 1; } 50% { opacity: .15; } }
+@keyframes gaYesil { 0% { opacity: .15; } 50% { opacity: 1; } }
+.ga-araba { animation: gaAraba 6s linear infinite; }
+@keyframes gaAraba { 0% { transform: translateX(-60px); } 45%,100% { transform: translateX(290px); } }
+.ga-cocuk { transform-box: fill-box; transform-origin: center bottom; animation: gaCocuk 6s ease-in-out infinite; }
+@keyframes gaCocuk { 0%,52% { transform: translate(0,0) scale(1); opacity: 1; } 88% { transform: translate(4px,34px) scale(1.25); opacity: 1; } 95% { transform: translate(4px,34px) scale(1.25); opacity: 0; } 96%,100% { transform: translate(0,0) scale(1); opacity: 0; } }
+.ga-tel { transform-box: fill-box; transform-origin: center; animation: gaTel 3s ease-in-out infinite; }
+@keyframes gaTel { 0%,70%,100% { transform: rotate(0); } 75% { transform: rotate(-9deg); } 80% { transform: rotate(9deg); } 85% { transform: rotate(-7deg); } 90% { transform: rotate(7deg); } }
+.ga-dalga { animation: gaDalga 3s ease-in-out infinite; opacity: 0; }
+@keyframes gaDalga { 0%,68%,100% { opacity: 0; } 75%,92% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ga-kirmizi, .ga-yesil, .ga-araba, .ga-cocuk, .ga-tel, .ga-dalga { animation: none; } .ga-yesil { opacity: .15; } .ga-araba { transform: translateX(60px); } }
+/* ---- Akıllı Sepet kart animasyonu ---- */
+.akilli-sepet-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.akilli-sepet-thumb svg { width: 100%; height: 100%; }
+.as-uyg { transform-box: fill-box; transform-origin: center; animation: asUyg 4s ease-in-out infinite; }
+.as-uyg2 { animation-delay: 2s; }
+@keyframes asUyg { 0%,30%,100% { transform: scale(1); } 15% { transform: scale(1.1); } }
+.as-ucuz { transform-box: fill-box; transform-origin: center; animation: asUcuz 2s ease-in-out infinite; }
+@keyframes asUcuz { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+.as-sepet { transform-box: fill-box; transform-origin: center bottom; animation: asSepet 4s ease-in-out infinite; }
+@keyframes asSepet { 0%,40%,60%,90%,100% { transform: translateY(0); } 48%,98% { transform: translateY(-4px); } }
+.as-urun { animation: asDus 4s ease-in infinite; opacity: 0; }
+.as-urun2 { animation-delay: 2s; }
+@keyframes asDus { 0% { transform: translate(0,0); opacity: 0; } 8% { opacity: 1; } 42% { transform: translate(28px,64px); opacity: 1; } 50%,100% { transform: translate(28px,70px); opacity: 0; } }
+.as-etiket { transform-box: fill-box; transform-origin: center; animation: asEtiket 3s ease-in-out infinite; }
+.as-etiket2 { animation-delay: 1.5s; }
+@keyframes asEtiket { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-4px) rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .as-uyg, .as-ucuz, .as-sepet, .as-etiket { animation: none; } .as-urun { animation: none; opacity: 0; } }
+/* ---- Neşeli Apartman kart animasyonu ---- */
+.neseli-apartman-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.neseli-apartman-thumb svg { width: 100%; height: 100%; }
+.na-bulut { animation: naBulut 12s linear infinite; }
+@keyframes naBulut { from { transform: translateX(-70px); } to { transform: translateX(300px); } }
+.na-kapici { animation: naYuru 5s ease-in-out infinite; }
+@keyframes naYuru { 0%,10% { transform: translateX(0); } 45%,60% { transform: translateX(62px); } 95%,100% { transform: translateX(0); } }
+.na-paket { animation: naPaket 5s ease-in-out infinite; }
+@keyframes naPaket { 0%,45% { opacity: 1; } 55%,90% { opacity: 0; } 100% { opacity: 1; } }
+.na-balon { transform-box: fill-box; transform-origin: center bottom; animation: naBalon 5s ease-in-out infinite; }
+.na-balon2 { animation-delay: 2.5s; }
+@keyframes naBalon { 0%,40%,100% { transform: scale(0); opacity: 0; } 50%,80% { transform: scale(1); opacity: 1; } }
+.na-isik { animation: naIsik 3s ease-in-out infinite; }
+@keyframes naIsik { 50% { fill: #FFE066; } }
+@media (prefers-reduced-motion: reduce) { .na-bulut, .na-kapici, .na-paket, .na-balon, .na-isik { animation: none; } }
+/* ---- Okuma Rallisi kart animasyonu ---- */
+/* Okyanus Kâşifi kapağı */
+.okk-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.okk-thumb svg { width: 100%; height: 100%; }
+.okk-isin { animation: okkIsin 4s ease-in-out infinite; transform-box: fill-box; transform-origin: top center; }
+@keyframes okkIsin { 0%,100% { opacity: .18; transform: skewX(-4deg); } 50% { opacity: .38; transform: skewX(4deg); } }
+.okk-denizalti { animation: okkSuz 3.2s ease-in-out infinite; }
+@keyframes okkSuz { 0%,100% { transform: translate(0,0) rotate(-2deg); } 50% { transform: translate(6px,-5px) rotate(2deg); } }
+.okk-pervane { transform-box: fill-box; transform-origin: center; animation: okkPervane .3s linear infinite; }
+@keyframes okkPervane { 0% { transform: scaleY(1); } 50% { transform: scaleY(.25); } 100% { transform: scaleY(1); } }
+.okk-kabarcik { animation: okkKabarcik 3.4s ease-in infinite; opacity: 0; }
+@keyframes okkKabarcik { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate(-6px,-62px); opacity: 0; } }
+.okk-parla { transform-box: fill-box; transform-origin: center; animation: okkParla 1.8s ease-in-out infinite; }
+@keyframes okkParla { 0%,100% { transform: scale(.75); opacity: .45; } 50% { transform: scale(1.15); opacity: 1; } }
+.okk-balik { animation: okkBalik 7s linear infinite; }
+@keyframes okkBalik { 0% { transform: translateX(270px); } 100% { transform: translateX(-60px); } }
+.okk-yosun { transform-box: fill-box; transform-origin: bottom center; animation: okkYosun 3s ease-in-out infinite alternate; }
+@keyframes okkYosun { 0% { transform: rotate(-7deg); } 100% { transform: rotate(7deg); } }
+.okk-harf { animation: okkHarf 3.6s ease-out infinite; opacity: 0; }
+@keyframes okkHarf { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(4px,-46px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .okk-thumb * { animation: none !important; } .okk-kabarcik, .okk-harf { opacity: 0; } }
+.orl-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.orl-thumb svg { width: 100%; height: 100%; }
+.orl-sehir { animation: orlKay 9s linear infinite; }
+.orl-bordur { animation: orlBordur .35s linear infinite; }
+.orl-serit { animation: orlSerit .45s linear infinite; }
+@keyframes orlKay { from { transform: translateX(0); } to { transform: translateX(-240px); } }
+@keyframes orlBordur { from { transform: translateX(0); } to { transform: translateX(-16px); } }
+@keyframes orlSerit { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 26; } }
+.orl-araba { animation: orlSars .5s ease-in-out infinite alternate; }
+@keyframes orlSars { from { transform: translateY(0); } to { transform: translateY(-1.6px); } }
+.orl-teker { transform-box: fill-box; transform-origin: center; animation: orlDon .35s linear infinite; }
+@keyframes orlDon { to { transform: rotate(360deg); } }
+.orl-hiz { animation: orlHiz .75s linear infinite; }
+@keyframes orlHiz { 0% { transform: translateX(30px); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(-40px); opacity: 0; } }
+.orl-odul { animation: orlOdul 2.4s linear infinite; }
+@keyframes orlOdul { 0% { transform: translate(260px,124px) scale(1); opacity: 1; } 62% { transform: translate(186px,124px) scale(1); opacity: 1; } 72% { transform: translate(176px,100px) scale(1.7); opacity: 0; } 100% { transform: translate(176px,100px) scale(1.7); opacity: 0; } }
+.orl-sayfa { transform-box: fill-box; transform-origin: left center; animation: orlSayfa 2.8s ease-in-out infinite; }
+@keyframes orlSayfa { 0%,30% { transform: scaleX(1); } 55%,100% { transform: scaleX(-1); } }
+.orl-harf { animation: orlHarf 2.8s ease-out infinite; opacity: 0; }
+@keyframes orlHarf { 0%,35% { transform: translate(0,0) scale(.4); opacity: 0; } 45% { opacity: 1; } 100% { transform: translate(120px,4px) scale(1.2); opacity: 0; } }
+.orl-bayrak { transform-box: fill-box; transform-origin: right center; animation: orlDalga 1.4s ease-in-out infinite; }
+@keyframes orlDalga { 0%,100% { transform: skewY(0) scaleX(1); } 50% { transform: skewY(-6deg) scaleX(.92); } }
+.orl-yildiz { animation: orlParla 2.2s ease-in-out infinite; }
+@keyframes orlParla { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+.orl-gunes { animation: orlGunes 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes orlGunes { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.orl-parilti { transform-box: fill-box; transform-origin: center; animation: orlParilti 2.4s ease-in-out infinite; }
+@keyframes orlParilti { 0%,66% { transform: scale(0); opacity: 0; } 72% { transform: scale(2.4); opacity: 1; } 85%,100% { transform: scale(0); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .orl-thumb * { animation: none !important; } .orl-harf, .orl-odul, .orl-parilti { opacity: 0; } }
+
+/* ---- Sözlük Postası kart animasyonu ---- */
+.hikaye-sahnesi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hikaye-sahnesi-thumb svg { width: 100%; height: 100%; }
+.hs-perde-sol { transform-origin: 0 0; animation: hsPerde 3.2s ease-in-out infinite; }
+.hs-perde-sag { transform-origin: 240px 0; animation: hsPerde 3.2s ease-in-out infinite; }
+.hs-kale { transform-origin: 160px 118px; animation: hsKale 3.2s ease-in-out infinite; }
+.hs-elif { animation: hsZipla 1.6s ease-in-out infinite; }
+@keyframes hsPerde { 0%,100% { transform: scaleX(1); } 45%,75% { transform: scaleX(.45); } }
+@keyframes hsKale { 0%,35% { transform: scale(0); } 55%,100% { transform: scale(1); } }
+@keyframes hsZipla { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .hs-perde-sol, .hs-perde-sag, .hs-kale, .hs-elif { animation: none; } .hs-perde-sol, .hs-perde-sag { transform: scaleX(.45); } }
+.sozluk-postasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sp-sahne { width: 100%; height: 100%; }
+.sp-zarf  { animation: spZarf 4.5s ease-in-out infinite; }
+@keyframes spZarf {
+  0%       { transform: translate(196px,4px) scale(1); opacity: 0; }
+  10%      { transform: translate(184px,10px) scale(1); opacity: 1; }
+  46%      { transform: translate(68px,84px) scale(.55); opacity: 1; }
+  54%, 100%{ transform: translate(74px,92px) scale(.2); opacity: 0; }
+}
+.sp-bayrak { animation: spBayrak 4.5s step-end infinite; }
+@keyframes spBayrak { 0% { fill: #C9C2B8; } 52% { fill: #FF4D8D; } 94% { fill: #C9C2B8; } }
+.sp-gelen  { animation: spGelen 4.5s ease-out infinite; }
+@keyframes spGelen { 0%, 52% { opacity: 0; transform: translateY(6px); } 60%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.sp-ev     { transform-box: fill-box; transform-origin: center bottom; animation: spEv 4.5s ease-in-out infinite; }
+.sp-ev2    { animation-delay: .12s; } .sp-ev3 { animation-delay: .24s; }
+@keyframes spEv { 0%, 58% { transform: none; } 64% { transform: translateY(-5px); } 70%, 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .sp-zarf, .sp-bayrak, .sp-gelen, .sp-ev { animation: none; }
+  .sp-zarf { opacity: 0; }
+  .sp-bayrak { fill: #FF4D8D; }
+}
+/* ---- Satır Sonu Makası kart animasyonu ---- */
+.satir-makasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sm-sahne { width: 100%; height: 100%; }
+.sm-bek    { animation: smBek 3.8s cubic-bezier(.4,0,.3,1) infinite; }
+@keyframes smBek {
+  0%, 34%  { transform: translate(160px,84px); fill: #E5484D; }
+  38%      { transform: translate(166px,84px); fill: #E5484D; }
+  56%      { transform: translate(40px,126px); fill: #2B2340; }
+  92%      { transform: translate(40px,126px); fill: #2B2340; opacity: 1; }
+  100%     { transform: translate(40px,126px); fill: #2B2340; opacity: 0; }
+}
+.sm-cizgi  { transform-box: fill-box; transform-origin: center; animation: smCizgi 3.8s ease-out infinite; }
+@keyframes smCizgi {
+  0%, 40%  { transform: scale(0); opacity: 0; }
+  48%      { transform: scale(1.5); opacity: 1; }
+  54%, 92% { transform: scale(1); opacity: 1; }
+  100%     { transform: scale(1); opacity: 0; }
+}
+.sm-makas  { animation: smMakas 3.8s ease-in-out infinite; }
+@keyframes smMakas {
+  0%, 8%   { transform: translate(160px,4px); opacity: 0; }
+  18%      { transform: translate(160px,40px); opacity: 1; }
+  26%      { transform: translate(160px,52px) rotate(0deg); }
+  30%      { transform: translate(160px,52px) scaleX(.7); }
+  34%      { transform: translate(160px,52px) scaleX(1); opacity: 1; }
+  44%, 100%{ transform: translate(160px,4px); opacity: 0; }
+}
+.sm-kalan  { animation: smKalan 3.8s ease-out infinite; }
+@keyframes smKalan { 0%, 56% { opacity: 0; } 64%, 92% { opacity: 1; } 100% { opacity: 0; } }
+.sm-kele   { animation: smKele 3.8s linear infinite; }
+@keyframes smKele { 0%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sm-bek, .sm-cizgi, .sm-makas, .sm-kalan, .sm-kele { animation: none; }
+  .sm-bek { transform: translate(40px,126px); fill: #2B2340; }
+  .sm-makas { opacity: 0; }
+}
+/* ---- Panayır Tahmincisi kart animasyonu: perde iner, "?" zıplar, dolap döner ---- */
+.panayir-thumb { position: absolute; inset: 0; overflow: hidden; }
+.pt-sahne { width: 100%; height: 100%; }
+.pt-dolap { transform-box: fill-box; transform-origin: center; animation: ptdon 12s linear infinite; }
+@keyframes ptdon { to { transform: rotate(360deg); } }
+.pt-perde { animation: ptperde 6s ease-in-out infinite; }
+@keyframes ptperde { 0%, 40% { transform: translateY(-90px); } 55%, 85% { transform: translateY(0); } 100% { transform: translateY(-90px); } }
+.pt-soru { transform-box: fill-box; transform-origin: center; animation: ptsoru 1.4s ease-in-out infinite alternate; }
+@keyframes ptsoru { from { transform: scale(1); } to { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .pt-dolap, .pt-perde, .pt-soru { animation: none; } .pt-perde { transform: translateY(0); } }
+.pota-duello-thumb { position: absolute; inset: 0; overflow: hidden; }
+.pd-sahne { width: 100%; height: 100%; }
+.pd-top { animation: pdsut 2.6s ease-in-out infinite; }
+@keyframes pdsut { 0% { transform: translate(104px,112px); } 15% { transform: translate(104px,100px); } 55% { transform: translate(158px,22px); } 78% { transform: translate(203px,56px); } 100% { transform: translate(203px,134px); } }
+.pd-file { transform-box: fill-box; transform-origin: 50% 0; animation: pdfile 2.6s ease-in-out infinite; }
+@keyframes pdfile { 0%, 76%, 100% { transform: scaleY(1); } 84% { transform: scaleY(1.35); } }
+@media (prefers-reduced-motion: reduce) { .pd-top, .pd-file { animation: none; } .pd-top { transform: translate(158px,22px); } }
+/* ---- Aç Timsah kart animasyonu: timsah büyük sayıyı (45) yer, "<" işareti belirir ---- */
+/* Zıpzıp Yarışı küçük resmi: kanguru 3'er zıplayarak "?" taşına ilerler */
+.zipzip-yarisi-thumb { position: absolute; inset: 0; overflow: hidden; }
+.zy-sahne { width: 100%; height: 100%; }
+.zy-kar { transform-box: view-box; animation: zykar 3.2s cubic-bezier(.35,.1,.3,1) infinite; }
+.zy-arti { animation: zyarti 3.2s ease-in-out infinite; }
+.zy-cakil { animation: zycakil 3.2s linear infinite; }
+.zy-cakil2 { animation-delay: .12s; }
+.zy-soru { transform-box: fill-box; transform-origin: center; animation: zysoru 3.2s ease-in-out infinite; }
+.zy-bulut { animation: zybulut 9s ease-in-out infinite alternate; }
+@keyframes zykar { 0%,30% { transform: translate(94.8px,86.5px) scale(.42); opacity: 1; } 45% { transform: translate(97px,52px) scale(.37); opacity: 1; } 60%,86% { transform: translate(100.8px,71.8px) scale(.32); opacity: 1; } 93% { transform: translate(100.8px,71.8px) scale(.32); opacity: 0; } 95% { transform: translate(94.8px,86.5px) scale(.42); opacity: 0; } 100% { transform: translate(94.8px,86.5px) scale(.42); opacity: 1; } }
+@keyframes zyarti { 0%,32% { opacity: 0; } 40%,62% { opacity: 1; } 70%,100% { opacity: 0; } }
+@keyframes zycakil { 0%,38% { fill: #D2C3A6; } 42%,50% { fill: #FFF27A; } 56%,100% { fill: #D2C3A6; } }
+@keyframes zysoru { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes zybulut { from { transform: translateX(0); } to { transform: translateX(14px); } }
+@media (prefers-reduced-motion: reduce) { .zy-kar, .zy-arti, .zy-cakil, .zy-soru, .zy-bulut { animation: none; } .zy-kar { transform: translate(94.8px,86.5px) scale(.42); } }
+/* Buz Yolu küçük resmi: Pıtır sayı doğrusunda 2'şer zıplar */
+.buz-yolu-thumb { position: absolute; inset: 0; overflow: hidden; }
+.by-sahne { width: 100%; height: 100%; }
+.by-x { transform-box: view-box; animation: byx 4s ease-in-out infinite; }
+.by-y { transform-box: view-box; animation: byy 4s ease-in-out infinite; }
+.by-iz2 { animation: byiz2 4s linear infinite; }
+.by-iz3 { animation: byiz3 4s linear infinite; }
+.by-balik { transform-box: view-box; animation: bybalik 4s ease-in-out infinite; }
+.by-isik { animation: byisik 5s ease-in-out infinite alternate; }
+@keyframes byx { 0%,14% { transform: translateX(0); opacity: 1; } 28%,42% { transform: translateX(44px); } 56%,86% { transform: translateX(88px); opacity: 1; } 92% { transform: translateX(88px); opacity: 0; } 94% { transform: translateX(0); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes byy { 0%,14% { transform: translateY(0); } 21% { transform: translateY(-20px); } 28%,42% { transform: translateY(0); } 49% { transform: translateY(-20px); } 56%,100% { transform: translateY(0); } }
+@keyframes byiz2 { 0%,27% { opacity: 0; } 30%,90% { opacity: 1; } 94%,100% { opacity: 0; } }
+@keyframes byiz3 { 0%,55% { opacity: 0; } 58%,90% { opacity: 1; } 94%,100% { opacity: 0; } }
+@keyframes bybalik { 0%,58% { transform: translate(0,0) rotate(0); opacity: 0; } 62% { opacity: 1; } 72% { transform: translate(-10px,-30px) rotate(-60deg); opacity: 1; } 80%,100% { transform: translate(-20px,-6px) rotate(-120deg); opacity: 0; } }
+@keyframes byisik { from { opacity: .35; } to { opacity: .8; } }
+@media (prefers-reduced-motion: reduce) { .by-x, .by-y, .by-balik, .by-isik, .by-iz2, .by-iz3 { animation: none; } }
+.ac-timsah-thumb { position: absolute; inset: 0; overflow: hidden; }
+.at-sahne { width: 100%; height: 100%; }
+.at-ust, .at-alt { transform-box: view-box; transform-origin: 208px 104px; }
+.at-ust { animation: atust 3s ease-in-out infinite; }
+.at-alt { animation: atalt 3s ease-in-out infinite; }
+@keyframes atust { 0%, 28%, 64%, 100% { transform: rotate(0); } 40%, 56% { transform: rotate(-22deg); } }
+@keyframes atalt { 0%, 28%, 64%, 100% { transform: rotate(0); } 40%, 56% { transform: rotate(13deg); } }
+.at-yem { transform-box: fill-box; transform-origin: center; animation: atyem 3s ease-in-out infinite; }
+@keyframes atyem { 0%, 52% { transform: none; opacity: 1; } 62% { transform: translateX(-45%) scale(.15); opacity: 0; } 86% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+.at-isaret { transform-box: fill-box; transform-origin: center; animation: atisaret 3s ease-in-out infinite; }
+@keyframes atisaret { 0%, 56% { transform: scale(0); } 66% { transform: scale(1.15); } 72%, 90% { transform: scale(1); } 100% { transform: scale(0); } }
+@media (prefers-reduced-motion: reduce) { .at-ust, .at-alt, .at-yem, .at-isaret { animation: none; } }
+/* ---- Rakam Oteli kart animasyonu: 4 onluk + 7 birlik = 47 ---- */
+.rakam-oteli-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ro-sahne { width: 100%; height: 100%; }
+.ro-p { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+.ro-r1 { animation: ror1 7s ease-out infinite; }
+@keyframes ror1 { 0%, 6% { transform: scale(0); } 9% { transform: scale(1.2); } 11%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-r2 { animation: ror2 7s ease-out infinite; }
+@keyframes ror2 { 0%, 12% { transform: scale(0); } 15% { transform: scale(1.2); } 17%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-r3 { animation: ror3 7s ease-out infinite; }
+@keyframes ror3 { 0%, 18% { transform: scale(0); } 21% { transform: scale(1.2); } 23%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-r4 { animation: ror4 7s ease-out infinite; }
+@keyframes ror4 { 0%, 24% { transform: scale(0); } 27% { transform: scale(1.2); } 29%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c1 { animation: roc1 7s ease-out infinite; }
+@keyframes roc1 { 0%, 32% { transform: scale(0); } 35% { transform: scale(1.2); } 37%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c2 { animation: roc2 7s ease-out infinite; }
+@keyframes roc2 { 0%, 36% { transform: scale(0); } 39% { transform: scale(1.2); } 41%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c3 { animation: roc3 7s ease-out infinite; }
+@keyframes roc3 { 0%, 40% { transform: scale(0); } 43% { transform: scale(1.2); } 45%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c4 { animation: roc4 7s ease-out infinite; }
+@keyframes roc4 { 0%, 44% { transform: scale(0); } 47% { transform: scale(1.2); } 49%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c5 { animation: roc5 7s ease-out infinite; }
+@keyframes roc5 { 0%, 48% { transform: scale(0); } 51% { transform: scale(1.2); } 53%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c6 { animation: roc6 7s ease-out infinite; }
+@keyframes roc6 { 0%, 52% { transform: scale(0); } 55% { transform: scale(1.2); } 57%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-c7 { animation: roc7 7s ease-out infinite; }
+@keyframes roc7 { 0%, 56% { transform: scale(0); } 59% { transform: scale(1.2); } 61%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.ro-lbl { animation: rolbl 7s ease-out infinite; }
+@keyframes rolbl { 0%, 66% { transform: scale(0); } 69% { transform: scale(1.2); } 71%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+/* ---- Kurabiye Fırını kart animasyonu: 3 kutu + 7 tek = 37 ---- */
+.kurabiye-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.kf-sahne { width: 100%; height: 100%; }
+.kf-p { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+.kf-b1 { animation: kfb1 7s ease-out infinite; }
+@keyframes kfb1 { 0%, 6% { transform: scale(0); } 9% { transform: scale(1.2); } 11%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-b2 { animation: kfb2 7s ease-out infinite; }
+@keyframes kfb2 { 0%, 13% { transform: scale(0); } 16% { transform: scale(1.2); } 18%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-b3 { animation: kfb3 7s ease-out infinite; }
+@keyframes kfb3 { 0%, 20% { transform: scale(0); } 23% { transform: scale(1.2); } 25%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c1 { animation: kfc1 7s ease-out infinite; }
+@keyframes kfc1 { 0%, 29% { transform: scale(0); } 32% { transform: scale(1.2); } 34%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c2 { animation: kfc2 7s ease-out infinite; }
+@keyframes kfc2 { 0%, 34% { transform: scale(0); } 37% { transform: scale(1.2); } 39%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c3 { animation: kfc3 7s ease-out infinite; }
+@keyframes kfc3 { 0%, 39% { transform: scale(0); } 42% { transform: scale(1.2); } 44%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c4 { animation: kfc4 7s ease-out infinite; }
+@keyframes kfc4 { 0%, 44% { transform: scale(0); } 47% { transform: scale(1.2); } 49%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c5 { animation: kfc5 7s ease-out infinite; }
+@keyframes kfc5 { 0%, 49% { transform: scale(0); } 52% { transform: scale(1.2); } 54%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c6 { animation: kfc6 7s ease-out infinite; }
+@keyframes kfc6 { 0%, 54% { transform: scale(0); } 57% { transform: scale(1.2); } 59%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-c7 { animation: kfc7 7s ease-out infinite; }
+@keyframes kfc7 { 0%, 59% { transform: scale(0); } 62% { transform: scale(1.2); } 64%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+.kf-ok { animation: kfok 7s ease-out infinite; }
+@keyframes kfok { 0%, 68% { transform: scale(0); } 71% { transform: scale(1.2); } 73%, 90% { transform: scale(1); } 96%, 100% { transform: scale(0); } }
+@media (prefers-reduced-motion: reduce) { .kf-p { animation: none; transform: scale(1); } }
+/* ---- Limonata Tezgâhı kart animasyonu ---- */
+.limonata-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.lt-sahne { width: 100%; height: 100%; }
+.lt-bardak { transform-box: view-box; transform-origin: 128px 50px; animation: ltBardak 6s ease-in-out infinite; }
+@keyframes ltBardak {
+  0%, 4%    { transform: rotate(0deg); }
+  10%, 20%  { transform: rotate(105deg); }
+  26%, 37%  { transform: rotate(0deg); }
+  43%, 53%  { transform: rotate(105deg); }
+  59%, 70%  { transform: rotate(0deg); }
+  76%, 86%  { transform: rotate(105deg); }
+  92%, 100% { transform: rotate(0deg); }
+}
+.lt-bardak-sivi { transform-box: fill-box; transform-origin: bottom; animation: ltBardakSivi 6s linear infinite; }
+@keyframes ltBardakSivi {
+  0%, 10% { transform: scaleY(1); } 20%, 26% { transform: scaleY(0); } 32%, 43% { transform: scaleY(1); }
+  53%, 59% { transform: scaleY(0); } 65%, 76% { transform: scaleY(1); } 86%, 92% { transform: scaleY(0); } 98%, 100% { transform: scaleY(1); }
+}
+.lt-akinti { animation: ltAkinti 6s linear infinite; }
+@keyframes ltAkinti {
+  0%, 10% { opacity: 0; } 11%, 20% { opacity: 1; } 21%, 43% { opacity: 0; } 44%, 53% { opacity: 1; }
+  54%, 76% { opacity: 0; } 77%, 86% { opacity: 1; } 87%, 100% { opacity: 0; }
+}
+.lt-sivi { transform-box: fill-box; transform-origin: bottom; animation: ltSivi 6s linear infinite; }
+@keyframes ltSivi {
+  0%, 10%   { transform: scaleY(0); }
+  20%, 43%  { transform: scaleY(.3333); }
+  53%, 76%  { transform: scaleY(.6667); }
+  86%, 94%  { transform: scaleY(1); }
+  100%      { transform: scaleY(0); }
+}
+.lt-soru { transform-box: fill-box; transform-origin: center; animation: ltSoru 1.5s ease-in-out infinite; }
+@keyframes ltSoru { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) {
+  .lt-bardak, .lt-bardak-sivi, .lt-akinti, .lt-sivi, .lt-soru { animation: none; }
+  .lt-sivi { transform: scaleY(.6667); }
+  .lt-akinti { opacity: 0; }
+}
+/* ---- Kedi Kasabası kart animasyonu ---- */
+.kedi-kasabasi-thumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.kk-sahne { width: 100%; height: 100%; }
+.kk-kedi { animation: kkZipla 4.8s ease-in-out infinite; }
+@keyframes kkZipla {
+  0%, 12%   { transform: translate(0px, 0px); }
+  20%       { transform: translate(28px, -20px); }
+  28%, 40%  { transform: translate(56px, 0px); }
+  48%       { transform: translate(84px, -20px); }
+  56%, 68%  { transform: translate(112px, 0px); }
+  76%       { transform: translate(140px, -20px); }
+  84%, 94%  { transform: translate(168px, 0px); }
+  100%      { transform: translate(0px, 0px); }
+}
+.kk-soru { animation: kkSoru 4.8s linear infinite; }
+.kk-cevap { opacity: 0; animation: kkCevap 4.8s linear infinite; }
+@keyframes kkSoru  { 0%, 82% { opacity: 1; } 84%, 96% { opacity: 0; } 98%, 100% { opacity: 1; } }
+@keyframes kkCevap { 0%, 82% { opacity: 0; } 84%, 96% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.kk-yildiz { transform-box: fill-box; transform-origin: center; animation: kkPirilti 2.4s ease-in-out infinite; }
+.kk-yildiz:nth-of-type(2) { animation-delay: .8s; }
+.kk-yildiz:nth-of-type(3) { animation-delay: 1.6s; }
+@keyframes kkPirilti { 50% { transform: scale(1.8); opacity: .5; } }
+@media (prefers-reduced-motion: reduce) {
+  .kk-kedi, .kk-soru, .kk-cevap, .kk-yildiz { animation: none; }
+}
+
+/* ---- Oyun kartı sahne animasyonları ---- */
+.hikaye-sehri-thumb, .yarisma-thumb, .dnk-thumb, .hece-thumb, .nokta-thumb,
+.zoxi-thumb, .tren-thumb, .dusler-thumb, .sorf-thumb, .dusler2-thumb,
+.penalti-thumb, .balon-thumb, .kopru-thumb, .roket-thumb, .terazi-thumb,
+.sunger-thumb, .timsah-thumb, .zipzip-thumb, .yak-thumb, .atm-thumb,
+.orman-thumb, .gdn-thumb, .pyp-thumb, .portfolio-thumb, .satranc-thumb {
+  position: absolute; inset: 0; overflow: hidden;
+}
+.hikaye-sehri-thumb svg, .yarisma-thumb svg, .dnk-thumb svg, .hece-thumb svg, .nokta-thumb svg,
+.zoxi-thumb svg, .tren-thumb svg, .dusler-thumb svg, .sorf-thumb svg, .dusler2-thumb svg,
+.penalti-thumb svg, .balon-thumb svg, .kopru-thumb svg, .roket-thumb svg, .terazi-thumb svg,
+.sunger-thumb svg, .timsah-thumb svg, .zipzip-thumb svg, .yak-thumb svg, .atm-thumb svg,
+.orman-thumb svg, .gdn-thumb svg, .pyp-thumb svg, .portfolio-thumb svg, .satranc-thumb svg {
+  width: 100%; height: 100%; display: block;
+}
+.hsr-bulut { animation: thumbKay 9s ease-in-out infinite alternate; }
+.hsr-blok { animation: hsrBlok 3.4s ease-in-out infinite alternate; }
+.hsr-isik { animation: thumbYanSon 2.4s ease-in-out infinite; }
+.hsr-isik2 { animation-delay: 1.2s; }
+@keyframes hsrBlok { to { transform: translateY(26px); } }
+.yrs-spot { transform-box: fill-box; transform-origin: top center; animation: yrsSpot 4s ease-in-out infinite alternate; }
+.yrs-spot2 { animation-delay: 2s; }
+@keyframes yrsSpot { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+.yrs-kupa { transform-box: fill-box; transform-origin: center bottom; animation: thumbNabiz 2.2s ease-in-out infinite; }
+.yrs-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.2s ease-in-out infinite; }
+.yrs-konfeti { animation: yrsKonfeti 3.2s linear infinite; }
+.yrs-konfeti2 { animation-duration: 4.1s; animation-delay: 1.2s; }
+@keyframes yrsKonfeti { to { transform: translateY(170px); } }
+.dnk-mercek { animation: dnkMercek 4s ease-in-out infinite alternate; }
+@keyframes dnkMercek { to { transform: translate(52px, -18px); } }
+.dnk-s1, .dnk-s2, .dnk-s3 { transform-box: fill-box; transform-origin: center; animation: thumbPop 4.5s ease-in-out infinite; }
+.dnk-s2 { animation-delay: 1.5s; } .dnk-s3 { animation-delay: 3s; }
+.hcl-b1 { animation: hclSol 2.8s ease-in-out infinite alternate; }
+.hcl-b2 { animation: hclSag 2.8s ease-in-out infinite alternate; }
+.hcl-arti { animation: thumbYanSon 2.8s ease-in-out infinite; }
+.hcl-kelime, .hcl-kedi { transform-box: fill-box; transform-origin: center; animation: thumbPop 2.8s ease-in-out infinite; }
+.hcl-kedi { animation-delay: .4s; }
+@keyframes hclSol { from { transform: translateX(-22px); } 60%, 100% { transform: translateX(16px); } }
+@keyframes hclSag { from { transform: translateX(22px); } 60%, 100% { transform: translateX(-16px); } }
+.npr-tuy { transform-box: fill-box; transform-origin: bottom left; animation: nprTuy 2.6s ease-in-out infinite; }
+@keyframes nprTuy { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg) translateX(-6px); } }
+.npr-soru { animation: thumbYanSon 2.6s ease-in-out infinite; }
+.npr-nokta { animation: thumbYanSon 2.6s ease-in-out infinite; animation-delay: 1.3s; }
+.zxi-ufo { animation: thumbSuzul 3s ease-in-out infinite alternate; }
+.zxi-isin { animation: zxiIsin 3s ease-in-out infinite alternate; }
+@keyframes zxiIsin { from { opacity: .08; } to { opacity: .3; } }
+.zxi-lamba { animation: thumbYanSon 1.6s linear infinite; }
+.zxi-y { animation: thumbPirilti 2.6s ease-in-out infinite; }
+.zxi-y2 { animation-delay: .9s; } .zxi-y3 { animation-delay: 1.7s; }
+.ntr-tren { animation: ntrTren 1.1s ease-in-out infinite alternate; }
+@keyframes ntrTren { to { transform: translateY(-2.5px); } }
+.ntr-slot { animation: thumbYanSon 2s ease-in-out infinite; }
+.ntr-d1 { animation: ntrDuman 2.4s ease-out infinite; }
+.ntr-d2 { animation: ntrDuman 2.4s ease-out infinite .8s; }
+.ntr-d3 { animation: ntrDuman 2.4s ease-out infinite 1.6s; }
+@keyframes ntrDuman { from { transform: translate(6px, 10px); opacity: .9; } to { transform: translate(-14px, -22px); opacity: 0; } }
+.dsa-y { animation: thumbPirilti 2.8s ease-in-out infinite; }
+.dsa-y2 { animation-delay: 1s; } .dsa-y3 { animation-delay: 1.9s; }
+.dsa-pencere { animation: thumbYanSon 3s ease-in-out infinite; }
+.dsa-p2 { animation-delay: 1.5s; }
+.dsa-bayrak { transform-box: fill-box; transform-origin: bottom left; animation: dsaBayrak 1.8s ease-in-out infinite alternate; }
+@keyframes dsaBayrak { to { transform: skewY(7deg); } }
+.dsa-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 3.2s ease-in-out infinite; }
+.srf-cocuk { animation: srfSurf 2.4s ease-in-out infinite alternate; }
+@keyframes srfSurf { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-8px) rotate(5deg); } }
+.srf-dalga { animation: srfDalga 2.4s ease-in-out infinite alternate; }
+@keyframes srfDalga { to { transform: translateX(14px); } }
+.ds2-lolipop { transform-box: fill-box; transform-origin: center; animation: ds2Don 7s linear infinite; }
+.ds2-lol2 { animation-direction: reverse; }
+@keyframes ds2Don { to { transform: rotate(360deg); } }
+.ds2-piril path { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.4s ease-in-out infinite; }
+.ds2-p2 { animation-delay: 1.2s; }
+.pnl-top { animation: pnlTop 2.2s cubic-bezier(.3,.6,.4,1) infinite; }
+@keyframes pnlTop { 0% { transform: translate(120px, 128px) scale(1); opacity: 1; } 55%, 78% { transform: translate(168px, 58px) scale(.82); opacity: 1; } 86% { opacity: 0; } 100% { transform: translate(120px, 128px) scale(1); opacity: 0; } }
+.pnl-ag { transform-box: fill-box; transform-origin: center; animation: pnlAg 2.2s ease-in-out infinite; }
+@keyframes pnlAg { 0%, 50%, 100% { transform: skewX(0); } 60% { transform: skewX(2deg); } 70% { transform: skewX(-1.4deg); } }
+.pnl-iz { animation: thumbYanSon 2.2s linear infinite; }
+.bln-b1 { animation: thumbSuzul 2.8s ease-in-out infinite alternate; }
+.bln-b2 { animation: thumbSuzul 3.4s ease-in-out infinite alternate .6s; }
+.bln-b3 { animation: thumbSuzul 2.5s ease-in-out infinite alternate 1.1s; }
+.bln-pat { transform-box: fill-box; transform-origin: center; animation: blnPat 2.6s ease-in-out infinite; }
+@keyframes blnPat { 0%, 55% { transform: scale(0); opacity: 0; } 65%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
+.kpo-cocuk { animation: kpoHop 1.6s ease-in-out infinite; }
+@keyframes kpoHop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-12px); } 60% { transform: translateY(-11px); } }
+.kpo-soru { animation: thumbYanSon 2s ease-in-out infinite; }
+.kpo-su { animation: thumbKay 3.5s ease-in-out infinite alternate; }
+.rkt-roket { animation: rktTitre .35s linear infinite alternate; }
+@keyframes rktTitre { from { transform: translate(-.8px, 0); } to { transform: translate(.8px, -2px); } }
+.rkt-alev { transform-box: fill-box; transform-origin: top center; animation: rktAlev .3s linear infinite alternate; }
+@keyframes rktAlev { from { transform: scaleY(.65); } to { transform: scaleY(1.15); } }
+.rkt-yakit { transform-box: fill-box; transform-origin: bottom center; animation: rktYakit 3.5s ease-in-out infinite; }
+@keyframes rktYakit { 0% { transform: scaleY(.15); } 70%, 100% { transform: scaleY(1); } }
+.trz-kol { transform-box: fill-box; transform-origin: 50% 4px; animation: trzDenge 4s ease-in-out infinite; }
+@keyframes trzDenge { 0% { transform: rotate(-7deg); } 35% { transform: rotate(5deg); } 65% { transform: rotate(-2deg); } 85%, 100% { transform: rotate(0deg); } }
+.trz-esit { animation: thumbYanSon 4s ease-in-out infinite; }
+.sgr-balik { animation: thumbSuzul 3s ease-in-out infinite alternate; }
+.sgr-kuyruk { transform-box: fill-box; transform-origin: right center; animation: sgrKuyruk .7s ease-in-out infinite alternate; }
+@keyframes sgrKuyruk { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+.sgr-yosun { transform-box: fill-box; transform-origin: bottom center; animation: sgrYosun 3.2s ease-in-out infinite alternate; }
+.sgr-y2 { animation-delay: 1.4s; }
+@keyframes sgrYosun { from { transform: rotate(-5deg); } to { transform: rotate(6deg); } }
+.sgr-hava { animation: sgrHava 3.4s ease-in infinite; }
+.sgr-h2 { animation-delay: 1.1s; } .sgr-h3 { animation-delay: 2.2s; }
+@keyframes sgrHava { from { transform: translateY(14px); opacity: .8; } to { transform: translateY(-34px); opacity: 0; } }
+.sgr-k1, .sgr-k3 { transform-box: fill-box; transform-origin: center; animation: thumbNabiz 2.8s ease-in-out infinite; }
+.sgr-k3 { animation-delay: 1.2s; }
+.sgr-k2 { animation: thumbYanSon 2.8s ease-in-out infinite; }
+.tmd-elma { animation: tmdElma 2.8s cubic-bezier(.5,.1,.8,.5) infinite; }
+@keyframes tmdElma { 0% { transform: translateY(-14px); opacity: 1; } 70% { transform: translateY(92px); opacity: 1; } 82%, 100% { transform: translateY(100px); opacity: 0; } }
+.tmd-cene { transform-box: fill-box; transform-origin: 14% 92%; animation: tmdCene 2.8s ease-in-out infinite; }
+@keyframes tmdCene { 0%, 55% { transform: rotate(0deg); } 72% { transform: rotate(-9deg); } 84%, 100% { transform: rotate(0deg); } }
+.zzp-kurbaga { animation: zzpHop 2.4s ease-in-out infinite; }
+@keyframes zzpHop { 0%, 18%, 100% { transform: translate(0, 0); } 38% { transform: translate(18px, -24px); } 58% { transform: translate(36px, 0); } 70% { transform: translate(36px, 0); } 85% { transform: translate(12px, -10px); } }
+.zzp-a1 { animation: zzpAtes 2.2s ease-in-out infinite; }
+.zzp-a2 { animation: zzpAtes 2.6s ease-in-out infinite .8s; }
+.zzp-a3 { animation: zzpAtes 1.9s ease-in-out infinite 1.4s; }
+@keyframes zzpAtes { 0%, 100% { opacity: .25; transform: translate(0, 0); } 50% { opacity: 1; transform: translate(4px, -5px); } }
+.pyk-halo { transform-box: fill-box; transform-origin: center; animation: thumbNabiz 2.4s ease-in-out infinite; }
+.pyk-isin { animation: thumbYanSon 2.4s ease-in-out infinite; }
+.pyk-harf { transform-box: fill-box; transform-origin: center; animation: thumbPop 3.6s ease-in-out infinite; }
+.pyk-h2 { animation-delay: 1.2s; } .pyk-h3 { animation-delay: 2.4s; }
+.atm-ekran { animation: thumbYanSon 2.2s steps(2) infinite; }
+.atm-kart { animation: atmKart 3s ease-in-out infinite alternate; }
+@keyframes atmKart { from { transform: translateX(0); } to { transform: translateX(14px); } }
+.atm-para { animation: atmPara 3s ease-in-out infinite alternate; }
+@keyframes atmPara { from { transform: translateY(0); } to { transform: translateY(9px); } }
+.atm-coin { animation: atmCoin 2.4s cubic-bezier(.5,.1,.8,.5) infinite; }
+@keyframes atmCoin { 0% { transform: translateY(66px); opacity: 0; } 12% { opacity: 1; } 78% { transform: translateY(126px); opacity: 1; } 88%, 100% { transform: translateY(130px); opacity: 0; } }
+.orm-kus { animation: ormKus 1.6s ease-in-out infinite alternate; }
+@keyframes ormKus { to { transform: translateY(-5px); } }
+.orm-kulak { transform-box: fill-box; transform-origin: bottom center; animation: ormKulak 2.6s ease-in-out infinite; }
+@keyframes ormKulak { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-7deg); } 90% { transform: rotate(5deg); } }
+.orm-kelebek { animation: ormKelebek 7s ease-in-out infinite alternate; }
+@keyframes ormKelebek { 0% { transform: translate(28px, 92px) rotate(8deg); } 35% { transform: translate(70px, 60px) rotate(-10deg); } 70% { transform: translate(120px, 78px) rotate(10deg); } 100% { transform: translate(150px, 52px) rotate(-6deg); } }
+.gdn-ok { transform-box: fill-box; transform-origin: center; animation: gdnOk 6s linear infinite; }
+@keyframes gdnOk { to { transform: rotate(360deg); } }
+.gdn-bant { animation: gdnBant .9s linear infinite; }
+@keyframes gdnBant { to { transform: translateX(24px); } }
+.gdn-sise { animation: gdnSise 3s ease-in infinite; }
+@keyframes gdnSise { 0% { transform: translate(40px, 36px); opacity: 1; } 45% { transform: translate(118px, 36px) rotate(0deg); opacity: 1; } 80% { transform: translate(124px, 92px) rotate(70deg); opacity: 1; } 90%, 100% { transform: translate(124px, 100px) rotate(70deg); opacity: 0; } }
+.pyp-orbit { transform-box: fill-box; transform-origin: center; animation: pypOrbit 14s linear infinite; }
+@keyframes pypOrbit { to { transform: rotate(360deg); } }
+.pyp-dunya { animation: thumbSuzul 3.4s ease-in-out infinite alternate; }
+.pyp-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.6s ease-in-out infinite; }
+.por-damga { animation: porDamga 2.8s ease-in-out infinite; }
+@keyframes porDamga { 0%, 55%, 100% { transform: translate(0, 0); } 68% { transform: translate(-58px, 6px); } 78% { transform: translate(-58px, 14px); } 88% { transform: translate(-58px, 6px); } }
+.por-yildiz { animation: thumbYanSon 2.8s ease-in-out infinite; }
+.por-kagit { animation: thumbSuzul 3.2s ease-in-out infinite alternate; }
+.stn-at { animation: stnAt 4s ease-in-out infinite; }
+@keyframes stnAt { 0%, 12% { transform: translate(0, 0); } 42%, 62% { transform: translate(80px, 40px); } 92%, 100% { transform: translate(0, 0); } }
+.stn-kale { animation: stnKale 4s ease-in-out infinite; }
+@keyframes stnKale { 0%, 12% { transform: translate(0, 0); } 42%, 62% { transform: translate(-80px, -40px); } 92%, 100% { transform: translate(0, 0); } }
+.stn-ok { animation: thumbYanSon 4s ease-in-out infinite; }
+.stn-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.8s ease-in-out infinite; }
+
+/* Ortak kart animasyonları */
+@keyframes thumbKay { to { transform: translateX(16px); } }
+@keyframes thumbSuzul { to { transform: translateY(-7px); } }
+@keyframes thumbYanSon { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
+@keyframes thumbNabiz { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes thumbPop { 0%, 8% { transform: scale(.4); opacity: 0; } 18%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes thumbPirilti { 0%, 100% { transform: scale(.5) rotate(0deg); opacity: .3; } 50% { transform: scale(1.2) rotate(25deg); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .hsr-bulut, .hsr-blok, .hsr-isik, .yrs-spot, .yrs-kupa, .yrs-parla, .yrs-konfeti,
+  .dnk-mercek, .dnk-s1, .dnk-s2, .dnk-s3, .hcl-b1, .hcl-b2, .hcl-arti, .hcl-kelime, .hcl-kedi,
+  .npr-tuy, .npr-soru, .npr-nokta, .zxi-ufo, .zxi-isin, .zxi-lamba, .zxi-y,
+  .ntr-tren, .ntr-slot, .ntr-d1, .ntr-d2, .ntr-d3, .dsa-y, .dsa-pencere, .dsa-bayrak, .dsa-parla,
+  .srf-cocuk, .srf-dalga, .ds2-lolipop, .ds2-piril path, .pnl-top, .pnl-ag, .pnl-iz,
+  .bln-b1, .bln-b2, .bln-b3, .bln-pat, .kpo-cocuk, .kpo-soru, .kpo-su,
+  .rkt-roket, .rkt-alev, .rkt-yakit, .trz-kol, .trz-esit,
+  .sgr-balik, .sgr-kuyruk, .sgr-yosun, .sgr-hava, .sgr-k1, .sgr-k2, .sgr-k3,
+  .tmd-elma, .tmd-cene, .zzp-kurbaga, .zzp-a1, .zzp-a2, .zzp-a3,
+  .pyk-halo, .pyk-isin, .pyk-harf, .atm-ekran, .atm-kart, .atm-para, .atm-coin,
+  .orm-kus, .orm-kulak, .orm-kelebek, .gdn-ok, .gdn-bant, .gdn-sise,
+  .pyp-orbit, .pyp-dunya, .pyp-parla, .por-damga, .por-yildiz, .por-kagit,
+  .stn-at, .stn-kale, .stn-ok, .stn-parla { animation: none; }
+  .bln-pat, .hcl-kelime, .hcl-kedi, .dnk-s1, .dnk-s2, .dnk-s3, .pyk-harf { opacity: 1; transform: none; }
+  .tmd-elma { transform: translateY(20px); }
+  .atm-coin { transform: translateY(100px); }
+  .gdn-sise { transform: translate(40px, 36px); }
+}
+
+/* ---- Emoji kartlarına canlılık ---- */
+.thumb-canli { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.thumb-emoji {
+  font-size: 4rem; line-height: 1;
+  animation: thumbZipla 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.18));
+}
+.game-card:nth-child(2n) .thumb-emoji { animation-name: thumbSalla; animation-duration: 3.1s; }
+.game-card:nth-child(3n) .thumb-emoji { animation-name: thumbNefes; animation-duration: 2.3s; }
+.game-card:nth-child(5n) .thumb-emoji { animation-delay: .7s; }
+@keyframes thumbZipla { 0%, 100% { transform: translateY(5px); } 50% { transform: translateY(-9px); } }
+@keyframes thumbSalla { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+@keyframes thumbNefes { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+.ts { position: absolute; font-size: 1rem; opacity: 0; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,.9); animation: tsPiril 3.2s ease-in-out infinite; pointer-events: none; }
+.ts1 { top: 18%; left: 18%; }
+.ts2 { top: 28%; right: 16%; animation-delay: 1.1s; font-size: 1.2rem; }
+.ts3 { bottom: 20%; left: 30%; animation-delay: 2.2s; font-size: .85rem; }
+@keyframes tsPiril { 0%, 100% { opacity: 0; transform: scale(.4) rotate(0deg); } 50% { opacity: .95; transform: scale(1.15) rotate(30deg); } }
+@media (max-width: 768px) { .thumb-emoji { font-size: 3rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .thumb-emoji, .ts { animation: none; }
+  .ts { opacity: .5; }
+}
