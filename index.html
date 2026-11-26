@@ -1070,6 +1070,21 @@
     @keyframes pdfile { 0%, 76%, 100% { transform: scaleY(1); } 84% { transform: scaleY(1.35); } }
     @media (prefers-reduced-motion: reduce) { .pd-top, .pd-file { animation: none; } .pd-top { transform: translate(158px,22px); } }
     /* ---- Aç Timsah kart animasyonu: timsah büyük sayıyı (45) yer, "<" işareti belirir ---- */
+    /* Zıpzıp Yarışı küçük resmi: kanguru 3'er zıplayarak "?" taşına ilerler */
+    .zipzip-yarisi-thumb { position: absolute; inset: 0; overflow: hidden; }
+    .zy-sahne { width: 100%; height: 100%; }
+    .zy-kar { transform-box: view-box; animation: zykar 3.2s cubic-bezier(.35,.1,.3,1) infinite; }
+    .zy-arti { animation: zyarti 3.2s ease-in-out infinite; }
+    .zy-cakil { animation: zycakil 3.2s linear infinite; }
+    .zy-cakil2 { animation-delay: .12s; }
+    .zy-soru { transform-box: fill-box; transform-origin: center; animation: zysoru 3.2s ease-in-out infinite; }
+    .zy-bulut { animation: zybulut 9s ease-in-out infinite alternate; }
+    @keyframes zykar { 0%,30% { transform: translate(94.8px,86.5px) scale(.42); opacity: 1; } 45% { transform: translate(97px,52px) scale(.37); opacity: 1; } 60%,86% { transform: translate(100.8px,71.8px) scale(.32); opacity: 1; } 93% { transform: translate(100.8px,71.8px) scale(.32); opacity: 0; } 95% { transform: translate(94.8px,86.5px) scale(.42); opacity: 0; } 100% { transform: translate(94.8px,86.5px) scale(.42); opacity: 1; } }
+    @keyframes zyarti { 0%,32% { opacity: 0; } 40%,62% { opacity: 1; } 70%,100% { opacity: 0; } }
+    @keyframes zycakil { 0%,38% { fill: #D2C3A6; } 42%,50% { fill: #FFF27A; } 56%,100% { fill: #D2C3A6; } }
+    @keyframes zysoru { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    @keyframes zybulut { from { transform: translateX(0); } to { transform: translateX(14px); } }
+    @media (prefers-reduced-motion: reduce) { .zy-kar, .zy-arti, .zy-cakil, .zy-soru, .zy-bulut { animation: none; } .zy-kar { transform: translate(94.8px,86.5px) scale(.42); } }
     /* Buz Yolu küçük resmi: Pıtır sayı doğrusunda 2'şer zıplar */
     .buz-yolu-thumb { position: absolute; inset: 0; overflow: hidden; }
     .by-sahne { width: 100%; height: 100%; }
@@ -2477,6 +2492,72 @@ const categories = [
     iconBg: "linear-gradient(135deg, #FF6B35, #FFD600)",
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
+      {
+        name: "Zıpzıp Yarışı",
+        file: "zipzip_yarisi.html",
+        desc: "İleri ve geri 2'şer, 3'er, 5'er say; karakterinle taştan taşa zıpla! Akıllı tahtada 3 arkadaşınla aynı anda yarış ya da tek başına gölgeni geç.",
+        sinif: "1. - 3. Sınıf — Ritmik sayma (1–3 oyunculu, akıllı tahta)",
+        grades: [1, 2, 3],
+        beceri: "Ritmik sayma",
+        eklenme: "2026-11-26",
+        thumbBg: "linear-gradient(180deg, #5FC0FF 0%, #DDF3FF 41%, #7CCB6B 42%, #62B653 100%)",
+        customThumb: `
+<div class="zipzip-yarisi-thumb">
+<svg class="zy-sahne" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="zyGok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FC0FF"/><stop offset="1" stop-color="#DDF3FF"/></linearGradient></defs>
+  <!-- gökyüzü, güneş, bulut, tepeler -->
+  <rect width="240" height="64" fill="url(#zyGok)"/>
+  <circle cx="178" cy="20" r="15" fill="#FFD84D" opacity=".25"/><circle cx="178" cy="20" r="10" fill="#FFD84D"/>
+  <g class="zy-bulut" fill="#fff" opacity=".9"><ellipse cx="128" cy="20" rx="18" ry="7"/><ellipse cx="138" cy="15" rx="11" ry="7"/></g>
+  <path d="M0 64Q40 50 84 60T170 56T240 58V70H0Z" fill="#A6E39A"/>
+  <rect y="62" width="240" height="88" fill="#7CCB6B"/>
+  <path d="M0 150V120Q60 112 120 118T240 114V150Z" fill="#62B653" opacity=".6"/>
+  <!-- 3B yol -->
+  <path d="M104 63H136L198 150H42Z" fill="#E8D7B6"/>
+  <path d="M104 63L42 150H48L106 63ZM136 63L198 150H192L134 63Z" fill="#C9B48F"/>
+  <!-- bitiş çizgisi -->
+  <g><rect x="106" y="63" width="28" height="3" fill="#222"/><g fill="#fff"><rect x="106" y="63" width="3.5" height="1.5"/><rect x="113" y="63" width="3.5" height="1.5"/><rect x="120" y="63" width="3.5" height="1.5"/><rect x="127" y="63" width="3.5" height="1.5"/><rect x="109.5" y="64.5" width="3.5" height="1.5"/><rect x="116.5" y="64.5" width="3.5" height="1.5"/><rect x="123.5" y="64.5" width="3.5" height="1.5"/><rect x="130.5" y="64.5" width="3.5" height="1.5"/></g></g>
+  <!-- uzak taşlar -->
+  <ellipse cx="120" cy="68" rx="6" ry="1.8" fill="#B9A88F"/><ellipse cx="120" cy="75" rx="9" ry="2.6" fill="#B9A88F"/>
+  <!-- "?" taşı -->
+  <g class="zy-soru"><ellipse cx="120" cy="88" rx="15" ry="4.6" fill="#FFD600" stroke="#fff" stroke-width="1.5"/><text x="120" y="91" text-anchor="middle" font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-size="8" font-weight="900" fill="#2B2340">?</text></g>
+  <ellipse cx="120" cy="94" rx="5" ry="1.5" fill="#D2C3A6"/><ellipse cx="120" cy="99" rx="6" ry="1.8" fill="#D2C3A6"/>
+  <!-- 9 taşı -->
+  <ellipse cx="120" cy="108" rx="22" ry="6.5" fill="#B9A88F"/><ellipse cx="120" cy="109.5" rx="22" ry="5" fill="#8F7F68" opacity=".35"/>
+  <text x="120" y="111" text-anchor="middle" font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-size="9" font-weight="900" fill="#fff">9</text>
+  <!-- 6 ile 9 arası çakıllar (3'er) -->
+  <ellipse class="zy-cakil" cx="120" cy="117" rx="8" ry="2.4" fill="#D2C3A6"/><ellipse class="zy-cakil zy-cakil2" cx="120" cy="124" rx="10" ry="3" fill="#D2C3A6"/>
+  <!-- 6 taşı -->
+  <ellipse cx="120" cy="137" rx="32" ry="9.5" fill="#B9A88F"/><ellipse cx="120" cy="139" rx="32" ry="7.5" fill="#8F7F68" opacity=".35"/>
+  <!-- yol kenarı süsleri -->
+  <g font-size="14"><text x="58" y="86">🌳</text><text x="166" y="96">🌼</text><text x="28" y="132">🌷</text><text x="200" y="138">🌳</text></g>
+  <!-- dizi şeridi -->
+  <g font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-weight="900">
+    <rect x="8" y="10" width="80" height="22" rx="8" fill="#fff" opacity=".95"/>
+    <text x="16" y="25" font-size="11" fill="#2B2340">6 › 9 ›</text>
+    <rect x="55" y="13" width="13" height="16" rx="4" fill="#FFD600"/><text x="61.5" y="25" font-size="11" fill="#2B2340" text-anchor="middle">?</text>
+    <rect x="70" y="15" width="16" height="12" rx="4" fill="#FF6B35"/><text x="78" y="24.5" font-size="8" fill="#fff" text-anchor="middle">+3</text>
+  </g>
+  <!-- kanguru -->
+  <g class="zy-kar"><path d="M32 92 Q8 98 4 116 Q20 104 42 100Z" fill="#C8783A"/>
+    <ellipse cx="52" cy="78" rx="24" ry="28" fill="#D98B48"/>
+    <ellipse cx="59" cy="86" rx="12" ry="15" fill="#F2C08A"/>
+    <path d="M38 98 Q42 114 74 113 Q78 105 60 101Z" fill="#B86A2E"/>
+    <path d="M66 68 Q78 72 80 82" stroke="#B86A2E" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="74" cy="44" rx="17" ry="15" fill="#D98B48"/>
+    <ellipse cx="89" cy="49" rx="10" ry="8" fill="#D98B48"/>
+    <circle cx="97" cy="47" r="3.2" fill="#3a2a1a"/>
+    <ellipse cx="64" cy="23" rx="5.5" ry="13" fill="#D98B48" transform="rotate(-18 64 23)"/>
+    <ellipse cx="64" cy="24" rx="2.6" ry="8.5" fill="#F2A5A5" transform="rotate(-18 64 24)"/>
+    <ellipse cx="74" cy="22" rx="5" ry="12" fill="#C8783A" transform="rotate(8 74 22)"/>
+    <circle cx="79" cy="40" r="5" fill="#fff"/><circle cx="80.5" cy="40" r="2.8" fill="#222"/>
+    <circle cx="83" cy="53" r="3.2" fill="#F28B8B" opacity=".6"/>
+    <path d="M86 56 Q90 59 94 56" stroke="#3a2a1a" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+  <text class="zy-arti" x="140" y="70" font-family="Nunito,Arial Rounded MT Bold,sans-serif" font-size="12" font-weight="900" fill="#fff" stroke="#FF6B35" stroke-width="3" paint-order="stroke">+3</text>
+</svg>
+</div>
+`
+      },
       {
         name: "Buz Yolu",
         file: "buz_yolu.html",
