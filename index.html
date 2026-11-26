@@ -951,73 +951,11 @@
       .geri-ikon.ik { width: 24px; height: 24px; }
     }
   
-    /* ===== FAZ 3: ÖĞRETMEN GÖRÜNÜMÜ ===== */
-    .ogretmen-btn {
-      display: flex; align-items: center; gap: 7px; position: relative; z-index: 1;
-      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .95rem; color: #6B3FA0;
-      background: rgba(255,255,255,.92); border: none; cursor: pointer; padding: 10px 16px; border-radius: 99px;
-      box-shadow: 0 4px 0 rgba(0,0,0,.15); white-space: nowrap; transition: transform .2s;
-    }
-    .ogretmen-btn .ik { width: 19px; height: 19px; }
-    .ogretmen-btn:hover { transform: translateY(-2px); }
-    .ogretmen-btn.acik { background: var(--koyu); color: #fff; }
     .hs-btn svg { flex: none; }
-
-    .ogretmen-serit {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 30px;
-      background: #F1EAFB; border: 2px solid #DCCBF5; border-radius: 18px; padding: 14px 18px; color: #3D2A5C;
-    }
-    .ogretmen-serit > .ik { width: 30px; height: 30px; color: #6B3FA0; }
-    .ogretmen-serit div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-    .ogretmen-serit strong { font-weight: 900; font-size: 1.05rem; }
-    .ogretmen-serit span { font-weight: 600; font-size: .9rem; }
-    .ogretmen-serit button {
-      font-family: inherit; font-weight: 900; font-size: .9rem; border: 2px solid #CDB6F0; background: #fff;
-      color: #3D2A5C; padding: 9px 16px; border-radius: 99px; cursor: pointer; white-space: nowrap;
-    }
-
-    .ogr-liste { background: #fff; border-radius: 20px; border: 2px solid var(--cizgi); overflow: hidden; }
-    .ogr-satir {
-      display: grid; grid-template-columns: minmax(0, 3fr) 90px minmax(0, 1.6fr) 100px 210px;
-      gap: 16px; align-items: center; padding: 12px 16px; border-top: 1px solid #F1E9DF;
-    }
-    .ogr-satir:first-child { border-top: none; }
-    .ogr-ust { background: #FBF6EE; font-weight: 900; font-size: .78rem; color: #8A7F73; text-transform: uppercase; letter-spacing: .04em; padding: 10px 16px; }
-    .ogr-oyun { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .ogr-resim { width: 96px; height: 60px; flex: none; border-radius: 10px; }
-    .ogr-resim::after { display: none; }
-    .ogr-resim * { animation: none !important; }
-    .ogr-ad { font-weight: 900; font-size: 1.02rem; color: var(--koyu); }
-    .ogr-yeni { font-size: .7rem; background: #FFD600; padding: 2px 7px; border-radius: 99px; vertical-align: 2px; }
-    .ogr-aciklama { font-weight: 600; font-size: .85rem; color: #5E5A55; line-height: 1.45; }
-    .ogr-sinif, .ogr-tarih { font-weight: 800; font-size: .88rem; color: #5E5A55; }
-    .ogr-kazanim { font-weight: 800; font-size: .88rem; color: var(--koyu); }
-    .ogr-eylem { display: flex; gap: 8px; justify-content: flex-end; }
-    .ogr-eylem button {
-      display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-weight: 900; font-size: .88rem;
-      padding: 8px 13px; border-radius: 12px; cursor: pointer; border: 2px solid var(--cizgi); background: #fff; color: var(--koyu);
-    }
-    .ogr-eylem .ik { width: 16px; height: 16px; }
-    .ogr-eylem .ogr-ac { background: var(--ana); border-color: var(--ana); color: #fff; }
-    .ogr-eylem .ogr-bag.kopyalandi { background: #E3F8F2; border-color: #00C9A7; color: #00785F; }
-    .ogr-eylem button:focus-visible { outline: 3px solid var(--koyu); outline-offset: 2px; }
-
-    @media (max-width: 900px) {
-      .ogr-ust { display: none; }
-      .ogr-satir { grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 16px; }
-      .ogr-oyun { grid-column: 1 / -1; }
-      .ogr-eylem { grid-column: 1 / -1; justify-content: stretch; }
-      .ogr-eylem button { flex: 1; justify-content: center; }
-      .ogr-sinif::before, .ogr-kazanim::before, .ogr-tarih::before {
-        content: attr(data-etiket); display: block; font-size: .7rem; color: #8A7F73; text-transform: uppercase; letter-spacing: .04em;
-      }
-    }
+    .about-btn .ik { width: 18px; height: 18px; stroke-width: 2.4; }
     @media (max-width: 600px) {
-      .ogretmen-yazi { display: none; }
-      .ogretmen-btn { padding: 10px 12px; }
-      .ogretmen-serit { flex-wrap: wrap; }
-      .ogretmen-serit button { width: 100%; }
-      .ogr-resim { width: 80px; height: 50px; }
+      .about-btn { padding: 10px 12px; }
+      .about-yazi { display: none; }
     }
 
     /* Çubuk sığsın: sınıf ve ders düğmeleri biraz sıkılaştı */
@@ -1061,9 +999,8 @@
     <symbol id="i-hedef" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></symbol>
     <symbol id="i-fikir" viewBox="0 0 24 24"><path d="M9.2 18h5.6M10.2 21h3.6"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></symbol>
     <symbol id="i-canta" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="14" rx="4"/><path d="M9 7V5.8a3 3 0 0 1 6 0V7M9 13.5h6"/></symbol>
-    <symbol id="i-ogretmen" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8.5 20.5l1.8-4.5M15.5 20.5l-1.8-4.5M7 8.5h6M7 11.5h4"/></symbol>
     <symbol id="i-oyna" viewBox="0 0 24 24"><path d="M8 5.6v12.8a1.1 1.1 0 0 0 1.7.9l9.8-6.4a1.1 1.1 0 0 0 0-1.8L9.7 4.7A1.1 1.1 0 0 0 8 5.6z" fill="currentColor" stroke="none"/></symbol>
-    <symbol id="i-baglanti" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    <symbol id="i-kisi" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6"/></symbol>
     <symbol id="i-yildiz" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" fill="currentColor"/></symbol>
     <symbol id="i-tamam" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   </defs>
@@ -1082,7 +1019,7 @@
       <button type="button" id="arama-temizle" hidden onclick="aramaYap('', true)" title="Aramayı temizle">✕</button>
       <button type="button" id="arama-ikon" onclick="document.getElementById('arama').focus()" title="Ara"><svg class="ik" aria-hidden="true"><use href="#i-arama"/></svg></button>
     </form>
-    <button type="button" class="ogretmen-btn" id="ogretmen-btn" onclick="ogretmenGorunumu()" aria-pressed="false" title="Öğretmen görünümü: kazanımlar ve paylaşım bağlantıları"><svg class="ik" aria-hidden="true"><use href="#i-ogretmen"/></svg><span class="ogretmen-yazi">Öğretmen</span></button>
+    <a class="about-btn" href="hakkimda.html" title="Hakkımda"><svg class="ik" aria-hidden="true"><use href="#i-kisi"/></svg><span class="about-yazi">Hakkımda</span></a>
   </div>
 </header>
 
@@ -1327,8 +1264,7 @@ function buildPage() {
       .map(cat => Object.assign({}, cat, { games: cat.games.filter(o => seciliBeceriler.has(oyunBecerisi(o))) }))
       .filter(cat => cat.games.length);
   }
-  if (ogretmenModu) main.appendChild(ogretmenSeridi());
-  else if (!aramaMetni && !seciliBeceriler.size) { const v = vitrinYap(seciliSinif); if (v) main.appendChild(v); }
+  if (!aramaMetni && !seciliBeceriler.size) { const v = vitrinYap(seciliSinif); if (v) main.appendChild(v); }
   liste.forEach((cat, ci) => main.appendChild(makeSection(cat, ci)));
   dersBarCiz(liste);
   if (!liste.length) {
@@ -1456,80 +1392,6 @@ window.addEventListener('resize', cubukYuksekligi);
 
 
 // ============================================================
-// ÖĞRETMEN GÖRÜNÜMÜ — üst bantaki anahtarla açılır, cihazda hatırlanır.
-// Kartlar yerine liste: oyun, sınıf, kazanım, eklenme tarihi, Aç + Bağlantı kopyala.
-// ============================================================
-let ogretmenModu = false;
-try { ogretmenModu = localStorage.getItem('ogretmenGorunumu') === '1'; } catch (e) {}
-function ogretmenGorunumu(ac) {
-  ogretmenModu = (typeof ac === 'boolean') ? ac : !ogretmenModu;
-  try { localStorage.setItem('ogretmenGorunumu', ogretmenModu ? '1' : '0'); } catch (e) {}
-  ogretmenBtnGuncelle();
-  buildPage();
-}
-function ogretmenBtnGuncelle() {
-  const b = document.getElementById('ogretmen-btn');
-  if (b) { b.classList.toggle('acik', ogretmenModu); b.setAttribute('aria-pressed', ogretmenModu); }
-  document.body.classList.toggle('ogretmen-modu', ogretmenModu);
-}
-function oyunBaglantisi(o) {
-  return 'https://sinanince.com/?sinif=' + seciliSinif + '#' + o.file.replace(/\.html$/, '');
-}
-function baglantiKopyala(btn, url) {
-  const bitti = () => {
-    btn.classList.add('kopyalandi');
-    btn.innerHTML = ikon('tamam') + 'Kopyalandı';
-    setTimeout(() => { btn.classList.remove('kopyalandi'); btn.innerHTML = ikon('baglanti') + 'Bağlantı'; }, 1600);
-  };
-  const eski = () => {
-    const t = document.createElement('textarea'); t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
-    document.body.appendChild(t); t.select();
-    try { document.execCommand('copy'); bitti(); } catch (e) { prompt('Bağlantıyı kopyalayın:', url); }
-    t.remove();
-  };
-  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(bitti, eski); else eski();
-}
-function tarihYaz(t) {
-  if (!t) return '—';
-  const [y, a, g] = t.split('-').map(Number);
-  return g + ' ' + ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][a - 1] + ' ' + y;
-}
-function ogretmenSeridi() {
-  const d = document.createElement('div');
-  d.className = 'ogretmen-serit';
-  d.innerHTML = `${ikon('ogretmen')}<div><strong>Öğretmen görünümü</strong><span>Kazanımlar ve paylaşım bağlantıları. Bağlantıyı öğrencilere gönderdiğinizde oyun doğrudan açılır.</span></div>
-    <button type="button">Öğrenci görünümüne dön</button>`;
-  d.querySelector('button').onclick = () => ogretmenGorunumu(false);
-  return d;
-}
-function ogretmenListesi(cat) {
-  const liste = document.createElement('div');
-  liste.className = 'ogr-liste';
-  liste.innerHTML = `<div class="ogr-satir ogr-ust" aria-hidden="true"><span>Oyun</span><span>Sınıf</span><span>Kazanım</span><span>Eklendi</span><span></span></div>`;
-  cat.games.forEach(o => {
-    const r = document.createElement('div');
-    r.className = 'ogr-satir';
-    const siniflar = oyunSiniflari(o);
-    r.innerHTML = `
-      <div class="ogr-oyun">
-        <div class="game-thumb ogr-resim" style="background:${o.thumbBg}">${o.customThumb || `<div class="thumb-canli"><span class="thumb-emoji">${o.emoji || '🎮'}</span></div>`}</div>
-        <div><div class="ogr-ad">${o.name}${yeniMi(o) ? ' <span class="ogr-yeni">Yeni</span>' : ''}</div><div class="ogr-aciklama">${o.desc}</div></div>
-      </div>
-      <div class="ogr-sinif" data-etiket="Sınıf">${siniflar.length === 4 ? 'Tümü' : siniflar.join(', ') + '. sınıf'}</div>
-      <div class="ogr-kazanim" data-etiket="Kazanım">${oyunBecerisi(o)}</div>
-      <div class="ogr-tarih" data-etiket="Eklendi">${tarihYaz(o.eklenme)}</div>
-      <div class="ogr-eylem">
-        <button type="button" class="ogr-ac">${ikon('oyna')}Aç</button>
-        <button type="button" class="ogr-bag" title="${oyunBaglantisi(o)}">${ikon('baglanti')}Bağlantı</button>
-      </div>`;
-    r.querySelector('.ogr-ac').onclick = () => openGame(o.file, o.name);
-    r.querySelector('.ogr-bag').onclick = e => baglantiKopyala(e.currentTarget, oyunBaglantisi(o));
-    liste.appendChild(r);
-  });
-  return liste;
-}
-
-// ============================================================
 // KAZANIM FİLTRESİ
 // ============================================================
 let seciliDers = null;
@@ -1653,7 +1515,7 @@ function makeSection(cat, ci) {
     });
 
     section.appendChild(header);
-    section.appendChild(ogretmenModu ? ogretmenListesi(cat) : grid);
+    section.appendChild(grid);
     return section;
 }
 
@@ -1842,7 +1704,6 @@ function launchConfetti(adet) {
   }
 }
 
-ogretmenBtnGuncelle();
 buildPage();
 adrestenOyunAc();
 
