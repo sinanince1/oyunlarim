@@ -56,6 +56,7 @@
     .m-ad { font-weight: 900; font-size: 1.05rem; }
     .cip { font-weight: 900; font-size: .78rem; padding: 3px 10px; border-radius: 99px; background: #F3EEE7; color: #6E6358; }
     .cip.s1 { background: #FFE9DF; color: #C4471A; } .cip.s2 { background: #FFF5C2; color: #8A6D00; } .cip.s3 { background: #D8F7F0; color: #00806A; } .cip.s4 { background: #E0EDFF; color: #2A64C2; }
+    .cip.gb { background: #DDF3FF; color: #1F6FB2; }
     .m-tarih { margin-left: auto; font-weight: 800; font-size: .8rem; color: #B9AEA0; white-space: nowrap; }
     .m-metin { font-weight: 700; font-size: 1.05rem; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
     .m-eylem { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 2px solid #F7F0E6; }
@@ -115,7 +116,7 @@
   </div>
   <nav class="sekmeler" id="sekmeler-ana">
     <button data-b="istatistik" class="aktif">📊 İstatistik</button>
-    <button data-b="fikirler">📬 Oyun Fikirleri <span class="rozet" id="rozet" hidden>0</span></button>
+    <button data-b="fikirler">📬 Fikirler ve Geri Bildirimler <span class="rozet" id="rozet" hidden>0</span></button>
     <button data-b="uyeler">👥 Kayıtlı Kullanıcılar</button>
   </nav>
 </header>
@@ -175,7 +176,7 @@
       </div>
       <div class="arac">
         <select id="f-sinif" aria-label="Sınıf"><option value="">Tüm sınıflar</option><option value="1">1. Sınıf</option><option value="2">2. Sınıf</option><option value="3">3. Sınıf</option><option value="4">4. Sınıf</option></select>
-        <select id="f-ders" aria-label="Ders"><option value="">Tüm dersler</option><option>Matematik</option><option>Türkçe</option><option>Hayat Bilgisi</option><option>Başka</option><option value="-">Ders seçilmemiş</option></select>
+        <select id="f-ders" aria-label="Ders"><option value="">Tüm dersler</option><option>Matematik</option><option>Türkçe</option><option>Hayat Bilgisi</option><option>Başka</option><option value="-">Ders seçilmemiş</option><option value="gb">💬 Yalnızca geri bildirimler</option><option value="fikir">💡 Yalnızca oyun fikirleri</option></select>
         <input type="search" id="f-ara" placeholder="Mesajlarda ara…" autocomplete="off">
         <button class="ince" id="hepsi-okundu" onclick="hepsiniOkundu()" hidden>✓ Görünenleri okundu yap</button>
       </div>
@@ -378,6 +379,11 @@ function tarihYaz(t) {
   return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: d.getFullYear() === bugun.getFullYear() ? undefined : 'numeric' }) + ' ' + saat;
 }
 const DERS_IKON = { 'Matematik': '🔢', 'Türkçe': '📖', 'Hayat Bilgisi': '🌱', 'Başka': '✨' };
+// Oyun geri bildirimi mi? (ana sayfadaki 💬 formu; kural ek alanlara izin vermediyse metnin başında "[Geri bildirim – Oyun]")
+const GB_ON = /^\[Geri bildirim – ([^\]]+)\]\s*/;
+function gbMi(m) { return m.tur === 'geri_bildirim' || GB_ON.test(m.metin || ''); }
+function gbOyun(m) { if (m.oyunAd) return m.oyunAd; const x = String(m.metin || '').match(GB_ON); return x ? x[1] : ''; }
+function gbMetin(m) { return String(m.metin || '').replace(GB_ON, ''); }
 function gruptaMi(m, g) {
   if (g === 'yeni') return m.durum === 'yeni';
   if (g === 'yildiz') return !!m.yildiz && m.durum !== 'arsiv';
@@ -388,8 +394,8 @@ function filtreli() {
   const s = $('f-sinif').value, dr = $('f-ders').value, q = trKucuk($('f-ara').value.trim());
   return veri.filter(m => gruptaMi(m, gorunum)
     && (!s || String(m.sinif) === s)
-    && (!dr || (dr === '-' ? !m.ders : m.ders === dr))
-    && (!q || trKucuk(m.metin + ' ' + m.ad).includes(q)));
+    && (!dr || (dr === 'gb' ? gbMi(m) : dr === 'fikir' ? !gbMi(m) : gbMi(m) ? false : dr === '-' ? !m.ders : m.ders === dr))
+    && (!q || trKucuk(m.metin + ' ' + m.ad + ' ' + (m.oyunAd || '')).includes(q)));
 }
 function rozetGuncelle() {
   const yeni = veri.filter(m => m.durum === 'yeni').length;
@@ -415,12 +421,12 @@ function fikirCiz() {
     <div class="m-ust">
       <span class="m-ad">${m.ad ? esc(m.ad) : '<span style="color:#B9AEA0">İsimsiz</span>'}</span>
       ${m.sinif ? `<span class="cip s${+m.sinif}">${+m.sinif}. Sınıf</span>` : ''}
-      ${m.ders ? `<span class="cip">${DERS_IKON[m.ders] || ''} ${esc(m.ders)}</span>` : ''}
+      ${gbMi(m) ? `<span class="cip gb">💬 Geri bildirim · ${esc(gbOyun(m))}</span>` : m.ders ? `<span class="cip">${DERS_IKON[m.ders] || ''} ${esc(m.ders)}</span>` : ''}
       <span class="m-tarih">${tarihYaz(m.tarih)}</span>
     </div>
-    <div class="m-metin">${esc(m.metin)}</div>
+    <div class="m-metin">${esc(gbMi(m) ? gbMetin(m) : m.metin)}</div>
     <div class="m-eylem">
-      <button data-e="spec" class="spec">📋 Spec için kopyala</button>
+      <button data-e="spec" class="spec">📋 ${gbMi(m) ? 'Düzeltme için kopyala' : 'Spec için kopyala'}</button>
       <button data-e="okundu">${m.durum === 'yeni' ? '✓ Okundu' : '● Yeni yap'}</button>
       <button data-e="yildiz" class="${m.yildiz ? 'yildizli' : ''}">${m.yildiz ? '⭐ Yıldızlı' : '☆ Yıldızla'}</button>
       <button data-e="arsiv">${m.durum === 'arsiv' ? '↩︎ Arşivden çıkar' : '🗄️ Arşivle'}</button>
@@ -431,6 +437,18 @@ function fikirCiz() {
 
 // Oyun spec'ine yapıştırılacak hazır metin
 function specMetni(m) {
+  if (gbMi(m)) {
+    const t = m.tarih && m.tarih.toDate ? m.tarih.toDate().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    return [
+      'ÖĞRENCİ GERİ BİLDİRİMİ (sinanince.com)',
+      'Oyun: ' + gbOyun(m) + (m.oyun ? ' (' + m.oyun + ')' : ''),
+      'Öğrenci: ' + ((m.ad || '').trim() || 'İsimsiz') + (m.sinif ? ' (' + m.sinif + '. sınıf)' : ''),
+      t ? 'Gönderim tarihi: ' + t : null,
+      'Geri bildirim (öğrencinin kendi yazdığı haliyle):',
+      '"' + gbMetin(m).trim() + '"',
+      'Bu geri bildirimi değerlendir; gerekiyorsa oyunda cerrahi bir düzeltme öner.'
+    ].filter(Boolean).join('\n');
+  }
   const tarih = m.tarih && m.tarih.toDate ? m.tarih.toDate().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
   const ad = (m.ad || '').trim();
   return [

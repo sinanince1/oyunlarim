@@ -742,14 +742,14 @@
 .zoxi-thumb, .tren-thumb, .dusler-thumb, .sorf-thumb, .dusler2-thumb,
 .penalti-thumb, .balon-thumb, .kopru-thumb, .roket-thumb, .terazi-thumb,
 .sunger-thumb, .timsah-thumb, .zipzip-thumb, .yak-thumb, .atm-thumb,
-.orman-thumb, .gdn-thumb, .pyp-thumb, .portfolio-thumb, .satranc-thumb, .gdk-thumb {
+.orman-thumb, .gdn-thumb, .satranc-thumb, .gdk-thumb {
   position: absolute; inset: 0; overflow: hidden;
 }
 .hikaye-sehri-thumb svg, .yarisma-thumb svg, .dnk-thumb svg, .hece-thumb svg, .nokta-thumb svg,
 .zoxi-thumb svg, .tren-thumb svg, .dusler-thumb svg, .sorf-thumb svg, .dusler2-thumb svg,
 .penalti-thumb svg, .balon-thumb svg, .kopru-thumb svg, .roket-thumb svg, .terazi-thumb svg,
 .sunger-thumb svg, .timsah-thumb svg, .zipzip-thumb svg, .yak-thumb svg, .atm-thumb svg,
-.orman-thumb svg, .gdn-thumb svg, .pyp-thumb svg, .portfolio-thumb svg, .satranc-thumb svg, .gdk-thumb svg {
+.orman-thumb svg, .gdn-thumb svg, .satranc-thumb svg, .gdk-thumb svg {
   width: 100%; height: 100%; display: block;
 }
 .hsr-bulut { animation: thumbKay 9s ease-in-out infinite alternate; }
@@ -877,14 +877,6 @@
 @keyframes gdnBant { to { transform: translateX(24px); } }
 .gdn-sise { animation: gdnSise 3s ease-in infinite; }
 @keyframes gdnSise { 0% { transform: translate(40px, 36px); opacity: 1; } 45% { transform: translate(118px, 36px) rotate(0deg); opacity: 1; } 80% { transform: translate(124px, 92px) rotate(70deg); opacity: 1; } 90%, 100% { transform: translate(124px, 100px) rotate(70deg); opacity: 0; } }
-.pyp-orbit { transform-box: fill-box; transform-origin: center; animation: pypOrbit 14s linear infinite; }
-@keyframes pypOrbit { to { transform: rotate(360deg); } }
-.pyp-dunya { animation: thumbSuzul 3.4s ease-in-out infinite alternate; }
-.pyp-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.6s ease-in-out infinite; }
-.por-damga { animation: porDamga 2.8s ease-in-out infinite; }
-@keyframes porDamga { 0%, 55%, 100% { transform: translate(0, 0); } 68% { transform: translate(-58px, 6px); } 78% { transform: translate(-58px, 14px); } 88% { transform: translate(-58px, 6px); } }
-.por-yildiz { animation: thumbYanSon 2.8s ease-in-out infinite; }
-.por-kagit { animation: thumbSuzul 3.2s ease-in-out infinite alternate; }
 .stn-at { animation: stnAt 4s ease-in-out infinite; }
 @keyframes stnAt { 0%, 12% { transform: translate(0, 0); } 42%, 62% { transform: translate(80px, 40px); } 92%, 100% { transform: translate(0, 0); } }
 .stn-kale { animation: stnKale 4s ease-in-out infinite; }
@@ -917,7 +909,6 @@
   .tmd-elma, .tmd-cene, .zzp-kurbaga, .zzp-a1, .zzp-a2, .zzp-a3,
   .pyk-halo, .pyk-isin, .pyk-harf, .atm-ekran, .atm-kart, .atm-para, .atm-coin,
   .orm-kus, .orm-kulak, .orm-kelebek, .gdn-ok, .gdn-bant, .gdn-sise,
-  .pyp-orbit, .pyp-dunya, .pyp-parla, .por-damga, .por-yildiz, .por-kagit,
   .stn-at, .stn-kale, .stn-ok, .stn-parla, .gdk-lazer, .gdk-kivilcim, .gdk-tabela, .gdk-bulut, .gdk-goz { animation: none; }
   .bln-pat, .hcl-kelime, .hcl-kedi, .dnk-s1, .dnk-s2, .dnk-s3, .pyk-harf { opacity: 1; transform: none; }
   .tmd-elma { transform: translateY(20px); }

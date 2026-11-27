@@ -982,6 +982,19 @@
     }
     @media (max-width: 600px) { .bs:nth-child(3n) { display: none; } }
     @media (prefers-reduced-motion: reduce) { .bs { animation: none; } }
+  
+    /* ===== Geri bildirim düğmesi (Oyun Fikrim Var'ın üstünde) ===== */
+    /* Üstüne gelince genişlerken düğme hiç küçülmesin (küçülünce fare dışarıda kalıp titriyordu) */
+    .geri-btn { min-width: 56px; justify-content: flex-end; }
+    .geri-btn:hover, .geri-btn:focus-visible { justify-content: center; }
+    .gb-btn { bottom: 84px; background: linear-gradient(135deg, #00C9A7, #4D9FFF); box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 8px 24px rgba(0,150,200,.3); }
+    .fk-secim { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 44px;
+      background: #FFFCF8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B5E50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 18px; }
+    .fk-secim:disabled { color: #B9AEA0; cursor: not-allowed; }
+    .fk-secim:focus { border-color: #4D9FFF; }
+    .gb-gonder { background: linear-gradient(135deg, #00C9A7, #4D9FFF); }
+    #gb-sinif button.secili { background: #4D9FFF; border-color: #4D9FFF; color: #fff; }
+    @media (max-width: 600px) { .gb-btn { bottom: 72px; } .geri-btn { min-width: 50px; justify-content: center; } }
   </style>
 </head>
 <body>
@@ -993,13 +1006,13 @@
     <symbol id="i-matematik" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8.5 6.3v4.4M6.3 8.5h4.4M13.6 8.5h4.2M6.9 14.4l3.2 3.2M10.1 14.4l-3.2 3.2M13.6 14.7h4.2M13.6 17.3h4.2"/></symbol>
     <symbol id="i-hayat" viewBox="0 0 24 24"><path d="M12 21v-8.5"/><path d="M12 13C12 9 9 6.5 4.5 6.5c0 4 3 6.5 7.5 6.5z"/><path d="M12 11c0-3.5 2.6-6 7-6 0 3.6-2.7 6-7 6z"/></symbol>
     <symbol id="i-fen" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.2L4.8 18.2A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-2.8L14 9.2V3"/><path d="M7.4 15h9.2"/></symbol>
-    <symbol id="i-pyp" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.5 3.8 5.5 3.8 9s-1.2 6.5-3.8 9c-2.6-2.5-3.8-5.5-3.8-9S9.4 5.5 12 3z"/></symbol>
     <symbol id="i-diger" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><g fill="currentColor" stroke="none"><circle cx="8.6" cy="8.6" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="15.4" cy="15.4" r="1.5"/></g></symbol>
     <symbol id="i-arama" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></symbol>
     <symbol id="i-hedef" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></symbol>
     <symbol id="i-fikir" viewBox="0 0 24 24"><path d="M9.2 18h5.6M10.2 21h3.6"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></symbol>
     <symbol id="i-canta" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="14" rx="4"/><path d="M9 7V5.8a3 3 0 0 1 6 0V7M9 13.5h6"/></symbol>
     <symbol id="i-oyna" viewBox="0 0 24 24"><path d="M8 5.6v12.8a1.1 1.1 0 0 0 1.7.9l9.8-6.4a1.1 1.1 0 0 0 0-1.8L9.7 4.7A1.1 1.1 0 0 0 8 5.6z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-mesaj" viewBox="0 0 24 24"><path d="M5 4.5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7.5L7 21v-3.5H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/><path d="M7.5 9.5h9M7.5 13h6"/></symbol>
     <symbol id="i-kisi" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6"/></symbol>
     <symbol id="i-yildiz" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" fill="currentColor"/></symbol>
     <symbol id="i-tamam" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
@@ -1068,6 +1081,34 @@
 </div>
 
 <!-- GERİ BİLDİRİM -->
+<button class="geri-btn gb-btn" id="gb-btn" onclick="gbAc()" aria-label="Oyun Hakkında Geri Bildirim" title="Oyun Hakkında Geri Bildirim"><svg class="ik geri-ikon" aria-hidden="true"><use href="#i-mesaj"/></svg><span class="geri-yazi">Geri Bildirim</span></button>
+<div class="geri-overlay" id="gb-overlay" role="dialog" aria-modal="true" aria-label="Oyun hakkında geri bildirim gönder">
+  <div class="geri-kutu">
+    <div class="geri-ust"><span>💬 Oyun hakkında geri bildirim</span><button onclick="gbKapat()" title="Kapat">✕</button></div>
+    <div class="fk-govde" id="gb-form">
+      <label class="fk-etiket" for="gb-ad">Adın <small>(sadece ilk adın, soyadını yazma)</small></label>
+      <input class="fk-girdi" id="gb-ad" maxlength="20" autocomplete="off" placeholder="Örnek: Elif">
+      <span class="fk-etiket">Kaçıncı sınıftasın?</span>
+      <div class="fk-secenek" id="gb-sinif">
+        <button type="button" data-v="1">1. Sınıf</button><button type="button" data-v="2">2. Sınıf</button><button type="button" data-v="3">3. Sınıf</button><button type="button" data-v="4">4. Sınıf</button>
+      </div>
+      <label class="fk-etiket" for="gb-oyun">Hangi oyun?</label>
+      <select class="fk-girdi fk-secim" id="gb-oyun" disabled><option value="">Önce sınıfını seç</option></select>
+      <label class="fk-etiket" for="gb-metin">Geri bildirimin</label>
+      <textarea class="fk-girdi" id="gb-metin" maxlength="600" placeholder="Oyunda en çok neyi sevdin? Neyi değiştirelim? Bir sorun mu buldun?"></textarea>
+      <div class="fk-sayac" id="gb-sayac">0 / 600</div>
+      <input class="fk-gizli" id="gb-web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="fk-hata" id="gb-hata"></p>
+      <button class="fk-gonder gb-gonder" id="gb-gonder" onclick="gbGonder()">🚀 Gönder</button>
+    </div>
+    <div class="fk-govde fk-tamam" id="gb-tamam" hidden>
+      <div class="fk-ikon">💬</div>
+      <h3>Teşekkürler!</h3>
+      <p>Geri bildirimin Sinan Öğretmen'e ulaştı. Oyunları senin sayende daha da güzelleştireceğim!</p>
+      <button class="fk-gonder gb-gonder" onclick="gbBitir()">💛 Vakit ayırdığın için teşekkürler!</button>
+    </div>
+  </div>
+</div>
 <button class="geri-btn" id="geri-btn" onclick="geriAc()" aria-label="Oyun Fikrim Var" title="Oyun Fikrim Var"><svg class="ik geri-ikon" aria-hidden="true"><use href="#i-fikir"/></svg><span class="geri-yazi">Oyun Fikrim Var</span></button>
 <div class="geri-overlay" id="geri-overlay" role="dialog" aria-modal="true" aria-label="Oyun fikri gönder">
   <div class="geri-kutu">
@@ -1099,7 +1140,7 @@
   </div>
 </div>
 
-<footer>Tüm oyunlar <span>❤️</span> ile yapıldı · <a href="hakkimda.html">Hakkımda</a> · <a href="#" onclick="geriAc();return false">Oyun fikri gönder</a></footer>
+<footer>Tüm oyunlar <span>❤️</span> ile yapıldı · <a href="hakkimda.html">Hakkımda</a> · <a href="#" onclick="geriAc();return false">Oyun fikri gönder</a> · <a href="#" onclick="gbAc();return false">Geri bildirim gönder</a></footer>
 
 <script src="hesap.js?v=20261126"></script>
 <script src="oyunlar.js?v=20261126"></script>
@@ -1115,7 +1156,7 @@
 // İkonlar: ikon('turkce') → <svg> ; ders adından ikon: dersIkonu('📖 Türkçe') → 'turkce'
 const ikon = (ad, sinif) => `<svg class="ik${sinif ? ' ' + sinif : ''}" aria-hidden="true"><use href="#i-${ad}"/></svg>`;
 const dersIkonu = n => n.includes('Türkçe') ? 'turkce' : n.includes('Matematik') ? 'matematik' : n.includes('Hayat') ? 'hayat'
-  : n.includes('Fen') ? 'fen' : n.includes('PYP') ? 'pyp' : 'diger';
+  : n.includes('Fen') ? 'fen' : 'diger';
 const dersYazi = n => n.slice(n.indexOf(' ') + 1); // '📖 Türkçe' → 'Türkçe'
 
 const SINIF_RENK = {
@@ -1124,7 +1165,7 @@ const SINIF_RENK = {
   3: { renk: '#00C9A7', grad: 'linear-gradient(135deg,#00C9A7,#4D9FFF)' },
   4: { renk: '#4D9FFF', grad: 'linear-gradient(135deg,#4D9FFF,#A855F7)' }
 };
-const KONU_SIRASI = ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'Fen Bilimleri', 'PYP', 'Diğer Oyunlar'];
+const KONU_SIRASI = ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'Fen Bilimleri', 'Diğer Oyunlar'];
 
 let seciliSinif = 2; // ilk girişte 2. sınıf açılır
 try {
@@ -1550,7 +1591,7 @@ function geriKapat() {
   if (!document.getElementById('fk-tamam').hidden) { document.getElementById('fk-metin').value = ''; document.getElementById('fk-sayac').textContent = '0 / 600'; document.getElementById('fk-tamam').hidden = true; document.getElementById('fk-form').hidden = false; }
 }
 document.getElementById('geri-overlay').addEventListener('click', function (e) { if (e.target === this) geriKapat(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') geriKapat(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { geriKapat(); gbKapat(); } });
 function fikirBitir() {
   // Formu sıfırla, pencereyi kapat, ana sayfanın başına dön
   document.getElementById('fk-metin').value = ''; document.getElementById('fk-sayac').textContent = '0 / 600';
@@ -1576,6 +1617,81 @@ function fikirGonder() {
   })).then(() => {
     kayit.push(simdi); try { localStorage.setItem('fikirGonderim', JSON.stringify(kayit)); } catch (e) {}
     document.getElementById('fk-form').hidden = true; document.getElementById('fk-tamam').hidden = false;
+  }).catch(() => hata('Gönderilemedi. İnternetini kontrol edip tekrar dener misin?'))
+    .finally(() => { btn.disabled = false; btn.textContent = '🚀 Gönder'; });
+}
+
+
+// ============================================================
+// OYUN GERİ BİLDİRİMİ — oyun fikirleriyle aynı koleksiyona (oyun_fikirleri) yazılır:
+// ders: 'Geri Bildirim', tur: 'geri_bildirim', oyun (dosya), oyunAd.
+// Firestore kuralı ek alanlara izin vermezse yalnızca fikir formunun alanlarıyla,
+// oyun adı metnin başına eklenerek tekrar denenir. Okuma: yonetim.html
+// ============================================================
+const GB_GUNLUK_SINIR = 5;
+let gbSinifSecili = 0;
+function gbOyunlariDoldur(g, secili) {
+  const sel = document.getElementById('gb-oyun');
+  if (!g) { sel.innerHTML = '<option value="">Önce sınıfını seç</option>'; sel.disabled = true; return; }
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  sel.innerHTML = '<option value="">Oyun seç…</option>' + sinifGruplari(g).map(cat =>
+    `<optgroup label="${esc(dersYazi(cat.name))}">${cat.games.map(o => `<option value="${esc(o.file)}"${o.file === secili ? ' selected' : ''}>${esc(o.name)}</option>`).join('')}</optgroup>`).join('');
+  sel.disabled = false;
+}
+function gbSinifSec(g) {
+  gbSinifSecili = g;
+  document.querySelectorAll('#gb-sinif button').forEach(b => b.classList.toggle('secili', +b.dataset.v === g));
+  const once = document.getElementById('gb-oyun').value || sonAcilanOyun;
+  gbOyunlariDoldur(g, once);
+}
+document.getElementById('gb-sinif').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  gbSinifSec(+b.dataset.v); document.getElementById('gb-hata').textContent = '';
+});
+document.getElementById('gb-oyun').addEventListener('change', () => { document.getElementById('gb-hata').textContent = ''; });
+document.getElementById('gb-metin').addEventListener('input', function () { document.getElementById('gb-sayac').textContent = this.value.length + ' / 600'; document.getElementById('gb-hata').textContent = ''; });
+function gbKayit() { try { return JSON.parse(localStorage.getItem('geriBildirimGonderim') || '[]'); } catch (e) { return []; } }
+function gbAc() {
+  if (!gbSinifSecili) gbSinifSec(seciliSinif);   // ana sayfada seçili sınıf hazır gelir
+  else if (sonAcilanOyun && !document.getElementById('gb-oyun').value) gbOyunlariDoldur(gbSinifSecili, sonAcilanOyun);
+  document.getElementById('gb-overlay').classList.add('active');
+  fbDb().catch(() => {});
+  setTimeout(() => { const a = document.getElementById('gb-form').hidden ? null : document.getElementById('gb-ad'); if (a && !a.value) a.focus(); }, 80);
+}
+function gbKapat() { document.getElementById('gb-overlay').classList.remove('active'); }
+document.getElementById('gb-overlay').addEventListener('click', function (e) { if (e.target === this) gbKapat(); });
+function gbBitir() {
+  document.getElementById('gb-metin').value = ''; document.getElementById('gb-sayac').textContent = '0 / 600';
+  document.getElementById('gb-oyun').value = ''; document.getElementById('gb-hata').textContent = '';
+  document.getElementById('gb-tamam').hidden = true; document.getElementById('gb-form').hidden = false;
+  gbKapat();
+}
+function gbGonder() {
+  const hata = t => { document.getElementById('gb-hata').textContent = t; };
+  const ad = document.getElementById('gb-ad').value.trim().replace(/\s+/g, ' ').slice(0, 20);
+  const sel = document.getElementById('gb-oyun');
+  const metin = document.getElementById('gb-metin').value.trim();
+  if (!gbSinifSecili) return hata('Sınıfını seçer misin? 🙂');
+  if (!sel.value) return hata('Hangi oyun için yazdığını seçer misin? 🎮');
+  if (metin.length < 10) return hata('Biraz daha anlatır mısın? ✏️');
+  if (document.getElementById('gb-web').value) return; // bot tuzağı
+  const simdi = Date.now(), kayit = gbKayit().filter(t => simdi - t < 864e5);
+  if (kayit.length >= GB_GUNLUK_SINIR) return hata('Bugün ' + GB_GUNLUK_SINIR + ' geri bildirim gönderdin. Yarın yenilerini bekliyorum! 🌙');
+  if (kayit.length && simdi - kayit[kayit.length - 1] < 30000) return hata('Biraz bekle, sonra tekrar gönder. ⏳');
+  const oyunAd = sel.options[sel.selectedIndex].text;
+  const btn = document.getElementById('gb-gonder'); btn.disabled = true; btn.textContent = 'Gönderiliyor…'; hata('');
+  fbDb().then(db => {
+    const col = db.collection('oyun_fikirleri');
+    const temel = () => ({ ad, sinif: gbSinifSecili, tarih: firebase.firestore.FieldValue.serverTimestamp(), durum: 'yeni', yildiz: false });
+    return col.add(Object.assign(temel(), { ders: 'Geri Bildirim', metin: metin.slice(0, 600), tur: 'geri_bildirim', oyun: sel.value, oyunAd }))
+      .catch(e => {
+        if (e && e.code !== 'permission-denied') throw e;
+        // Kural ek alanlara izin vermiyorsa: fikir formunun alanlarıyla, oyun adı metnin başında
+        return col.add(Object.assign(temel(), { ders: 'Başka', metin: ('[Geri bildirim – ' + oyunAd + '] ' + metin).slice(0, 600) }));
+      });
+  }).then(() => {
+    kayit.push(simdi); try { localStorage.setItem('geriBildirimGonderim', JSON.stringify(kayit)); } catch (e) {}
+    document.getElementById('gb-form').hidden = true; document.getElementById('gb-tamam').hidden = false;
   }).catch(() => hata('Gönderilemedi. İnternetini kontrol edip tekrar dener misin?'))
     .finally(() => { btn.disabled = false; btn.textContent = '🚀 Gönder'; });
 }
@@ -1614,7 +1730,9 @@ function oyunSay(file, name) {
   } catch (e) {}
 }
 
+let sonAcilanOyun = '';
 function openGame(file, name) {
+  sonAcilanOyun = file;
   oyunSay(file, name);
   const fr = document.getElementById('game-frame'), ov = document.getElementById('modal-overlay');
   fr.src = '';
