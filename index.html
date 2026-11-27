@@ -734,18 +734,27 @@
     .game-card:hover .play-btn { transform: scale(1.12); }
     .game-card:active .play-btn { transform: scale(.94); }
 
-    /* Oyun fikri: yuvarlak düğme, masaüstünde üstüne gelince yazı açılır */
+    /* Fikir + geri bildirim: yuvarlak düğme (ikon tam ortada); masaüstünde üstüne gelince
+       yazı yumuşakça açılır. Genişlik sabit değil: içerik (yazı) büyüdükçe düğme de kare kare
+       büyür, böylece hiç zıplamaz ve 56px'in altına inmez. */
     .geri-btn {
-      display: flex; align-items: center; gap: 0; padding: 0; width: 56px; height: 56px;
-      justify-content: center; overflow: hidden; white-space: nowrap;
-      transition: width .25s, gap .25s, padding .25s, transform .18s;
+      display: flex; align-items: center; justify-content: center;
+      width: auto; min-width: 56px; height: 56px; padding: 0 15px;
+      overflow: hidden; white-space: nowrap;
+      transition: padding .45s cubic-bezier(.4,0,.2,1), transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s;
     }
-    .geri-ikon { font-size: 1.5rem; line-height: 1; }
-    .geri-yazi { max-width: 0; opacity: 0; transition: max-width .25s, opacity .2s; }
+    .geri-ikon { font-size: 1.5rem; line-height: 1; transition: transform .45s cubic-bezier(.4,0,.2,1); }
+    .geri-yazi {
+      display: inline-block; max-width: 0; margin-left: 0; opacity: 0;
+      transition: max-width .45s cubic-bezier(.4,0,.2,1), margin-left .45s cubic-bezier(.4,0,.2,1), opacity .3s ease .08s;
+    }
     @media (hover: hover) {
-      .geri-btn:hover, .geri-btn:focus-visible { width: auto; padding: 0 20px; gap: 8px; }
-      .geri-btn:hover .geri-yazi, .geri-btn:focus-visible .geri-yazi { max-width: 200px; opacity: 1; }
+      .geri-btn:hover, .geri-btn:focus-visible { padding: 0 20px 0 16px; }
+      .geri-btn:hover .geri-yazi, .geri-btn:focus-visible .geri-yazi { max-width: 132px; margin-left: 9px; opacity: 1; }
+      .gb-btn:hover .geri-yazi, .gb-btn:focus-visible .geri-yazi { max-width: 104px; }
+      .geri-btn:hover .geri-ikon { transform: rotate(-8deg) scale(1.06); }
     }
+    @media (prefers-reduced-motion: reduce) { .geri-btn, .geri-yazi, .geri-ikon { transition: none; } }
 
     @media (max-width: 600px) {
       header { padding: 12px 14px; gap: 10px; }
@@ -758,7 +767,7 @@
       .game-info { padding: 10px 12px 12px; }
       .game-name { font-size: 1rem; margin: 0; }
       .play-btn { top: 76px; right: 8px; width: 44px; height: 44px; font-size: 1rem; border-width: 3px; }
-      .geri-btn { width: 50px; height: 50px; right: 12px; bottom: 12px; padding: 0; }
+      .geri-btn { min-width: 50px; height: 50px; right: 12px; bottom: 12px; padding: 0 13px; }
     }
   
     /* ===== FAZ 2: YAPIŞKAN ÇUBUK, VİTRİN, RENK GÖREVLERİ (Sinan İnce 2026) ===== */
@@ -984,9 +993,6 @@
     @media (prefers-reduced-motion: reduce) { .bs { animation: none; } }
   
     /* ===== Geri bildirim düğmesi (Oyun Fikrim Var'ın üstünde) ===== */
-    /* Üstüne gelince genişlerken düğme hiç küçülmesin (küçülünce fare dışarıda kalıp titriyordu) */
-    .geri-btn { min-width: 56px; justify-content: flex-end; }
-    .geri-btn:hover, .geri-btn:focus-visible { justify-content: center; }
     .gb-btn { bottom: 84px; background: linear-gradient(135deg, #00C9A7, #4D9FFF); box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 8px 24px rgba(0,150,200,.3); }
     .fk-secim { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 44px;
       background: #FFFCF8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B5E50' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 18px; }
@@ -994,7 +1000,7 @@
     .fk-secim:focus { border-color: #4D9FFF; }
     .gb-gonder { background: linear-gradient(135deg, #00C9A7, #4D9FFF); }
     #gb-sinif button.secili { background: #4D9FFF; border-color: #4D9FFF; color: #fff; }
-    @media (max-width: 600px) { .gb-btn { bottom: 72px; } .geri-btn { min-width: 50px; justify-content: center; } }
+    @media (max-width: 600px) { .gb-btn { bottom: 72px; } }
   </style>
 </head>
 <body>
@@ -1046,18 +1052,18 @@
       <button class="sinif-btn" data-sinif="4" onclick="sinifSec(4)" aria-pressed="false">4. Sınıf</button>
     </nav>
     <nav class="ders-bar" id="ders-bar" aria-label="Derslere git"></nav>
-    <button class="filtre-btn" id="filtre-btn" onclick="filtreAcKapa()" aria-expanded="false" aria-controls="filtre-panel"><svg class="ik" aria-hidden="true"><use href="#i-hedef"/></svg><span class="filtre-yazi">Kazanım</span></button>
+    <button class="filtre-btn" id="filtre-btn" onclick="filtreAcKapa()" aria-expanded="false" aria-controls="filtre-panel"><svg class="ik" aria-hidden="true"><use href="#i-hedef"/></svg><span class="filtre-yazi">Öğrenme Çıktıları</span></button>
   </div>
   <div class="filtre-alan">
     <div class="filtre-panel" id="filtre-panel" hidden>
       <div class="filtre-ust">
-        <span class="filtre-baslik">Kazanıma göre filtrele</span>
+        <span class="filtre-baslik">Öğrenme çıktısına göre filtrele</span>
         <button class="filtre-temizle" onclick="filtreTemizle()">🧹 Filtreyi Temizle</button>
         <button class="filtre-kapat" onclick="filtreAcKapa(false)" title="Kapat">✕</button>
       </div>
       <div class="filtre-icerik">
         <div class="filtre-dersler" id="filtre-dersler" aria-label="Ders seç"></div>
-        <div class="filtre-beceriler" id="filtre-beceriler" aria-label="Kazanım seç"></div>
+        <div class="filtre-beceriler" id="filtre-beceriler" aria-label="Öğrenme çıktısı seç"></div>
       </div>
     </div>
   </div>
@@ -1272,7 +1278,7 @@ function sinifBarGuncelle() {
     const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     alt.innerHTML = aramaMetni
       ? ikon('arama') + ' "' + esc(aramaMetni) + '" için arama sonuçları (tüm sınıflar)'
-      : seciliBeceriler.size ? ikon('hedef') + ' ' + seciliSinif + '. sınıf — seçtiğin kazanımların oyunları' : '';
+      : seciliBeceriler.size ? ikon('hedef') + ' ' + seciliSinif + '. sınıf — seçtiğin öğrenme çıktılarının oyunları' : '';
     alt.hidden = !alt.innerHTML;
   }
   filtreBtnGuncelle();
@@ -1463,7 +1469,7 @@ function filtreBtnGuncelle() {
   const btn = document.getElementById('filtre-btn');
   if (!btn) return;
   btn.classList.toggle('dolu', seciliBeceriler.size > 0);
-  btn.innerHTML = ikon('hedef') + `<span class="filtre-yazi">Kazanım</span>` + (seciliBeceriler.size ? `<span class="filtre-sayi">${seciliBeceriler.size}</span>` : '');
+  btn.innerHTML = ikon('hedef') + `<span class="filtre-yazi">Öğrenme Çıktıları</span>` + (seciliBeceriler.size ? `<span class="filtre-sayi">${seciliBeceriler.size}</span>` : '');
 }
 
 function filtrePanelCiz() {
