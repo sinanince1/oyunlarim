@@ -742,14 +742,14 @@
 .zoxi-thumb, .tren-thumb, .dusler-thumb, .sorf-thumb, .dusler2-thumb,
 .penalti-thumb, .balon-thumb, .kopru-thumb, .roket-thumb, .terazi-thumb,
 .sunger-thumb, .timsah-thumb, .zipzip-thumb, .yak-thumb, .atm-thumb,
-.orman-thumb, .gdn-thumb, .pyp-thumb, .portfolio-thumb, .satranc-thumb {
+.orman-thumb, .gdn-thumb, .pyp-thumb, .portfolio-thumb, .satranc-thumb, .gdk-thumb {
   position: absolute; inset: 0; overflow: hidden;
 }
 .hikaye-sehri-thumb svg, .yarisma-thumb svg, .dnk-thumb svg, .hece-thumb svg, .nokta-thumb svg,
 .zoxi-thumb svg, .tren-thumb svg, .dusler-thumb svg, .sorf-thumb svg, .dusler2-thumb svg,
 .penalti-thumb svg, .balon-thumb svg, .kopru-thumb svg, .roket-thumb svg, .terazi-thumb svg,
 .sunger-thumb svg, .timsah-thumb svg, .zipzip-thumb svg, .yak-thumb svg, .atm-thumb svg,
-.orman-thumb svg, .gdn-thumb svg, .pyp-thumb svg, .portfolio-thumb svg, .satranc-thumb svg {
+.orman-thumb svg, .gdn-thumb svg, .pyp-thumb svg, .portfolio-thumb svg, .satranc-thumb svg, .gdk-thumb svg {
   width: 100%; height: 100%; display: block;
 }
 .hsr-bulut { animation: thumbKay 9s ease-in-out infinite alternate; }
@@ -891,6 +891,12 @@
 @keyframes stnKale { 0%, 12% { transform: translate(0, 0); } 42%, 62% { transform: translate(-80px, -40px); } 92%, 100% { transform: translate(0, 0); } }
 .stn-ok { animation: thumbYanSon 4s ease-in-out infinite; }
 .stn-parla { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 2.8s ease-in-out infinite; }
+.gdk-lazer { animation: gdkAkis 1.1s linear infinite; }
+@keyframes gdkAkis { to { stroke-dashoffset: 28; } }
+.gdk-kivilcim { transform-box: fill-box; transform-origin: center; animation: thumbPirilti 1.2s ease-in-out infinite; }
+.gdk-tabela { transform-box: fill-box; transform-origin: center; animation: thumbNabiz 2.4s ease-in-out infinite; }
+.gdk-bulut { animation: thumbKay 8s ease-in-out infinite alternate; }
+.gdk-goz { animation: thumbYanSon 2.2s ease-in-out infinite; }
 
 /* Ortak kart animasyonları */
 @keyframes thumbKay { to { transform: translateX(16px); } }
@@ -912,7 +918,7 @@
   .pyk-halo, .pyk-isin, .pyk-harf, .atm-ekran, .atm-kart, .atm-para, .atm-coin,
   .orm-kus, .orm-kulak, .orm-kelebek, .gdn-ok, .gdn-bant, .gdn-sise,
   .pyp-orbit, .pyp-dunya, .pyp-parla, .por-damga, .por-yildiz, .por-kagit,
-  .stn-at, .stn-kale, .stn-ok, .stn-parla { animation: none; }
+  .stn-at, .stn-kale, .stn-ok, .stn-parla, .gdk-lazer, .gdk-kivilcim, .gdk-tabela, .gdk-bulut, .gdk-goz { animation: none; }
   .bln-pat, .hcl-kelime, .hcl-kedi, .dnk-s1, .dnk-s2, .dnk-s3, .pyk-harf { opacity: 1; transform: none; }
   .tmd-elma { transform: translateY(20px); }
   .atm-coin { transform: translateY(100px); }

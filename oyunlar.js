@@ -2052,6 +2052,45 @@ const categories = [
     lineColor: "linear-gradient(90deg, #FF6B35, #FFD600)",
     games: [
       {
+        name: "Gökdelen Şehri",
+        file: "gokdelen_sehri.html",
+        beceri: "Mantık",
+        desc: "Binaları diz, kenardaki tabelalar kaç bina görünsün diyorsa o kadar! 3 boyutlu öğretici, 74 bulmaca ve yıldızlarla şehir marketi. 🏙️",
+        eklenme: "2026-11-27",
+        thumbBg: "linear-gradient(180deg,#7CCBFF,#D9F1FF)",
+        customThumb: `
+<div class="gdk-thumb">
+<svg viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="gdkGok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7CCBFF"/><stop offset="1" stop-color="#D9F1FF"/></linearGradient></defs>
+  <rect width="240" height="150" fill="url(#gdkGok)"/>
+  <g class="gdk-bulut" fill="#fff" opacity=".9"><ellipse cx="190" cy="26" rx="20" ry="8"/><ellipse cx="204" cy="21" rx="13" ry="9"/></g>
+  <rect y="128" width="240" height="22" fill="#A3D98A"/>
+  <path d="M8 132 H232" stroke="#8D98A7" stroke-width="5"/>
+  <g stroke="#2B2340" stroke-width="2" stroke-linejoin="round">
+    <path d="M186 84 h36 l10 -8 h-36 Z" fill="#B8D6FF"/><path d="M222 84 v46 l10 -8 v-46 Z" fill="#3A7FD9"/><rect x="186" y="84" width="36" height="46" fill="#4D9FFF"/>
+    <path d="M110 62 h36 l10 -8 h-36 Z" fill="#E7C9FF"/><path d="M146 62 v68 l10 -8 v-68 Z" fill="#8A3FD6"/><rect x="110" y="62" width="36" height="68" fill="#A855F7"/>
+    <path d="M62 106 h36 l10 -8 h-36 Z" fill="#A8F0E0"/><path d="M98 106 v24 l10 -8 v-24 Z" fill="#00A88B"/><rect x="62" y="106" width="36" height="24" fill="#00C9A7"/>
+  </g>
+  <g fill="#FFF6CF"><rect x="117" y="70" width="8" height="10" rx="1"/><rect x="131" y="70" width="8" height="10" rx="1"/><rect x="117" y="92" width="8" height="10" rx="1"/><rect x="131" y="92" width="8" height="10" rx="1"/><rect x="117" y="113" width="8" height="10" rx="1"/><rect x="131" y="113" width="8" height="10" rx="1"/>
+    <rect x="193" y="92" width="8" height="10" rx="1"/><rect x="207" y="92" width="8" height="10" rx="1"/><rect x="193" y="113" width="8" height="10" rx="1"/><rect x="207" y="113" width="8" height="10" rx="1"/>
+    <rect x="69" y="113" width="8" height="10" rx="1"/><rect x="83" y="113" width="8" height="10" rx="1"/></g>
+  <!-- lazerler: yeşil = görünür, kırmızı = saklı -->
+  <g stroke-linecap="round" fill="none">
+    <path d="M110 64 H30" stroke="#14E07A" stroke-width="7" opacity=".3"/><path class="gdk-lazer" d="M110 64 H30" stroke="#14E07A" stroke-width="3" stroke-dasharray="8 6"/>
+    <path d="M62 108 H30" stroke="#14E07A" stroke-width="7" opacity=".3"/><path class="gdk-lazer" d="M62 108 H30" stroke="#14E07A" stroke-width="3" stroke-dasharray="8 6"/>
+    <path d="M186 86 H156" stroke="#FF2E63" stroke-width="7" opacity=".3"/><path class="gdk-lazer" d="M186 86 H156" stroke="#FF2E63" stroke-width="3" stroke-dasharray="8 6"/>
+  </g>
+  <path class="gdk-kivilcim" d="M156 78 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z" fill="#FFD600" stroke="#FF6B35" stroke-width="1"/>
+  <!-- tabela ve çocuk -->
+  <path d="M14 130 V96" stroke="#6B6585" stroke-width="3"/>
+  <g class="gdk-tabela"><circle cx="14" cy="88" r="11" fill="#fff" stroke="#2B2340" stroke-width="2.5"/><text x="14" y="93" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-weight="900" font-size="14" fill="#2B2340">2</text></g>
+  <g><rect x="25" y="112" width="10" height="12" rx="3" fill="#FF6B35"/><rect x="26" y="124" width="3" height="6" fill="#2B2340"/><rect x="31" y="124" width="3" height="6" fill="#2B2340"/><circle cx="30" cy="107" r="5" fill="#FFD6B0"/><path d="M25 106 a5 5 0 0 1 10 0 Z" fill="#2B2340"/></g>
+  <path class="gdk-goz" d="M30 108 V66" stroke="#14E07A" stroke-width="1.5" stroke-dasharray="3 3"/>
+</svg>
+</div>
+`,
+      },
+      {
         name: "Değiştirme Satrancı",
         file: "satranc.html",
         beceri: "Satranç",
